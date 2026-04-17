@@ -8,12 +8,13 @@ import { PinDialog } from '@/components/PinDialog'
 import { AccountCard } from '@/components/AccountCard'
 import { AccountDialog } from '@/components/AccountDialog'
 import { TransactionDialog } from '@/components/TransactionDialog'
+import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Plus, LockOpen, ChartLine, List, Gear, DownloadSimple, Trash, PencilSimple, ArrowsLeftRight, Eye, EyeSlash } from '@phosphor-icons/react'
+import { Plus, LockOpen, ChartLine, List, Gear, DownloadSimple, Trash, PencilSimple, ArrowsLeftRight, Eye, EyeSlash, Keyboard } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
@@ -34,6 +35,7 @@ function App() {
   const [showAccountDialog, setShowAccountDialog] = useState(false)
   const [showTransactionDialog, setShowTransactionDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
 
   const [editingAccount, setEditingAccount] = useState<Account | undefined>()
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>()
@@ -303,6 +305,94 @@ function App() {
         }
       },
       description: 'Toggle all categories'
+    },
+    {
+      key: 'n',
+      ctrl: true,
+      callback: () => {
+        if (isAuthenticated) {
+          setEditingTransaction(undefined)
+          setShowTransactionDialog(true)
+          toast.success('Nuovo movimento')
+        }
+      },
+      description: 'New transaction'
+    },
+    {
+      key: 'm',
+      ctrl: true,
+      callback: () => {
+        if (isAuthenticated) {
+          setEditingAccount(undefined)
+          setShowAccountDialog(true)
+          toast.success('Nuovo conto')
+        }
+      },
+      description: 'New account'
+    },
+    {
+      key: 'd',
+      ctrl: true,
+      callback: () => {
+        if (isAuthenticated) {
+          setActiveTab('dashboard')
+          toast.success('Dashboard')
+        }
+      },
+      description: 'Navigate to Dashboard'
+    },
+    {
+      key: 't',
+      ctrl: true,
+      callback: () => {
+        if (isAuthenticated) {
+          setActiveTab('transactions')
+          toast.success('Movimenti')
+        }
+      },
+      description: 'Navigate to Transactions'
+    },
+    {
+      key: 'r',
+      ctrl: true,
+      callback: () => {
+        if (isAuthenticated) {
+          setActiveTab('reports')
+          toast.success('Report')
+        }
+      },
+      description: 'Navigate to Reports'
+    },
+    {
+      key: 'e',
+      ctrl: true,
+      callback: () => {
+        if (isAuthenticated && activeTab === 'transactions') {
+          handleExportCSV()
+        }
+      },
+      description: 'Export CSV'
+    },
+    {
+      key: 'u',
+      ctrl: true,
+      callback: () => {
+        if (isAuthenticated && hasPrivateAccount && !isPrivateUnlocked) {
+          setShowPrivatePinDialog(true)
+          toast.success('Sblocca conto privato')
+        }
+      },
+      description: 'Unlock private account'
+    },
+    {
+      key: '?',
+      shift: true,
+      callback: () => {
+        if (isAuthenticated) {
+          setShowKeyboardHelp(true)
+        }
+      },
+      description: 'Show keyboard shortcuts help'
     }
   ], isAuthenticated)
 
@@ -327,6 +417,15 @@ function App() {
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-semibold tracking-tight">Zecchino</h1>
             <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowKeyboardHelp(true)}
+                aria-label="Mostra scorciatoie da tastiera"
+                className="hidden sm:inline-flex"
+              >
+                <Keyboard size={20} weight="duotone" />
+              </Button>
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Saldo Totale</p>
                 <p className={`text-2xl font-mono font-semibold ${totalBalance < 0 ? 'text-destructive' : 'text-foreground'}`}>
@@ -344,14 +443,17 @@ function App() {
             <TabsTrigger value="dashboard" className="gap-2">
               <List size={18} weight="duotone" />
               <span className="hidden sm:inline">Dashboard</span>
+              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex">Ctrl+D</Badge>
             </TabsTrigger>
             <TabsTrigger value="transactions" className="gap-2">
               <ArrowsLeftRight size={18} weight="duotone" />
               <span className="hidden sm:inline">Movimenti</span>
+              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex">Ctrl+T</Badge>
             </TabsTrigger>
             <TabsTrigger value="reports" className="gap-2">
               <ChartLine size={18} weight="duotone" />
               <span className="hidden sm:inline">Report</span>
+              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex">Ctrl+R</Badge>
             </TabsTrigger>
           </TabsList>
 
@@ -362,15 +464,18 @@ function App() {
                 <Button onClick={() => { setEditingTransaction(undefined); setShowTransactionDialog(true) }} className="gap-2">
                   <Plus size={18} weight="bold" />
                   Movimento
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 bg-primary-foreground/20 hidden sm:inline-flex">Ctrl+N</Badge>
                 </Button>
                 <Button onClick={() => { setEditingAccount(undefined); setShowAccountDialog(true) }} variant="outline" className="gap-2">
                   <Plus size={18} weight="bold" />
                   Conto
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex">Ctrl+M</Badge>
                 </Button>
                 {hasPrivateAccount && !isPrivateUnlocked && (
                   <Button onClick={() => setShowPrivatePinDialog(true)} variant="secondary" className="gap-2">
                     <LockOpen size={18} weight="duotone" />
                     Sblocca Privato
+                    <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex">Ctrl+U</Badge>
                   </Button>
                 )}
               </div>
@@ -551,10 +656,12 @@ function App() {
                 <Button onClick={handleExportCSV} variant="outline" className="gap-2">
                   <DownloadSimple size={18} weight="duotone" />
                   Esporta CSV
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex">Ctrl+E</Badge>
                 </Button>
                 <Button onClick={() => { setEditingTransaction(undefined); setShowTransactionDialog(true) }} className="gap-2">
                   <Plus size={18} weight="bold" />
                   Nuovo Movimento
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 bg-primary-foreground/20 hidden sm:inline-flex">Ctrl+N</Badge>
                 </Button>
               </div>
             </div>
@@ -758,6 +865,11 @@ function App() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <KeyboardShortcutsHelp
+        open={showKeyboardHelp}
+        onClose={() => setShowKeyboardHelp(false)}
+      />
     </div>
   )
 }

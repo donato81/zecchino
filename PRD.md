@@ -61,6 +61,13 @@ This is a full-featured financial management system with multiple account types,
 - **Progression**: Press key → Category visibility toggles → Toast notification confirms action → Accounts update instantly
 - **Success criteria**: All category filters respond to keyboard input; shortcuts shown as visual badges on filter buttons; works only on dashboard tab to avoid conflicts
 
+### Comprehensive Keyboard Shortcuts
+- **Functionality**: Full keyboard navigation and quick actions throughout the app (Ctrl+N for new transaction, Ctrl+M for new account, Ctrl+D/T/R for tab navigation, Ctrl+E for export, Ctrl+U to unlock private account, ? to show help)
+- **Purpose**: Enable power users and accessibility users to navigate and perform actions without mouse interaction
+- **Trigger**: Keyboard combinations pressed anywhere in the app (except when typing in input fields)
+- **Progression**: Press shortcut → Action executes immediately → Toast confirms action → UI updates
+- **Success criteria**: All shortcuts work reliably; keyboard help dialog (?) displays complete reference; visual badges on buttons show shortcuts; no conflicts with browser shortcuts
+
 ### Comprehensive Reporting
 - **Functionality**: Generate financial insights by period, category, and account
 - **Purpose**: Visualize financial health, trends, and spending patterns
