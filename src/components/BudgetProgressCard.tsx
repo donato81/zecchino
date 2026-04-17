@@ -41,10 +41,10 @@ export function BudgetProgressCard({
   }
 
   const getProgressColor = () => {
-    if (isOverBudget) return 'bg-destructive'
-    if (percentage >= 90) return 'bg-amber-500'
-    if (percentage >= 75) return 'bg-yellow-500'
-    return 'bg-accent'
+    if (isOverBudget) return 'bg-gradient-to-r from-destructive via-destructive to-red-600'
+    if (percentage >= 90) return 'bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600'
+    if (percentage >= 75) return 'bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500'
+    return 'bg-gradient-to-r from-accent via-accent to-blue-500'
   }
 
   const getStatusIcon = () => {
@@ -55,8 +55,10 @@ export function BudgetProgressCard({
   }
 
   return (
-    <Card className={`transition-all ${!budget.attivo ? 'opacity-60' : ''}`}>
-      <CardHeader className="pb-3">
+    <Card className={`transition-all hover:shadow-xl relative overflow-hidden ${!budget.attivo ? 'opacity-60' : ''}`}>
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-50"></div>
+      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-accent/10 to-transparent rounded-bl-full"></div>
+      <CardHeader className="pb-3 relative z-10">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center gap-2">
@@ -107,22 +109,22 @@ export function BudgetProgressCard({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
+      <CardContent className="space-y-4 relative z-10">
+        <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
               {getStatusIcon()}
-              <span className="font-medium">
+              <span className="font-semibold">
                 {isOverBudget ? 'Budget superato' : 'In corso'}
               </span>
             </div>
-            <span className={`font-mono font-semibold ${isOverBudget ? 'text-destructive' : ''}`}>
+            <span className={`font-mono font-bold text-lg ${isOverBudget ? 'text-destructive' : 'text-accent'}`}>
               {percentage.toFixed(0)}%
             </span>
           </div>
-          <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+          <div className="w-full bg-gradient-to-r from-muted via-muted to-muted/80 rounded-full h-4 overflow-hidden shadow-inner">
             <div 
-              className={`h-full transition-all rounded-full ${getProgressColor()}`}
+              className={`h-full transition-all rounded-full shadow-md ${getProgressColor()}`}
               style={{ width: `${Math.min(percentage, 100)}%` }}
             />
           </div>

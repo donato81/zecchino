@@ -735,7 +735,10 @@ function App() {
     return (
       <>
         <SkipLink />
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5" role="main" aria-label="Schermata di autenticazione">
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden" role="main" aria-label="Schermata di autenticazione">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-accent opacity-90"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_50%),radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.08),transparent_50%)]"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]"></div>
           <PinDialog
             open={showPinDialog}
             title={isSetupMode ? 'Imposta PIN Globale' : 'Inserisci PIN'}
@@ -751,12 +754,20 @@ function App() {
   return (
     <>
       <SkipLink />
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      <div className="min-h-screen relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/15"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(99,102,241,0.08),transparent_50%),radial-gradient(circle_at_80%_70%,rgba(59,130,246,0.08),transparent_50%)]"></div>
+        <div className="relative">
         <FocusIndicator />
-        <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10" role="banner">
-          <div className="container mx-auto px-4 py-4">
+        <header className="border-b bg-card/80 backdrop-blur-md sticky top-0 z-10 shadow-sm" role="banner">
+          <div className="container mx-auto px-4 py-5">
             <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-semibold tracking-tight" id="app-title">Zecchino</h1>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
+                  <span className="text-2xl font-bold text-primary-foreground">Z</span>
+                </div>
+                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent" id="app-title">Zecchino</h1>
+              </div>
               <div className="flex items-center gap-4" role="region" aria-label="Informazioni saldo e azioni rapide">
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -765,7 +776,7 @@ function App() {
                       size="icon"
                       onClick={() => setShowKeyboardHelp(true)}
                       aria-label="Mostra scorciatoie da tastiera"
-                      className="hidden sm:inline-flex"
+                      className="hidden sm:inline-flex hover:bg-accent/20 hover:text-accent transition-all"
                     >
                       <Keyboard size={20} weight="duotone" />
                     </Button>
@@ -779,9 +790,9 @@ function App() {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="text-right cursor-help" role="status" aria-live="polite" aria-label={`Saldo totale: ${formatCurrency(totalBalance)}`}>
-                      <p className="text-sm text-muted-foreground" id="total-balance-label">Saldo Totale</p>
-                      <p className={`text-2xl font-mono font-semibold ${totalBalance < 0 ? 'text-destructive' : 'text-foreground'}`} aria-labelledby="total-balance-label">
+                    <div className="text-right cursor-help bg-gradient-to-br from-card to-muted/50 px-4 py-2 rounded-xl border border-border/50 shadow-sm" role="status" aria-live="polite" aria-label={`Saldo totale: ${formatCurrency(totalBalance)}`}>
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider" id="total-balance-label">Saldo Totale</p>
+                      <p className={`text-2xl font-mono font-bold ${totalBalance < 0 ? 'text-destructive' : 'bg-gradient-to-r from-income to-success bg-clip-text text-transparent'}`} aria-labelledby="total-balance-label">
                         {formatCurrency(totalBalance)}
                       </p>
                     </div>
@@ -1672,6 +1683,7 @@ function App() {
         open={showKeyboardHelp}
         onClose={() => setShowKeyboardHelp(false)}
       />
+      </div>
     </div>
     </>
   )

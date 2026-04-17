@@ -25,6 +25,19 @@ const ACCOUNT_COLORS: Record<AccountType, string> = {
   pensione: 'text-[oklch(0.45_0.10_260)]'
 }
 
+const ACCOUNT_GRADIENTS: Record<AccountType, string> = {
+  bancario: 'from-primary/10 via-primary/5 to-transparent',
+  prepagata: 'from-accent/10 via-accent/5 to-transparent',
+  contanti: 'from-income/10 via-income/5 to-transparent',
+  salvadanaio: 'from-secondary/10 via-secondary/5 to-transparent',
+  privato: 'from-destructive/10 via-destructive/5 to-transparent',
+  investimenti: 'from-[oklch(0.55_0.18_140)]/10 via-[oklch(0.55_0.18_140)]/5 to-transparent',
+  credito: 'from-[oklch(0.60_0.15_330)]/10 via-[oklch(0.60_0.15_330)]/5 to-transparent',
+  paypal: 'from-[oklch(0.50_0.15_230)]/10 via-[oklch(0.50_0.15_230)]/5 to-transparent',
+  crypto: 'from-[oklch(0.65_0.20_50)]/10 via-[oklch(0.65_0.20_50)]/5 to-transparent',
+  pensione: 'from-[oklch(0.45_0.10_260)]/10 via-[oklch(0.45_0.10_260)]/5 to-transparent'
+}
+
 export function AccountCard({ account, balance, onClick }: AccountCardProps) {
   const isNegative = balance < 0
   const Icon = ACCOUNT_TYPE_ICONS[account.tipo]
@@ -34,7 +47,7 @@ export function AccountCard({ account, balance, onClick }: AccountCardProps) {
   return (
     <Card
       onClick={onClick}
-      className={`transition-all hover:shadow-md ${onClick ? 'cursor-pointer' : ''}`}
+      className={`transition-all hover:shadow-lg hover:scale-[1.02] relative overflow-hidden border-2 ${onClick ? 'cursor-pointer' : ''}`}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={(e) => {
@@ -45,14 +58,16 @@ export function AccountCard({ account, balance, onClick }: AccountCardProps) {
       }}
       aria-label={`${account.nome}, ${ACCOUNT_TYPE_LABELS[account.tipo]}, saldo ${formatCurrency(balance, account.valuta)}`}
     >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-medium">
+      <div className={`absolute inset-0 bg-gradient-to-br ${ACCOUNT_GRADIENTS[account.tipo]} opacity-50`}></div>
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/10 to-transparent rounded-bl-full"></div>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+        <CardTitle className="text-lg font-semibold">
           {account.nome}
         </CardTitle>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="cursor-help">
-              <Icon size={32} weight="duotone" className={ACCOUNT_COLORS[account.tipo]} />
+            <div className="cursor-help p-2 rounded-xl bg-card/80 backdrop-blur-sm shadow-sm">
+              <Icon size={28} weight="duotone" className={ACCOUNT_COLORS[account.tipo]} />
             </div>
           </TooltipTrigger>
           <TooltipContent variant={categoryId}>
@@ -63,11 +78,11 @@ export function AccountCard({ account, balance, onClick }: AccountCardProps) {
           </TooltipContent>
         </Tooltip>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
+      <CardContent className="relative z-10">
+        <div className="space-y-3">
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className={`text-2xl font-mono font-semibold ${isNegative ? 'text-destructive' : ''} cursor-help`}>
+              <div className={`text-3xl font-mono font-bold tracking-tight ${isNegative ? 'text-destructive' : 'bg-gradient-to-r from-income to-success bg-clip-text text-transparent'} cursor-help`}>
                 {formatCurrency(balance, account.valuta)}
               </div>
             </TooltipTrigger>
@@ -75,11 +90,11 @@ export function AccountCard({ account, balance, onClick }: AccountCardProps) {
               {isNegative ? 'Saldo negativo' : 'Saldo positivo'}
             </TooltipContent>
           </Tooltip>
-          <div className="flex gap-1.5 flex-wrap">
+          <div className="flex gap-2 flex-wrap">
             <Tooltip>
               <TooltipTrigger asChild>
                 <div>
-                  <Badge variant="outline" className="text-xs cursor-help">
+                  <Badge variant="outline" className="text-xs cursor-help font-medium">
                     {ACCOUNT_TYPE_LABELS[account.tipo]}
                   </Badge>
                 </div>
@@ -92,7 +107,7 @@ export function AccountCard({ account, balance, onClick }: AccountCardProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div>
-                    <Badge variant={categoryInfo.badgeVariant} className="text-xs cursor-help">
+                    <Badge variant={categoryInfo.badgeVariant} className="text-xs cursor-help font-medium shadow-sm">
                       {categoryInfo.label}
                     </Badge>
                   </div>

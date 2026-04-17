@@ -5,24 +5,24 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const tooltipVariants = cva(
-  "animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-fit origin-(--radix-tooltip-content-transform-origin) rounded-md px-3 py-1.5 text-xs text-balance font-medium shadow-lg",
+  "animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-fit origin-(--radix-tooltip-content-transform-origin) rounded-xl px-4 py-2 text-xs text-balance font-semibold shadow-xl backdrop-blur-sm",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground",
-        secondary: "bg-secondary text-secondary-foreground",
-        accent: "bg-accent text-accent-foreground",
-        muted: "bg-muted text-muted-foreground border border-border",
-        banking: "bg-[oklch(0.35_0.08_250)] text-white",
-        digital: "bg-[oklch(0.65_0.15_190)] text-[oklch(0.25_0.08_250)]",
-        savings: "bg-[oklch(0.75_0.12_85)] text-[oklch(0.25_0.08_250)]",
-        investments: "bg-[oklch(0.55_0.18_140)] text-white",
-        private: "bg-[oklch(0.55_0.15_25)] text-white",
-        income: "bg-income text-income-foreground",
-        expense: "bg-expense text-expense-foreground",
-        success: "bg-[oklch(0.75_0.12_85)] text-[oklch(0.25_0.08_250)]",
-        warning: "bg-[oklch(0.80_0.15_70)] text-[oklch(0.25_0.08_250)]",
-        destructive: "bg-destructive text-destructive-foreground"
+        default: "bg-gradient-to-br from-primary via-primary to-primary/90 text-primary-foreground",
+        secondary: "bg-gradient-to-br from-secondary via-secondary to-secondary/90 text-secondary-foreground",
+        accent: "bg-gradient-to-br from-accent via-accent to-accent/90 text-accent-foreground",
+        muted: "bg-gradient-to-br from-muted via-muted to-muted/90 text-muted-foreground border-2 border-border/50",
+        banking: "bg-gradient-to-br from-[oklch(0.35_0.08_250)] via-[oklch(0.35_0.08_250)] to-[oklch(0.30_0.08_250)] text-white",
+        digital: "bg-gradient-to-br from-[oklch(0.65_0.15_190)] via-[oklch(0.65_0.15_190)] to-[oklch(0.60_0.15_190)] text-[oklch(0.25_0.08_250)]",
+        savings: "bg-gradient-to-br from-[oklch(0.75_0.12_85)] via-[oklch(0.75_0.12_85)] to-[oklch(0.70_0.12_85)] text-[oklch(0.25_0.08_250)]",
+        investments: "bg-gradient-to-br from-[oklch(0.55_0.18_140)] via-[oklch(0.55_0.18_140)] to-[oklch(0.50_0.18_140)] text-white",
+        private: "bg-gradient-to-br from-[oklch(0.55_0.15_25)] via-[oklch(0.55_0.15_25)] to-[oklch(0.50_0.15_25)] text-white",
+        income: "bg-gradient-to-br from-income via-income to-income/90 text-income-foreground",
+        expense: "bg-gradient-to-br from-expense via-expense to-expense/90 text-expense-foreground",
+        success: "bg-gradient-to-br from-[oklch(0.75_0.12_85)] via-[oklch(0.75_0.12_85)] to-[oklch(0.70_0.12_85)] text-[oklch(0.25_0.08_250)]",
+        warning: "bg-gradient-to-br from-[oklch(0.80_0.15_70)] via-[oklch(0.80_0.15_70)] to-[oklch(0.75_0.15_70)] text-[oklch(0.25_0.08_250)]",
+        destructive: "bg-gradient-to-br from-destructive via-destructive to-destructive/90 text-destructive-foreground"
       }
     },
     defaultVariants: {

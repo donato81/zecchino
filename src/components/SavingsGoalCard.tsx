@@ -66,10 +66,10 @@ export function SavingsGoalCard({ goal, accounts, onEdit, onDelete, onAddFunds }
   }
 
   const getProgressColor = () => {
-    if (progress.isComplete) return 'bg-income'
-    if (progress.isOverdue) return 'bg-destructive'
-    if (progress.percentage >= 75) return 'bg-accent'
-    return 'bg-primary'
+    if (progress.isComplete) return 'bg-gradient-to-r from-income via-green-500 to-green-600'
+    if (progress.isOverdue) return 'bg-gradient-to-r from-destructive via-red-500 to-red-600'
+    if (progress.percentage >= 75) return 'bg-gradient-to-r from-accent via-blue-500 to-blue-600'
+    return 'bg-gradient-to-r from-primary via-indigo-500 to-indigo-600'
   }
 
   const formatDeadline = (dateString: string) => {
@@ -83,20 +83,22 @@ export function SavingsGoalCard({ goal, accounts, onEdit, onDelete, onAddFunds }
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="relative overflow-hidden transition-all hover:shadow-lg">
+      <Card className="relative overflow-hidden transition-all hover:shadow-xl border-2">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-50"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/10 to-transparent rounded-bl-full"></div>
         <div 
-          className="absolute top-0 left-0 w-1 h-full"
+          className="absolute top-0 left-0 w-2 h-full shadow-lg"
           style={{ backgroundColor: goal.colore }}
         />
         
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 relative z-10">
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-3 flex-1">
               <div 
-                className="p-3 rounded-lg"
+                className="p-3 rounded-xl shadow-md"
                 style={{ backgroundColor: `${goal.colore}20`, color: goal.colore }}
               >
-                <Icon size={28} weight="duotone" />
+                <Icon size={32} weight="duotone" />
               </div>
               
               <div className="flex-1 min-w-0">
