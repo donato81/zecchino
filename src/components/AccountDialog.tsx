@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Account, AccountType } from '@/lib/types'
-import { ACCOUNT_TYPE_LABELS, ACCOUNT_TYPE_ICONS } from '@/lib/constants'
+import { ACCOUNT_TYPE_LABELS, ACCOUNT_TYPE_ICONS, ACCOUNT_TYPE_DESCRIPTIONS } from '@/lib/constants'
 import { generateId } from '@/lib/helpers'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -129,9 +129,12 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
                           )}>
                             {ACCOUNT_TYPE_LABELS[type]}
                           </p>
-                          {disabled && (
-                            <p className="text-[10px] text-muted-foreground">Già esistente</p>
-                          )}
+                          <p className={cn(
+                            'text-[10px] leading-tight',
+                            isSelected ? 'text-primary/70' : 'text-muted-foreground'
+                          )}>
+                            {disabled ? 'Già esistente' : ACCOUNT_TYPE_DESCRIPTIONS[type]}
+                          </p>
                         </div>
                       </CardContent>
                     </Card>

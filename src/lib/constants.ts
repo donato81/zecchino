@@ -37,6 +37,19 @@ export const ACCOUNT_TYPE_LABELS: Record<string, string> = {
   pensione: 'Fondo Pensione'
 }
 
+export const ACCOUNT_TYPE_DESCRIPTIONS: Record<AccountType, string> = {
+  bancario: 'Conto corrente tradizionale',
+  prepagata: 'Postepay, Revolut, N26',
+  contanti: 'Portafoglio fisico',
+  salvadanaio: 'Riserva e risparmio',
+  privato: 'Protetto con PIN',
+  investimenti: 'Azioni, fondi, ETF',
+  credito: 'Carte di credito',
+  paypal: 'Saldo PayPal',
+  crypto: 'Bitcoin, Ethereum',
+  pensione: 'Previdenza integrativa'
+}
+
 export const ACCOUNT_TYPE_ICONS: Record<AccountType, Icon> = {
   bancario: Bank,
   prepagata: CreditCard,
