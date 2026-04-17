@@ -1,28 +1,14 @@
 import { Account } from '@/lib/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/helpers'
-import { Bank, Wallet, PiggyBank, CreditCard, LockKey, TrendUp, Money, CurrencyBtc, Briefcase } from '@phosphor-icons/react'
 import { AccountType } from '@/lib/types'
-import { ACCOUNT_TYPE_LABELS } from '@/lib/constants'
+import { ACCOUNT_TYPE_LABELS, ACCOUNT_TYPE_ICONS } from '@/lib/constants'
 import { Badge } from '@/components/ui/badge'
 
 interface AccountCardProps {
   account: Account
   balance: number
   onClick?: () => void
-}
-
-const ACCOUNT_ICONS: Record<AccountType, React.ReactNode> = {
-  bancario: <Bank size={32} weight="duotone" />,
-  prepagata: <CreditCard size={32} weight="duotone" />,
-  contanti: <Wallet size={32} weight="duotone" />,
-  salvadanaio: <PiggyBank size={32} weight="duotone" />,
-  privato: <LockKey size={32} weight="duotone" />,
-  investimenti: <TrendUp size={32} weight="duotone" />,
-  credito: <CreditCard size={32} weight="duotone" />,
-  paypal: <Money size={32} weight="duotone" />,
-  crypto: <CurrencyBtc size={32} weight="duotone" />,
-  pensione: <Briefcase size={32} weight="duotone" />
 }
 
 const ACCOUNT_COLORS: Record<AccountType, string> = {
@@ -40,6 +26,7 @@ const ACCOUNT_COLORS: Record<AccountType, string> = {
 
 export function AccountCard({ account, balance, onClick }: AccountCardProps) {
   const isNegative = balance < 0
+  const Icon = ACCOUNT_TYPE_ICONS[account.tipo]
 
   return (
     <Card
@@ -59,9 +46,7 @@ export function AccountCard({ account, balance, onClick }: AccountCardProps) {
         <CardTitle className="text-lg font-medium">
           {account.nome}
         </CardTitle>
-        <div className={ACCOUNT_COLORS[account.tipo]}>
-          {ACCOUNT_ICONS[account.tipo]}
-        </div>
+        <Icon size={32} weight="duotone" className={ACCOUNT_COLORS[account.tipo]} />
       </CardHeader>
       <CardContent>
         <div className="space-y-1">

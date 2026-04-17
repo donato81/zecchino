@@ -3,10 +3,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Account, AccountType } from '@/lib/types'
-import { ACCOUNT_TYPE_LABELS } from '@/lib/constants'
+import { ACCOUNT_TYPE_LABELS, ACCOUNT_TYPE_ICONS } from '@/lib/constants'
 import { generateId } from '@/lib/helpers'
+import { Card, CardContent } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
 interface AccountDialogProps {
   open: boolean
@@ -94,24 +95,49 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="account-type">Tipo di Conto</Label>
-              <Select value={tipo} onValueChange={(value) => setTipo(value as AccountType)}>
-                <SelectTrigger id="account-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ACCOUNT_TYPES.map((type) => {
-                    const disabled = type === 'privato' && !account && hasPrivateAccount
-                    return (
-                      <SelectItem key={type} value={type} disabled={disabled}>
-                        {ACCOUNT_TYPE_LABELS[type]}
-                        {disabled && ' (Già esistente)'}
-                      </SelectItem>
-                    )
-                  })}
-                </SelectContent>
-              </Select>
+            <div className="space-y-3">
+              <Label>Tipo di Conto</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {ACCOUNT_TYPES.map((type) => {
+                  const Icon = ACCOUNT_TYPE_ICONS[type]
+                  const disabled = type === 'privato' && !account && hasPrivateAccount
+                  const isSelected = tipo === type
+                  
+                  return (
+                    <Card
+                      key={type}
+                      className={cn(
+                        'cursor-pointer transition-all hover:shadow-md',
+                        isSelected && 'ring-2 ring-primary bg-primary/5',
+                        disabled && 'opacity-50 cursor-not-allowed'
+                      )}
+                      onClick={() => !disabled && setTipo(type)}
+                    >
+                      <CardContent className="p-3 flex flex-col items-center gap-2 text-center">
+                        <Icon 
+                          size={28} 
+                          weight="duotone" 
+                          className={cn(
+                            'transition-colors',
+                            isSelected ? 'text-primary' : 'text-muted-foreground'
+                          )} 
+                        />
+                        <div className="space-y-0.5">
+                          <p className={cn(
+                            'text-xs font-medium leading-none',
+                            isSelected && 'text-primary'
+                          )}>
+                            {ACCOUNT_TYPE_LABELS[type]}
+                          </p>
+                          {disabled && (
+                            <p className="text-[10px] text-muted-foreground">Già esistente</p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
             </div>
 
             <div className="space-y-2">

@@ -1,4 +1,6 @@
-import { Category } from './types'
+import { Category, AccountType } from './types'
+import { Bank, CreditCard, Money, PiggyBank, Lock, TrendUp, Wallet, CurrencyBtc, Coins } from '@phosphor-icons/react'
+import type { Icon } from '@phosphor-icons/react'
 
 export const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   { nome: 'Stipendio', tipo: 'entrata', predefinita: true },
@@ -33,6 +35,19 @@ export const ACCOUNT_TYPE_LABELS: Record<string, string> = {
   paypal: 'PayPal',
   crypto: 'Crypto Wallet',
   pensione: 'Fondo Pensione'
+}
+
+export const ACCOUNT_TYPE_ICONS: Record<AccountType, Icon> = {
+  bancario: Bank,
+  prepagata: CreditCard,
+  contanti: Money,
+  salvadanaio: PiggyBank,
+  privato: Lock,
+  investimenti: TrendUp,
+  credito: CreditCard,
+  paypal: Wallet,
+  crypto: CurrencyBtc,
+  pensione: Coins
 }
 
 export const TRANSACTION_TYPE_LABELS: Record<string, string> = {
