@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Account, Transaction, Category } from '@/lib/types'
 import { hashPin, verifyPin } from '@/lib/crypto'
-import { DEFAULT_CATEGORIES } from '@/lib/constants'
+import { DEFAULT_CATEGORIES, ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from '@/lib/constants'
 import { generateId, calculateAccountBalance, getTotalBalance, formatCurrency, exportToCSV, downloadFile } from '@/lib/helpers'
 import { PinDialog } from '@/components/PinDialog'
 import { AccountCard } from '@/components/AccountCard'
@@ -188,6 +188,25 @@ function App() {
       .slice(0, 10)
   }, [visibleTransactions])
 
+  const groupedAccounts = useMemo(() => {
+    const groups = new Map<string, Account[]>()
+    
+    visibleAccounts.forEach(account => {
+      const categoryId = ACCOUNT_TYPE_TO_CATEGORY[account.tipo]
+      if (!groups.has(categoryId)) {
+        groups.set(categoryId, [])
+      }
+      groups.get(categoryId)?.push(account)
+    })
+    
+    return ACCOUNT_CATEGORIES
+      .map(category => ({
+        ...category,
+        accounts: groups.get(category.id) || []
+      }))
+      .filter(group => group.accounts.length > 0)
+  }, [visibleAccounts])
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5">
@@ -269,17 +288,31 @@ function App() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {visibleAccounts.map(account => {
-                  const balance = calculateAccountBalance(account, visibleTransactions)
-                  return (
-                    <AccountCard
-                      key={account.id}
-                      account={account}
-                      balance={balance}
-                    />
-                  )
-                })}
+              <div className="space-y-6">
+                {groupedAccounts.map(group => (
+                  <div key={group.id} className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={group.badgeVariant}>
+                        {group.label}
+                      </Badge>
+                      <span className="text-sm text-muted-foreground">
+                        {group.description}
+                      </span>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      {group.accounts.map(account => {
+                        const balance = calculateAccountBalance(account, visibleTransactions)
+                        return (
+                          <AccountCard
+                            key={account.id}
+                            account={account}
+                            balance={balance}
+                          />
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 

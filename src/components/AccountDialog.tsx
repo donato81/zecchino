@@ -4,9 +4,10 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Account, AccountType } from '@/lib/types'
-import { ACCOUNT_TYPE_LABELS, ACCOUNT_TYPE_ICONS, ACCOUNT_TYPE_DESCRIPTIONS } from '@/lib/constants'
+import { ACCOUNT_TYPE_LABELS, ACCOUNT_TYPE_ICONS, ACCOUNT_TYPE_DESCRIPTIONS, ACCOUNT_CATEGORIES } from '@/lib/constants'
 import { generateId } from '@/lib/helpers'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 interface AccountDialogProps {
@@ -16,8 +17,6 @@ interface AccountDialogProps {
   account?: Account
   hasPrivateAccount?: boolean
 }
-
-const ACCOUNT_TYPES: AccountType[] = ['bancario', 'prepagata', 'contanti', 'salvadanaio', 'investimenti', 'credito', 'paypal', 'crypto', 'pensione', 'privato']
 
 export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccount = false }: AccountDialogProps) {
   const [nome, setNome] = useState(account?.nome || '')
@@ -97,49 +96,63 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
 
             <div className="space-y-3">
               <Label>Tipo di Conto</Label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {ACCOUNT_TYPES.map((type) => {
-                  const Icon = ACCOUNT_TYPE_ICONS[type]
-                  const disabled = type === 'privato' && !account && hasPrivateAccount
-                  const isSelected = tipo === type
-                  
-                  return (
-                    <Card
-                      key={type}
-                      className={cn(
-                        'cursor-pointer transition-all hover:shadow-md',
-                        isSelected && 'ring-2 ring-primary bg-primary/5',
-                        disabled && 'opacity-50 cursor-not-allowed'
-                      )}
-                      onClick={() => !disabled && setTipo(type)}
-                    >
-                      <CardContent className="p-3 flex flex-col items-center gap-2 text-center">
-                        <Icon 
-                          size={28} 
-                          weight="duotone" 
-                          className={cn(
-                            'transition-colors',
-                            isSelected ? 'text-primary' : 'text-muted-foreground'
-                          )} 
-                        />
-                        <div className="space-y-0.5">
-                          <p className={cn(
-                            'text-xs font-medium leading-none',
-                            isSelected && 'text-primary'
-                          )}>
-                            {ACCOUNT_TYPE_LABELS[type]}
-                          </p>
-                          <p className={cn(
-                            'text-[10px] leading-tight',
-                            isSelected ? 'text-primary/70' : 'text-muted-foreground'
-                          )}>
-                            {disabled ? 'Già esistente' : ACCOUNT_TYPE_DESCRIPTIONS[type]}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )
-                })}
+              <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                {ACCOUNT_CATEGORIES.map((category) => (
+                  <div key={category.id} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={category.badgeVariant} className="text-xs">
+                        {category.label}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {category.description}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {category.types.map((type) => {
+                        const Icon = ACCOUNT_TYPE_ICONS[type]
+                        const disabled = type === 'privato' && !account && hasPrivateAccount
+                        const isSelected = tipo === type
+                        
+                        return (
+                          <Card
+                            key={type}
+                            className={cn(
+                              'cursor-pointer transition-all hover:shadow-md',
+                              isSelected && 'ring-2 ring-primary bg-primary/5',
+                              disabled && 'opacity-50 cursor-not-allowed'
+                            )}
+                            onClick={() => !disabled && setTipo(type)}
+                          >
+                            <CardContent className="p-3 flex flex-col items-center gap-2 text-center">
+                              <Icon 
+                                size={28} 
+                                weight="duotone" 
+                                className={cn(
+                                  'transition-colors',
+                                  isSelected ? 'text-primary' : 'text-muted-foreground'
+                                )} 
+                              />
+                              <div className="space-y-0.5">
+                                <p className={cn(
+                                  'text-xs font-medium leading-none',
+                                  isSelected && 'text-primary'
+                                )}>
+                                  {ACCOUNT_TYPE_LABELS[type]}
+                                </p>
+                                <p className={cn(
+                                  'text-[10px] leading-tight',
+                                  isSelected ? 'text-primary/70' : 'text-muted-foreground'
+                                )}>
+                                  {disabled ? 'Già esistente' : ACCOUNT_TYPE_DESCRIPTIONS[type]}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 

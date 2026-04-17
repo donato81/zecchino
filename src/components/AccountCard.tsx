@@ -2,7 +2,7 @@ import { Account } from '@/lib/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/helpers'
 import { AccountType } from '@/lib/types'
-import { ACCOUNT_TYPE_LABELS, ACCOUNT_TYPE_ICONS } from '@/lib/constants'
+import { ACCOUNT_TYPE_LABELS, ACCOUNT_TYPE_ICONS, ACCOUNT_TYPE_TO_CATEGORY, ACCOUNT_CATEGORIES } from '@/lib/constants'
 import { Badge } from '@/components/ui/badge'
 
 interface AccountCardProps {
@@ -27,6 +27,8 @@ const ACCOUNT_COLORS: Record<AccountType, string> = {
 export function AccountCard({ account, balance, onClick }: AccountCardProps) {
   const isNegative = balance < 0
   const Icon = ACCOUNT_TYPE_ICONS[account.tipo]
+  const categoryId = ACCOUNT_TYPE_TO_CATEGORY[account.tipo]
+  const categoryInfo = ACCOUNT_CATEGORIES.find(cat => cat.id === categoryId)
 
   return (
     <Card
@@ -49,13 +51,20 @@ export function AccountCard({ account, balance, onClick }: AccountCardProps) {
         <Icon size={32} weight="duotone" className={ACCOUNT_COLORS[account.tipo]} />
       </CardHeader>
       <CardContent>
-        <div className="space-y-1">
+        <div className="space-y-2">
           <div className={`text-2xl font-mono font-semibold ${isNegative ? 'text-destructive' : ''}`}>
             {formatCurrency(balance, account.valuta)}
           </div>
-          <Badge variant="outline" className="text-xs">
-            {ACCOUNT_TYPE_LABELS[account.tipo]}
-          </Badge>
+          <div className="flex gap-1.5 flex-wrap">
+            <Badge variant="outline" className="text-xs">
+              {ACCOUNT_TYPE_LABELS[account.tipo]}
+            </Badge>
+            {categoryInfo && (
+              <Badge variant={categoryInfo.badgeVariant} className="text-xs">
+                {categoryInfo.label}
+              </Badge>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
