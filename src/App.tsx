@@ -9,6 +9,7 @@ import { AccountCard } from '@/components/AccountCard'
 import { AccountDialog } from '@/components/AccountDialog'
 import { TransactionDialog } from '@/components/TransactionDialog'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
+import { FocusIndicator } from '@/components/FocusIndicator'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -468,6 +469,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      <FocusIndicator />
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -496,17 +498,17 @@ function App() {
       <main className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
-            <TabsTrigger value="dashboard" className="gap-2">
+            <TabsTrigger value="dashboard" className="gap-2" data-focus-info="Scheda Dashboard - Visualizza conti e movimenti recenti (Ctrl+D)">
               <List size={18} weight="duotone" />
               <span className="hidden sm:inline">Dashboard</span>
               <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex">Ctrl+D</Badge>
             </TabsTrigger>
-            <TabsTrigger value="transactions" className="gap-2">
+            <TabsTrigger value="transactions" className="gap-2" data-focus-info="Scheda Movimenti - Visualizza tutti i movimenti (Ctrl+T)">
               <ArrowsLeftRight size={18} weight="duotone" />
               <span className="hidden sm:inline">Movimenti</span>
               <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex">Ctrl+T</Badge>
             </TabsTrigger>
-            <TabsTrigger value="reports" className="gap-2">
+            <TabsTrigger value="reports" className="gap-2" data-focus-info="Scheda Report - Visualizza statistiche finanziarie (Ctrl+R)">
               <ChartLine size={18} weight="duotone" />
               <span className="hidden sm:inline">Report</span>
               <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex">Ctrl+R</Badge>
@@ -517,18 +519,32 @@ function App() {
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
               <h2 className="text-2xl font-semibold">I Tuoi Conti</h2>
               <div className="flex gap-2 flex-wrap">
-                <Button onClick={() => { setEditingTransaction(undefined); setShowTransactionDialog(true) }} className="gap-2">
+                <Button 
+                  onClick={() => { setEditingTransaction(undefined); setShowTransactionDialog(true) }} 
+                  className="gap-2"
+                  data-focus-info="Aggiungi nuovo movimento (Ctrl+N)"
+                >
                   <Plus size={18} weight="bold" />
                   Movimento
                   <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 bg-primary-foreground/20 hidden sm:inline-flex">Ctrl+N</Badge>
                 </Button>
-                <Button onClick={() => { setEditingAccount(undefined); setShowAccountDialog(true) }} variant="outline" className="gap-2">
+                <Button 
+                  onClick={() => { setEditingAccount(undefined); setShowAccountDialog(true) }} 
+                  variant="outline" 
+                  className="gap-2"
+                  data-focus-info="Aggiungi nuovo conto (Ctrl+M)"
+                >
                   <Plus size={18} weight="bold" />
                   Conto
                   <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex">Ctrl+M</Badge>
                 </Button>
                 {hasPrivateAccount && !isPrivateUnlocked && (
-                  <Button onClick={() => setShowPrivatePinDialog(true)} variant="secondary" className="gap-2">
+                  <Button 
+                    onClick={() => setShowPrivatePinDialog(true)} 
+                    variant="secondary" 
+                    className="gap-2"
+                    data-focus-info="Sblocca conto privato (Ctrl+U)"
+                  >
                     <LockOpen size={18} weight="duotone" />
                     Sblocca Privato
                     <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex">Ctrl+U</Badge>
@@ -558,6 +574,7 @@ function App() {
                       size="sm"
                       className="gap-2"
                       aria-label={allCategoriesVisible ? 'Nascondi tutte le categorie' : 'Mostra tutte le categorie'}
+                      data-focus-info={`${allCategoriesVisible ? 'Nascondi' : 'Mostra'} tutte le categorie (Ctrl+A)`}
                     >
                       {allCategoriesVisible ? <EyeSlash size={16} weight="duotone" /> : <Eye size={16} weight="duotone" />}
                       <span className="text-xs font-medium">{allCategoriesVisible ? 'Nascondi tutto' : 'Mostra tutto'}</span>
@@ -574,6 +591,7 @@ function App() {
                           variant={isActive ? category.badgeVariant : 'outline'}
                           size="sm"
                           className="gap-2"
+                          data-focus-info={`Filtra ${category.label} (${category.accounts.length} conti) - Tasto ${keyNumber}`}
                         >
                           <Badge variant={category.badgeVariant} className="text-xs px-0 border-0 bg-transparent">
                             {category.label}
@@ -666,6 +684,7 @@ function App() {
                                 : 'hover:bg-muted/50'
                             }`}
                             onClick={() => recentTransactionsNav.setFocusedIndex(index)}
+                            data-focus-info={`Movimento: ${transaction.descrizione || category?.nome} - ${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'} ${formatCurrency(transaction.importo)} - Premi Enter per modificare`}
                           >
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
@@ -727,12 +746,21 @@ function App() {
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Tutti i Movimenti</h2>
               <div className="flex gap-2">
-                <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+                <Button 
+                  onClick={handleExportCSV} 
+                  variant="outline" 
+                  className="gap-2"
+                  data-focus-info="Esporta movimenti in formato CSV (Ctrl+E)"
+                >
                   <DownloadSimple size={18} weight="duotone" />
                   Esporta CSV
                   <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex">Ctrl+E</Badge>
                 </Button>
-                <Button onClick={() => { setEditingTransaction(undefined); setShowTransactionDialog(true) }} className="gap-2">
+                <Button 
+                  onClick={() => { setEditingTransaction(undefined); setShowTransactionDialog(true) }} 
+                  className="gap-2"
+                  data-focus-info="Aggiungi nuovo movimento (Ctrl+N)"
+                >
                   <Plus size={18} weight="bold" />
                   Nuovo Movimento
                   <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 bg-primary-foreground/20 hidden sm:inline-flex">Ctrl+N</Badge>
@@ -779,6 +807,7 @@ function App() {
                                 : 'hover:bg-muted/50'
                             }`}
                             onClick={() => allTransactionsNav.setFocusedIndex(index)}
+                            data-focus-info={`Movimento: ${transaction.descrizione || category?.nome} - ${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'} ${formatCurrency(transaction.importo)} - Premi Enter per modificare`}
                           >
                             <div className="flex-1 min-w-0 space-y-1">
                               <div className="flex items-center gap-2">

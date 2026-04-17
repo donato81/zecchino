@@ -75,6 +75,13 @@ This is a full-featured financial management system with multiple account types,
 - **Progression**: Press arrow key → Focus moves to next/previous item with visual highlight → Press Enter/E → Edit dialog opens → Or press Delete → Confirmation dialog appears
 - **Success criteria**: Visual focus indicator clearly shows selected transaction; navigation wraps from last to first; actions work on focused item; keyboard hints displayed above lists; focus state persists during navigation
 
+### Keyboard Focus Visual Indicators
+- **Functionality**: Automatic tooltip system that displays contextual information when navigating with keyboard (Tab, arrows), showing element purpose and available shortcuts
+- **Purpose**: Provide clear visual feedback for keyboard navigation state, especially valuable for screen reader users and keyboard-only navigation
+- **Trigger**: Any keyboard navigation action (Tab, arrow keys) that moves focus to an interactive element
+- **Progression**: Press Tab/Arrow key → Focus moves to element → Animated tooltip appears above/below element showing description and keyboard shortcut → Tooltip follows focus as user navigates → Disappears on mouse interaction
+- **Success criteria**: Tooltips appear for all interactive elements (buttons, tabs, transaction rows, category filters); tooltip text is descriptive and includes shortcuts; tooltip positioning adapts to avoid screen edges; only appears during keyboard navigation, not mouse hover
+
 ### Comprehensive Reporting
 - **Functionality**: Generate financial insights by period, category, and account
 - **Purpose**: Visualize financial health, trends, and spending patterns
