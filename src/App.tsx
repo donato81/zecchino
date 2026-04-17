@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Plus, LockOpen, ChartLine, List, Gear, DownloadSimple, Trash, PencilSimple, ArrowsLeftRight } from '@phosphor-icons/react'
+import { Plus, LockOpen, ChartLine, List, Gear, DownloadSimple, Trash, PencilSimple, ArrowsLeftRight, Eye, EyeSlash } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 
@@ -224,6 +224,23 @@ function App() {
     })
   }
 
+  const toggleAllCategories = () => {
+    setVisibleCategories((current) => {
+      const currentCategories = current || []
+      const allCategoryIds = ACCOUNT_CATEGORIES.map(c => c.id)
+      if (currentCategories.length === allCategoryIds.length) {
+        return []
+      } else {
+        return allCategoryIds
+      }
+    })
+  }
+
+  const allCategoriesVisible = useMemo(() => {
+    const currentCategories = visibleCategories || []
+    return currentCategories.length === ACCOUNT_CATEGORIES.map(c => c.id).length
+  }, [visibleCategories])
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5">
@@ -307,8 +324,19 @@ function App() {
             ) : (
               <div className="space-y-6">
                 {groupedAccounts.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 items-center">
                     <span className="text-sm text-muted-foreground self-center mr-2">Filtra categorie:</span>
+                    <Button
+                      onClick={toggleAllCategories}
+                      variant={allCategoriesVisible ? 'default' : 'outline'}
+                      size="sm"
+                      className="gap-2"
+                      aria-label={allCategoriesVisible ? 'Nascondi tutte le categorie' : 'Mostra tutte le categorie'}
+                    >
+                      {allCategoriesVisible ? <EyeSlash size={16} weight="duotone" /> : <Eye size={16} weight="duotone" />}
+                      <span className="text-xs font-medium">{allCategoriesVisible ? 'Nascondi tutto' : 'Mostra tutto'}</span>
+                    </Button>
+                    <Separator orientation="vertical" className="h-6" />
                     {groupedAccounts.map(category => {
                       const isActive = (visibleCategories || []).includes(category.id)
                       return (
