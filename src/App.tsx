@@ -39,6 +39,7 @@ function App() {
   const [deletingItem, setDeletingItem] = useState<{ type: 'account' | 'transaction', id: string } | null>(null)
 
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [visibleCategories, setVisibleCategories] = useKV<string[]>('visible-categories', ACCOUNT_CATEGORIES.map(c => c.id))
 
   const safeAccounts = accounts || []
   const safeTransactions = transactions || []
@@ -207,6 +208,22 @@ function App() {
       .filter(group => group.accounts.length > 0)
   }, [visibleAccounts])
 
+  const filteredGroupedAccounts = useMemo(() => {
+    const safeVisibleCategories = visibleCategories || []
+    return groupedAccounts.filter(group => safeVisibleCategories.includes(group.id))
+  }, [groupedAccounts, visibleCategories])
+
+  const toggleCategoryVisibility = (categoryId: string) => {
+    setVisibleCategories((current) => {
+      const currentCategories = current || []
+      if (currentCategories.includes(categoryId)) {
+        return currentCategories.filter(id => id !== categoryId)
+      } else {
+        return [...currentCategories, categoryId]
+      }
+    })
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5">
@@ -289,30 +306,69 @@ function App() {
               </Card>
             ) : (
               <div className="space-y-6">
-                {groupedAccounts.map(group => (
-                  <div key={group.id} className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Badge variant={group.badgeVariant}>
-                        {group.label}
-                      </Badge>
-                      <span className="text-sm text-muted-foreground">
-                        {group.description}
-                      </span>
-                    </div>
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      {group.accounts.map(account => {
-                        const balance = calculateAccountBalance(account, visibleTransactions)
-                        return (
-                          <AccountCard
-                            key={account.id}
-                            account={account}
-                            balance={balance}
-                          />
-                        )
-                      })}
-                    </div>
+                {groupedAccounts.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-sm text-muted-foreground self-center mr-2">Filtra categorie:</span>
+                    {groupedAccounts.map(category => {
+                      const isActive = (visibleCategories || []).includes(category.id)
+                      return (
+                        <Button
+                          key={category.id}
+                          onClick={() => toggleCategoryVisibility(category.id)}
+                          variant={isActive ? category.badgeVariant : 'outline'}
+                          size="sm"
+                          className="gap-2"
+                        >
+                          <Badge variant={category.badgeVariant} className="text-xs px-0 border-0 bg-transparent">
+                            {category.label}
+                          </Badge>
+                          <span className="text-xs">({category.accounts.length})</span>
+                        </Button>
+                      )
+                    })}
                   </div>
-                ))}
+                )}
+
+                {filteredGroupedAccounts.length === 0 ? (
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                      <p className="text-muted-foreground mb-4">Nessun conto da visualizzare con i filtri selezionati</p>
+                      <Button 
+                        onClick={() => setVisibleCategories(ACCOUNT_CATEGORIES.map(c => c.id))} 
+                        variant="outline"
+                      >
+                        Mostra Tutti i Conti
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <>
+                    {filteredGroupedAccounts.map(group => (
+                      <div key={group.id} className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={group.badgeVariant}>
+                            {group.label}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">
+                            {group.description}
+                          </span>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                          {group.accounts.map(account => {
+                            const balance = calculateAccountBalance(account, visibleTransactions)
+                            return (
+                              <AccountCard
+                                key={account.id}
+                                account={account}
+                                balance={balance}
+                              />
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
             )}
 
