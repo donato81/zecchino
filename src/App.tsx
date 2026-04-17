@@ -23,6 +23,7 @@ import { SavingsGoalCard } from '@/components/SavingsGoalCard'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
 import { FocusIndicator } from '@/components/FocusIndicator'
 import { AudioSettings } from '@/components/AudioSettings'
+import { ScreenReaderSettings } from '@/components/ScreenReaderSettings'
 import { IncomeExpenseChart } from '@/components/IncomeExpenseChart'
 import { MonthlyComparisonChart } from '@/components/MonthlyComparisonChart'
 import { PeriodSelector } from '@/components/PeriodSelector'
@@ -1583,7 +1584,15 @@ function App() {
               </CardContent>
             </Card>
 
-            <AudioSettings />
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold flex items-center gap-2">
+                <Gear size={24} weight="duotone" />
+                Impostazioni Accessibilità
+              </h3>
+              
+              <AudioSettings />
+              <ScreenReaderSettings />
+            </div>
           </TabsContent>
         </Tabs>
       </main>

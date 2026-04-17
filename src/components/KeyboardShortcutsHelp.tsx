@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Keyboard } from '@phosphor-icons/react'
 import { soundSystem } from '@/lib/sound-system'
+import { useScreenReader } from '@/hooks/use-screen-reader'
 import { useEffect } from 'react'
 
 interface KeyboardShortcutsHelpProps {
@@ -78,14 +79,18 @@ const shortcutGroups: ShortcutGroup[] = [
 ]
 
 export function KeyboardShortcutsHelp({ open, onClose }: KeyboardShortcutsHelpProps) {
+  const screenReader = useScreenReader()
+
   useEffect(() => {
     if (open) {
       soundSystem.play('dialog-open')
+      screenReader.announceHelpOpened()
     }
-  }, [open])
+  }, [open, screenReader])
 
   const handleClose = () => {
     soundSystem.play('dialog-close')
+    screenReader.announceHelpClosed()
     onClose()
   }
 

@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { soundSystem } from '@/lib/sound-system'
+import { useScreenReader } from '@/hooks/use-screen-reader'
 
 type Period = 'week' | 'month' | '3months' | '6months' | 'year'
 
@@ -18,9 +19,13 @@ const periods: { value: Period; label: string }[] = [
 ]
 
 export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
+  const screenReader = useScreenReader()
+
   const handlePeriodChange = (period: Period) => {
     soundSystem.play('period-change')
     onChange(period)
+    const periodLabel = periods.find(p => p.value === period)?.label || period
+    screenReader.announcePeriodChange(periodLabel)
   }
 
   return (

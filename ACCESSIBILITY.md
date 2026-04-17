@@ -36,11 +36,28 @@ Il sistema annuncia automaticamente:
 - **Autenticazione**: Conferma di accesso riuscito o errori PIN
 - **Cambio scheda**: Nome della scheda e conteggio elementi
 - **Creazione conto**: Nome, tipo e saldo iniziale
+- **Modifica conto**: Conferma di modifiche salvate
+- **Eliminazione conto**: Conferma di eliminazione con rimozione movimenti
 - **Movimento aggiunto**: Tipo, importo, conto e categoria
-- **Eliminazione**: Conferma di elementi eliminati
-- **Budget**: Status e progressi
-- **Esportazione**: Numero di movimenti esportati
+- **Movimento modificato**: Conferma di modifiche salvate
+- **Eliminazione movimento**: Conferma di elementi eliminati
+- **Budget creato**: Nome, importo target e periodo
+- **Budget modificato**: Conferma di modifiche salvate
+- **Budget eliminato**: Conferma di eliminazione
+- **Avvisi budget**: Status e progressi con soglie (75%, 90%, 100%)
+- **Obiettivo risparmio creato**: Nome, target e scadenza
+- **Obiettivo risparmio modificato**: Conferma di modifiche salvate
+- **Obiettivo risparmio eliminato**: Conferma di eliminazione
+- **Progressi risparmio**: Stato attuale, percentuale e importo mancante
+- **Esportazione**: Numero di movimenti esportati e formato
 - **Filtri**: Stato di attivazione/disattivazione filtri categorie
+- **Cambio periodo**: Periodo selezionato per visualizzazione grafici
+- **Audio**: Cambio volume, mute/unmute, preset applicati
+- **Template budget**: Selezione template con compilazione automatica
+- **Errori form**: Campo specifico e descrizione errore
+- **Apertura/Chiusura dialoghi**: Titolo dialogo e istruzioni navigazione
+- **Aiuto tastiera**: Apertura e chiusura guida scorciatoie
+- **Conto privato**: Sblocco e blocco con status visibilità
 
 #### Live Regions ARIA
 
@@ -135,6 +152,10 @@ Nella sezione Report:
 2. **Liste**: Usa frecce ↑/↓ per navigare rapidamente tra movimenti
 3. **Filtri**: Usa tasti 1-5 per filtrare rapidamente le categorie sulla Dashboard
 4. **Aiuto**: Premi ? per ascoltare tutte le scorciatoie disponibili
+5. **Audio**: Usa Alt+1/2/3/4 per cambiare rapidamente il volume
+6. **Feedback immediato**: Ogni azione importante viene annunciata automaticamente
+7. **Errori chiari**: Gli errori nei form vengono annunciati con campo e descrizione specifica
+8. **Status update**: Progressi budget e obiettivi risparmio vengono annunciati con dettagli completi
 
 ### Per Utenti con Navigazione da Tastiera
 
@@ -199,6 +220,8 @@ Tutti i componenti UI in `/src/components/ui` sono basati su Radix UI, che forni
 - [ ] Modalità alto contrasto
 - [ ] Supporto per ingrandimento testo fino a 200%
 - [ ] Lettura automatica riepiloghi giornalieri
-- [ ] Personalizzazione verbosità annunci
+- [ ] Personalizzazione verbosità annunci (verboso, normale, conciso)
 - [ ] Supporto per comandi vocali
 - [ ] Modalità riduzione movimenti per utenti con disturbi vestibolari
+- [ ] Notifiche sonore personalizzabili per diversi tipi di eventi
+- [ ] Sintesi vocale personalizzabile (velocità, tono, voce)

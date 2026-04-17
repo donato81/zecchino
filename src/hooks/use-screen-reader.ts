@@ -66,6 +66,90 @@ export function useScreenReader() {
     screenReader.announceSort(columnName, direction)
   }, [])
 
+  const announceAccountCreated = useCallback((name: string, type: string, initialBalance: number) => {
+    screenReader.announceAccountCreated(name, type, initialBalance)
+  }, [])
+
+  const announceAccountDeleted = useCallback((name: string) => {
+    screenReader.announceAccountDeleted(name)
+  }, [])
+
+  const announceBudgetCreated = useCallback((name: string, target: number, period: string) => {
+    screenReader.announceBudgetCreated(name, target, period)
+  }, [])
+
+  const announceBudgetDeleted = useCallback((name: string) => {
+    screenReader.announceBudgetDeleted(name)
+  }, [])
+
+  const announceSavingsGoalCreated = useCallback((name: string, target: number, deadline?: string) => {
+    screenReader.announceSavingsGoalCreated(name, target, deadline)
+  }, [])
+
+  const announceSavingsGoalProgress = useCallback((name: string, current: number, target: number, percentage: number) => {
+    screenReader.announceSavingsGoalProgress(name, current, target, percentage)
+  }, [])
+
+  const announceSavingsGoalDeleted = useCallback((name: string) => {
+    screenReader.announceSavingsGoalDeleted(name)
+  }, [])
+
+  const announceVolumeChange = useCallback((level: number, muted: boolean) => {
+    screenReader.announceVolumeChange(level, muted)
+  }, [])
+
+  const announcePresetApplied = useCallback((presetName: string) => {
+    screenReader.announcePresetApplied(presetName)
+  }, [])
+
+  const announceTemplateSelected = useCallback((templateName: string) => {
+    screenReader.announceTemplateSelected(templateName)
+  }, [])
+
+  const announceFormError = useCallback((fieldName: string, error: string) => {
+    screenReader.announceFormError(fieldName, error)
+  }, [])
+
+  const announceFormFieldFilled = useCallback((fieldName: string, value: string) => {
+    screenReader.announceFormFieldFilled(fieldName, value)
+  }, [])
+
+  const announceToggleState = useCallback((elementName: string, isEnabled: boolean) => {
+    screenReader.announceToggleState(elementName, isEnabled)
+  }, [])
+
+  const announceCardAction = useCallback((action: string, itemName: string) => {
+    screenReader.announceCardAction(action, itemName)
+  }, [])
+
+  const announceExport = useCallback((itemCount: number, format: string) => {
+    screenReader.announceExport(itemCount, format)
+  }, [])
+
+  const announcePeriodChange = useCallback((periodName: string) => {
+    screenReader.announcePeriodChange(periodName)
+  }, [])
+
+  const announceHelpOpened = useCallback(() => {
+    screenReader.announceHelpOpened()
+  }, [])
+
+  const announceHelpClosed = useCallback(() => {
+    screenReader.announceHelpClosed()
+  }, [])
+
+  const announcePrivateAccountLocked = useCallback(() => {
+    screenReader.announcePrivateAccountLocked()
+  }, [])
+
+  const announceDataCleared = useCallback((dataType: string) => {
+    screenReader.announceDataCleared(dataType)
+  }, [])
+
+  const announceImportComplete = useCallback((itemCount: number, dataType: string) => {
+    screenReader.announceImportComplete(itemCount, dataType)
+  }, [])
+
   return {
     announce,
     announceNavigation,
@@ -82,7 +166,28 @@ export function useScreenReader() {
     announceFocus,
     announceListNavigation,
     announceFilter,
-    announceSort
+    announceSort,
+    announceAccountCreated,
+    announceAccountDeleted,
+    announceBudgetCreated,
+    announceBudgetDeleted,
+    announceSavingsGoalCreated,
+    announceSavingsGoalProgress,
+    announceSavingsGoalDeleted,
+    announceVolumeChange,
+    announcePresetApplied,
+    announceTemplateSelected,
+    announceFormError,
+    announceFormFieldFilled,
+    announceToggleState,
+    announceCardAction,
+    announceExport,
+    announcePeriodChange,
+    announceHelpOpened,
+    announceHelpClosed,
+    announcePrivateAccountLocked,
+    announceDataCleared,
+    announceImportComplete
   }
 }
 

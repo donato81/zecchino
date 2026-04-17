@@ -146,6 +146,134 @@ class ScreenReaderAnnouncer {
     const direzione = direction === 'ascending' ? 'crescente' : 'decrescente'
     this.announce(`Ordinamento per ${columnName}, ordine ${direzione}`, 'polite')
   }
+
+  announceAccountCreated(name: string, type: string, initialBalance: number) {
+    const formattedBalance = new Intl.NumberFormat('it-IT', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(initialBalance)
+    this.announce(`Nuovo conto ${name} di tipo ${type} creato con saldo iniziale di ${formattedBalance}`, 'polite')
+  }
+
+  announceAccountDeleted(name: string) {
+    this.announce(`Conto ${name} eliminato. Tutti i movimenti associati sono stati rimossi`, 'assertive')
+  }
+
+  announceBudgetCreated(name: string, target: number, period: string) {
+    const formattedTarget = new Intl.NumberFormat('it-IT', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(target)
+    this.announce(`Nuovo budget ${name} creato. Importo target: ${formattedTarget} per periodo ${period}`, 'polite')
+  }
+
+  announceBudgetDeleted(name: string) {
+    this.announce(`Budget ${name} eliminato`, 'assertive')
+  }
+
+  announceSavingsGoalCreated(name: string, target: number, deadline?: string) {
+    const formattedTarget = new Intl.NumberFormat('it-IT', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(target)
+    let message = `Nuovo obiettivo di risparmio ${name} creato. Target: ${formattedTarget}`
+    if (deadline) {
+      message += `, scadenza ${new Date(deadline).toLocaleDateString('it-IT')}`
+    }
+    this.announce(message, 'polite')
+  }
+
+  announceSavingsGoalProgress(name: string, current: number, target: number, percentage: number) {
+    const formattedCurrent = new Intl.NumberFormat('it-IT', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(current)
+    const formattedTarget = new Intl.NumberFormat('it-IT', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(target)
+    const remaining = target - current
+    const formattedRemaining = new Intl.NumberFormat('it-IT', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(remaining)
+
+    let status = ''
+    if (percentage >= 100) {
+      status = `obiettivo raggiunto!`
+    } else if (percentage >= 75) {
+      status = `quasi raggiunto, mancano ${formattedRemaining}`
+    } else {
+      status = `progresso ${Math.round(percentage)}%, risparmiati ${formattedCurrent} su ${formattedTarget}`
+    }
+
+    this.announce(`Obiettivo ${name}: ${status}`, 'polite')
+  }
+
+  announceSavingsGoalDeleted(name: string) {
+    this.announce(`Obiettivo di risparmio ${name} eliminato`, 'assertive')
+  }
+
+  announceVolumeChange(level: number, muted: boolean) {
+    if (muted) {
+      this.announce('Audio disattivato', 'polite')
+    } else {
+      this.announce(`Volume impostato a ${level}%`, 'polite')
+    }
+  }
+
+  announcePresetApplied(presetName: string) {
+    this.announce(`Preset audio ${presetName} applicato`, 'polite')
+  }
+
+  announceTemplateSelected(templateName: string) {
+    this.announce(`Template ${templateName} selezionato. Campi compilati automaticamente`, 'polite')
+  }
+
+  announceFormError(fieldName: string, error: string) {
+    this.announce(`Errore nel campo ${fieldName}: ${error}`, 'assertive')
+  }
+
+  announceFormFieldFilled(fieldName: string, value: string) {
+    this.announce(`Campo ${fieldName} impostato a ${value}`, 'polite')
+  }
+
+  announceToggleState(elementName: string, isEnabled: boolean) {
+    const stato = isEnabled ? 'attivato' : 'disattivato'
+    this.announce(`${elementName} ${stato}`, 'polite')
+  }
+
+  announceCardAction(action: string, itemName: string) {
+    this.announce(`${action} ${itemName}`, 'polite')
+  }
+
+  announceExport(itemCount: number, format: string) {
+    this.announce(`${itemCount} ${itemCount === 1 ? 'elemento esportato' : 'elementi esportati'} in formato ${format}`, 'polite')
+  }
+
+  announcePeriodChange(periodName: string) {
+    this.announce(`Periodo cambiato a ${periodName}`, 'polite')
+  }
+
+  announceHelpOpened() {
+    this.announce('Aiuto scorciatoie da tastiera aperto. Usa Tab per navigare, Escape per chiudere', 'polite')
+  }
+
+  announceHelpClosed() {
+    this.announce('Aiuto scorciatoie da tastiera chiuso', 'polite')
+  }
+
+  announcePrivateAccountLocked() {
+    this.announce('Conto privato bloccato. I dati privati non sono più visibili', 'polite')
+  }
+
+  announceDataCleared(dataType: string) {
+    this.announce(`${dataType} cancellati completamente`, 'assertive')
+  }
+
+  announceImportComplete(itemCount: number, dataType: string) {
+    this.announce(`Importazione completata. ${itemCount} ${dataType} importati`, 'polite')
+  }
 }
 
 export const screenReader = new ScreenReaderAnnouncer()

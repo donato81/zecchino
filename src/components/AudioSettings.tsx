@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { soundSystem } from '@/lib/sound-system'
+import { useScreenReader } from '@/hooks/use-screen-reader'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -19,6 +20,7 @@ const VOLUME_PRESETS = [
 ] as const
 
 export function AudioSettings() {
+  const screenReader = useScreenReader()
   const [audioEnabled, setAudioEnabled] = useKV<boolean>('audio-enabled', true)
   const [audioVolume, setAudioVolume] = useKV<number>('audio-volume', 0.3)
   
@@ -41,15 +43,18 @@ export function AudioSettings() {
     if (!localEnabled) {
       soundSystem.play('settings-change')
       toast.success('Audio abilitato')
+      screenReader.announceToggleState('Audio', true)
       setTimeout(() => soundSystem.play('success'), 100)
     } else {
       toast.success('Audio disabilitato')
+      screenReader.announceToggleState('Audio', false)
     }
   }
 
   const handleVolumeChange = (values: number[]) => {
     setLocalVolume(values[0])
     soundSystem.play('volume-change')
+    screenReader.announceVolumeChange(values[0], false)
   }
 
   const handleTestSound = () => {
@@ -62,6 +67,7 @@ export function AudioSettings() {
     soundSystem.play('preset-applied')
     const presetName = VOLUME_PRESETS.find(p => p.value === value)?.name || 'personalizzato'
     toast.success(`Volume impostato: ${presetName} (${value}%)`)
+    screenReader.announcePresetApplied(`${presetName} - ${value}%`)
   }
 
   useKeyboardShortcuts(
