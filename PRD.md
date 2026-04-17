@@ -54,6 +54,13 @@ This is a full-featured financial management system with multiple account types,
 - **Progression**: View categories → Add/rename/delete → Categories available in transaction forms
 - **Success criteria**: 18 default Italian categories exist; users can customize fully
 
+### Account Category Filtering with Keyboard Shortcuts
+- **Functionality**: Quick filter account display by category using keyboard shortcuts (1-5 for categories, Ctrl+A for toggle all)
+- **Purpose**: Enable rapid, keyboard-accessible filtering for screen reader users and power users
+- **Trigger**: Number keys 1-5 (Banking, Digital, Savings, Investments, Private) or Ctrl+A on dashboard
+- **Progression**: Press key → Category visibility toggles → Toast notification confirms action → Accounts update instantly
+- **Success criteria**: All category filters respond to keyboard input; shortcuts shown as visual badges on filter buttons; works only on dashboard tab to avoid conflicts
+
 ### Comprehensive Reporting
 - **Functionality**: Generate financial insights by period, category, and account
 - **Purpose**: Visualize financial health, trends, and spending patterns

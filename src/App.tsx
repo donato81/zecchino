@@ -16,6 +16,7 @@ import { Separator } from '@/components/ui/separator'
 import { Plus, LockOpen, ChartLine, List, Gear, DownloadSimple, Trash, PencilSimple, ArrowsLeftRight, Eye, EyeSlash } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 
 function App() {
   const [globalPinHash, setGlobalPinHash] = useKV<string>('global-pin-hash', '')
@@ -241,6 +242,70 @@ function App() {
     return currentCategories.length === ACCOUNT_CATEGORIES.map(c => c.id).length
   }, [visibleCategories])
 
+  useKeyboardShortcuts([
+    {
+      key: '1',
+      callback: () => {
+        if (isAuthenticated && activeTab === 'dashboard') {
+          toggleCategoryVisibility('banking')
+          toast.success('Filtro Bancari attivato/disattivato')
+        }
+      },
+      description: 'Toggle Banking category'
+    },
+    {
+      key: '2',
+      callback: () => {
+        if (isAuthenticated && activeTab === 'dashboard') {
+          toggleCategoryVisibility('digital')
+          toast.success('Filtro Digitali attivato/disattivato')
+        }
+      },
+      description: 'Toggle Digital category'
+    },
+    {
+      key: '3',
+      callback: () => {
+        if (isAuthenticated && activeTab === 'dashboard') {
+          toggleCategoryVisibility('savings')
+          toast.success('Filtro Risparmio attivato/disattivato')
+        }
+      },
+      description: 'Toggle Savings category'
+    },
+    {
+      key: '4',
+      callback: () => {
+        if (isAuthenticated && activeTab === 'dashboard') {
+          toggleCategoryVisibility('investments')
+          toast.success('Filtro Investimenti attivato/disattivato')
+        }
+      },
+      description: 'Toggle Investments category'
+    },
+    {
+      key: '5',
+      callback: () => {
+        if (isAuthenticated && activeTab === 'dashboard') {
+          toggleCategoryVisibility('private')
+          toast.success('Filtro Privato attivato/disattivato')
+        }
+      },
+      description: 'Toggle Private category'
+    },
+    {
+      key: 'a',
+      ctrl: true,
+      callback: () => {
+        if (isAuthenticated && activeTab === 'dashboard') {
+          toggleAllCategories()
+          toast.success(allCategoriesVisible ? 'Tutti i filtri nascosti' : 'Tutti i filtri attivati')
+        }
+      },
+      description: 'Toggle all categories'
+    }
+  ], isAuthenticated)
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5">
@@ -335,10 +400,12 @@ function App() {
                     >
                       {allCategoriesVisible ? <EyeSlash size={16} weight="duotone" /> : <Eye size={16} weight="duotone" />}
                       <span className="text-xs font-medium">{allCategoriesVisible ? 'Nascondi tutto' : 'Mostra tutto'}</span>
+                      <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 hidden sm:inline-flex">Ctrl+A</Badge>
                     </Button>
                     <Separator orientation="vertical" className="h-6" />
-                    {groupedAccounts.map(category => {
+                    {groupedAccounts.map((category, index) => {
                       const isActive = (visibleCategories || []).includes(category.id)
+                      const keyNumber = index + 1
                       return (
                         <Button
                           key={category.id}
@@ -351,6 +418,7 @@ function App() {
                             {category.label}
                           </Badge>
                           <span className="text-xs">({category.accounts.length})</span>
+                          <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 hidden sm:inline-flex">{keyNumber}</Badge>
                         </Button>
                       )
                     })}
