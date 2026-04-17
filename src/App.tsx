@@ -10,6 +10,8 @@ import { AccountDialog } from '@/components/AccountDialog'
 import { TransactionDialog } from '@/components/TransactionDialog'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
 import { FocusIndicator } from '@/components/FocusIndicator'
+import { IncomeExpenseChart } from '@/components/IncomeExpenseChart'
+import { PeriodSelector } from '@/components/PeriodSelector'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -46,6 +48,7 @@ function App() {
 
   const [activeTab, setActiveTab] = useState('dashboard')
   const [visibleCategories, setVisibleCategories] = useKV<string[]>('visible-categories', ACCOUNT_CATEGORIES.map(c => c.id))
+  const [chartPeriod, setChartPeriod] = useState<'week' | 'month' | '3months' | '6months' | 'year'>('month')
 
   const safeAccounts = accounts || []
   const safeTransactions = transactions || []
@@ -1085,6 +1088,11 @@ function App() {
                   </div>
                 </TooltipContent>
               </Tooltip>
+            </div>
+
+            <div className="space-y-4">
+              <PeriodSelector value={chartPeriod} onChange={setChartPeriod} />
+              <IncomeExpenseChart transactions={visibleTransactions} period={chartPeriod} />
             </div>
 
             <Card>

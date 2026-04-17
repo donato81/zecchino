@@ -83,11 +83,11 @@ This is a full-featured financial management system with multiple account types,
 - **Success criteria**: Tooltips appear for all interactive elements (buttons, tabs, transaction rows, category filters); tooltip text is descriptive and includes shortcuts; tooltip positioning adapts to avoid screen edges; only appears during keyboard navigation, not mouse hover
 
 ### Comprehensive Reporting
-- **Functionality**: Generate financial insights by period, category, and account with interactive tooltips showing detailed statistics
-- **Purpose**: Visualize financial health, trends, and spending patterns with instant access to breakdowns
-- **Trigger**: Navigate to Reports section or hover/focus on stat cards
-- **Progression**: Select period filter → View total income/expenses → Hover/focus on cards for detailed breakdowns → Analyze by category → Review monthly trends → Export data
-- **Success criteria**: Reports show accurate calculations, clear visualizations, interactive tooltips with top categories and transaction counts, and export to CSV/text
+- **Functionality**: Generate financial insights by period, category, and account with interactive tooltips and visual charts showing detailed statistics
+- **Purpose**: Visualize financial health, trends, and spending patterns with instant access to breakdowns and income vs expense trends over time
+- **Trigger**: Navigate to Reports section or hover/focus on stat cards or view income/expense chart
+- **Progression**: Select period filter for chart (week, month, 3 months, 6 months, year) → View total income/expenses → View visual trend chart with area graphs → Hover/focus on cards for detailed breakdowns → Analyze by category → Review monthly trends → Export data
+- **Success criteria**: Reports show accurate calculations, clear visualizations with interactive area charts showing income vs expense trends, interactive tooltips with top categories and transaction counts, period selector for customizable time ranges, and export to CSV/text
 
 ### Data Export & Backup
 - **Functionality**: Export transactions as CSV or backup entire database
