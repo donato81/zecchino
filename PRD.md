@@ -170,6 +170,18 @@ Animations should feel like smooth financial transitions - confident, profession
 - **Navigation**: Smooth crossfade between major sections (250ms)
 - **Hover States**: Instant color shifts (100ms) for immediate tactile feedback
 
+## Sound Design
+
+Professional audio feedback reinforces user actions and provides accessibility for screen reader users through synthesized Web Audio API sounds.
+
+- **PIN Authentication**: Ascending melodic chords for successful unlock, descending tones for errors
+- **Transaction Types**: Distinct sounds for income (bright chord), expense (single note), transfer (two-note sequence)
+- **Budget Alerts**: Progressive severity - gentle warning at 75%, urgent at 90%, critical when exceeded
+- **Navigation**: Subtle click for UI interactions, smooth transition tone for tab changes
+- **Actions**: Success chimes for saves, delete descending sequence, notification pings
+- **Keyboard Shortcuts**: Immediate audio feedback for all shortcuts to confirm activation
+- **Focus Navigation**: Soft tone when navigating lists with arrow keys
+
 ## Component Selection
 
 - **Components**: 

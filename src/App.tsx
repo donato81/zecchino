@@ -5,6 +5,7 @@ import { hashPin, verifyPin } from '@/lib/crypto'
 import { DEFAULT_CATEGORIES, ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from '@/lib/constants'
 import { generateId, calculateAccountBalance, getTotalBalance, formatCurrency, exportToCSV, downloadFile, getActiveBudgets, getBudgetProgress } from '@/lib/helpers'
 import { generateBudgetAlerts, shouldShowBudgetNotification, getBudgetNotificationTitle } from '@/lib/budget-alerts'
+import { soundSystem } from '@/lib/sound-system'
 import { PinDialog } from '@/components/PinDialog'
 import { AccountCard } from '@/components/AccountCard'
 import { AccountDialog } from '@/components/AccountDialog'
@@ -67,6 +68,7 @@ function App() {
   const [chartPeriod, setChartPeriod] = useState<'week' | 'month' | '3months' | '6months' | 'year'>('month')
   const [dismissedAlerts, setDismissedAlerts] = useKV<string[]>('dismissed-budget-alerts', [])
   const [budgetPercentages, setBudgetPercentages] = useKV<Record<string, number>>('budget-percentages', {})
+  const [previousTab, setPreviousTab] = useState('dashboard')
 
   const safeAccounts = accounts || []
   const safeTransactions = transactions || []
@@ -91,6 +93,12 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    if (activeTab !== previousTab && isAuthenticated) {
+      setPreviousTab(activeTab)
+    }
+  }, [activeTab, previousTab, isAuthenticated])
+
   const handleGlobalPinSubmit = async (pin: string) => {
     if (isSetupMode) {
       const hash = await hashPin(pin)
@@ -98,14 +106,17 @@ function App() {
       setIsAuthenticated(true)
       setShowPinDialog(false)
       setIsSetupMode(false)
+      soundSystem.play('unlock')
       toast.success('PIN globale creato con successo')
     } else {
       const isValid = await verifyPin(pin, globalPinHash || '')
       if (isValid) {
         setIsAuthenticated(true)
         setShowPinDialog(false)
+        soundSystem.play('unlock')
         toast.success('Accesso consentito')
       } else {
+        soundSystem.play('error')
         toast.error('PIN non corretto')
       }
     }
@@ -117,18 +128,21 @@ function App() {
       setPrivatePinHash(hash)
       setIsPrivateUnlocked(true)
       setShowPrivatePinDialog(false)
+      soundSystem.play('unlock')
       toast.success('PIN privato creato e conto sbloccato')
     } else {
       const isValid = await verifyPin(pin, privatePinHash)
       if (isValid) {
         setIsPrivateUnlocked(true)
         setShowPrivatePinDialog(false)
+        soundSystem.play('unlock')
         const privateAccount = visibleAccounts.find(a => a.isPrivato)
         if (privateAccount) {
           const balance = calculateAccountBalance(privateAccount, visibleTransactions)
           toast.success(`Conto privato sbloccato. Saldo: ${formatCurrency(balance)}`)
         }
       } else {
+        soundSystem.play('error')
         toast.error('PIN privato non corretto')
       }
     }
@@ -141,9 +155,11 @@ function App() {
       if (existingIndex >= 0) {
         const updated = [...current]
         updated[existingIndex] = account
+        soundSystem.play('save')
         toast.success('Conto modificato')
         return updated
       } else {
+        soundSystem.play('success')
         toast.success(`Conto "${account.nome}" creato`)
         return [...current, account]
       }
@@ -160,9 +176,17 @@ function App() {
       if (existingIndex >= 0) {
         const updated = [...current]
         updated[existingIndex] = transaction
+        soundSystem.play('save')
         toast.success('Movimento modificato')
         updatedTransactions = updated
       } else {
+        if (transaction.tipo === 'entrata') {
+          soundSystem.play('income')
+        } else if (transaction.tipo === 'uscita') {
+          soundSystem.play('expense')
+        } else {
+          soundSystem.play('transfer')
+        }
         const account = safeAccounts.find(a => a.id === transaction.contoId)
         toast.success(`Movimento aggiunto: ${transaction.tipo} ${formatCurrency(transaction.importo)} - ${account?.nome || ''}`)
         updatedTransactions = [...current, transaction]
@@ -194,10 +218,13 @@ function App() {
         let message = ''
         if (level === 'exceeded') {
           message = `Budget "${budget.nome}" superato! Hai speso ${formatCurrency(spent)} su ${formatCurrency(budget.importoTarget)}.`
+          soundSystem.play('budget-exceeded')
         } else if (level === 'critical') {
           message = `Attenzione! Il budget "${budget.nome}" è al ${Math.round(newPercentage)}%. Rimangono ${formatCurrency(remaining)}.`
+          soundSystem.play('budget-critical')
         } else if (level === 'warning') {
           message = `Il budget "${budget.nome}" ha raggiunto il ${Math.round(newPercentage)}%.`
+          soundSystem.play('budget-warning')
         }
         
         if (level === 'exceeded') {
@@ -223,9 +250,11 @@ function App() {
       if (existingIndex >= 0) {
         const updated = [...current]
         updated[existingIndex] = budget
+        soundSystem.play('save')
         toast.success('Budget modificato')
         return updated
       } else {
+        soundSystem.play('success')
         toast.success(`Budget "${budget.nome}" creato`)
         return [...current, budget]
       }
@@ -240,9 +269,11 @@ function App() {
       if (existingIndex >= 0) {
         const updated = [...current]
         updated[existingIndex] = goal
+        soundSystem.play('save')
         toast.success('Obiettivo di risparmio modificato')
         return updated
       } else {
+        soundSystem.play('milestone')
         toast.success(`Obiettivo "${goal.nome}" creato`)
         return [...current, goal]
       }
@@ -258,6 +289,7 @@ function App() {
   const handleDeleteConfirm = () => {
     if (!deletingItem) return
 
+    soundSystem.play('delete')
     if (deletingItem.type === 'account') {
       setAccounts((current) => (current || []).filter(a => a.id !== deletingItem.id))
       setTransactions((current) => (current || []).filter(t => t.contoId !== deletingItem.id && t.contoDestinazioneId !== deletingItem.id))
@@ -280,6 +312,7 @@ function App() {
   const handleExportCSV = () => {
     const csv = exportToCSV(visibleTransactions, visibleAccounts, safeCategories)
     downloadFile(csv, `zecchino-export-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv')
+    soundSystem.play('success')
     toast.success('Dati esportati in CSV')
   }
 
@@ -447,6 +480,7 @@ function App() {
       callback: () => {
         if (isAuthenticated && activeTab === 'dashboard') {
           toggleCategoryVisibility('banking')
+          soundSystem.play('click')
           toast.success('Filtro Bancari attivato/disattivato')
         }
       },
@@ -457,6 +491,7 @@ function App() {
       callback: () => {
         if (isAuthenticated && activeTab === 'dashboard') {
           toggleCategoryVisibility('digital')
+          soundSystem.play('click')
           toast.success('Filtro Digitali attivato/disattivato')
         }
       },
@@ -467,6 +502,7 @@ function App() {
       callback: () => {
         if (isAuthenticated && activeTab === 'dashboard') {
           toggleCategoryVisibility('savings')
+          soundSystem.play('click')
           toast.success('Filtro Risparmio attivato/disattivato')
         }
       },
@@ -477,6 +513,7 @@ function App() {
       callback: () => {
         if (isAuthenticated && activeTab === 'dashboard') {
           toggleCategoryVisibility('investments')
+          soundSystem.play('click')
           toast.success('Filtro Investimenti attivato/disattivato')
         }
       },
@@ -487,6 +524,7 @@ function App() {
       callback: () => {
         if (isAuthenticated && activeTab === 'dashboard') {
           toggleCategoryVisibility('private')
+          soundSystem.play('click')
           toast.success('Filtro Privato attivato/disattivato')
         }
       },
@@ -498,6 +536,7 @@ function App() {
       callback: () => {
         if (isAuthenticated && activeTab === 'dashboard') {
           toggleAllCategories()
+          soundSystem.play('click')
           toast.success(allCategoriesVisible ? 'Tutti i filtri nascosti' : 'Tutti i filtri attivati')
         }
       },
@@ -510,6 +549,7 @@ function App() {
         if (isAuthenticated) {
           setEditingTransaction(undefined)
           setShowTransactionDialog(true)
+          soundSystem.play('click')
           toast.success('Nuovo movimento')
         }
       },
@@ -522,6 +562,7 @@ function App() {
         if (isAuthenticated) {
           setEditingAccount(undefined)
           setShowAccountDialog(true)
+          soundSystem.play('click')
           toast.success('Nuovo conto')
         }
       },
@@ -533,6 +574,7 @@ function App() {
       callback: () => {
         if (isAuthenticated) {
           setActiveTab('dashboard')
+          soundSystem.play('navigation')
           toast.success('Dashboard')
         }
       },
@@ -544,6 +586,7 @@ function App() {
       callback: () => {
         if (isAuthenticated) {
           setActiveTab('transactions')
+          soundSystem.play('navigation')
           toast.success('Movimenti')
         }
       },
@@ -555,6 +598,7 @@ function App() {
       callback: () => {
         if (isAuthenticated) {
           setActiveTab('reports')
+          soundSystem.play('navigation')
           toast.success('Report')
         }
       },
@@ -576,6 +620,7 @@ function App() {
       callback: () => {
         if (isAuthenticated && hasPrivateAccount && !isPrivateUnlocked) {
           setShowPrivatePinDialog(true)
+          soundSystem.play('click')
           toast.success('Sblocca conto privato')
         }
       },
@@ -587,6 +632,7 @@ function App() {
       callback: () => {
         if (isAuthenticated) {
           setShowKeyboardHelp(true)
+          soundSystem.play('notification')
         }
       },
       description: 'Show keyboard shortcuts help'
