@@ -11,6 +11,7 @@ import { TransactionDialog } from '@/components/TransactionDialog'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
 import { FocusIndicator } from '@/components/FocusIndicator'
 import { IncomeExpenseChart } from '@/components/IncomeExpenseChart'
+import { MonthlyComparisonChart } from '@/components/MonthlyComparisonChart'
 import { PeriodSelector } from '@/components/PeriodSelector'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -956,6 +957,8 @@ function App() {
 
           <TabsContent value="reports" className="space-y-6">
             <h2 className="text-2xl font-semibold">Report Finanziario</h2>
+
+            <MonthlyComparisonChart transactions={visibleTransactions} />
 
             <div className="grid gap-4 md:grid-cols-3">
               <Tooltip>
