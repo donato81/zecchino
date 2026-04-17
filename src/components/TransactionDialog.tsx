@@ -11,6 +11,7 @@ import { TRANSACTION_TYPE_LABELS, RECURRENCE_LABELS } from '@/lib/constants'
 import { generateId } from '@/lib/helpers'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { soundSystem } from '@/lib/sound-system'
+import { useScreenReader } from '@/hooks/use-screen-reader'
 
 interface TransactionDialogProps {
   open: boolean
@@ -31,6 +32,7 @@ export function TransactionDialog({
   accounts,
   categories
 }: TransactionDialogProps) {
+  const screenReader = useScreenReader()
   const [tipo, setTipo] = useState<TransactionType>(transaction?.tipo || 'uscita')
   const [data, setData] = useState(
     transaction?.data || new Date().toISOString().split('T')[0]
@@ -45,21 +47,52 @@ export function TransactionDialog({
     transaction?.frequenzaRicorrenza || ''
   )
   const [error, setError] = useState('')
+  const [previousError, setPreviousError] = useState('')
 
   useEffect(() => {
     if (open) {
       soundSystem.play('dialog-open')
+      const dialogTitle = transaction ? 'Modifica Movimento' : 'Nuovo Movimento'
+      screenReader.announceDialogOpen(dialogTitle)
       if (!transaction) {
         resetForm()
       }
     }
-  }, [open, transaction])
+  }, [open, transaction, screenReader])
 
   useEffect(() => {
     if (tipo !== 'trasferimento') {
       setContoDestinazioneId('')
+    } else if (tipo === 'trasferimento' && contoId && contoDestinazioneId) {
+      const contoOrigine = accounts.find(a => a.id === contoId)
+      const contoDestinazione = accounts.find(a => a.id === contoDestinazioneId)
+      if (contoOrigine && contoDestinazione) {
+        screenReader.announce(
+          `Trasferimento da ${contoOrigine.nome} a ${contoDestinazione.nome}`,
+          'polite'
+        )
+      }
     }
-  }, [tipo])
+  }, [tipo, contoId, contoDestinazioneId, accounts, screenReader])
+
+  useEffect(() => {
+    if (ricorrente && frequenzaRicorrenza) {
+      const frequenzaLabel = RECURRENCE_LABELS[frequenzaRicorrenza as RecurrenceFrequency]
+      screenReader.announce(`Movimento ricorrente: ${frequenzaLabel}`, 'polite')
+    }
+  }, [ricorrente, frequenzaRicorrenza, screenReader])
+
+  useEffect(() => {
+    if (error && error !== previousError) {
+      const fieldMatch = error.match(/^(.*?)(è obbligatori[ao]|deve essere|seleziona)/i)
+      const fieldName = fieldMatch ? fieldMatch[1].trim() : 'Campo'
+      screenReader.announceFormError(fieldName, error)
+      setPreviousError(error)
+    } else if (!error && previousError) {
+      screenReader.announceSuccess('Errore corretto')
+      setPreviousError('')
+    }
+  }, [error, previousError, screenReader])
 
   useEffect(() => {
     if (!categoriaId || !categories.find(c => c.id === categoriaId)) {
@@ -204,18 +237,25 @@ export function TransactionDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="transaction-date">Data</Label>
+                <Label htmlFor="transaction-date">Data *</Label>
                 <Input
                   id="transaction-date"
                   type="date"
                   value={data}
                   onChange={(e) => setData(e.target.value)}
                   max={new Date().toISOString().split('T')[0]}
+                  required
+                  aria-required="true"
+                  aria-invalid={error.includes('data') ? 'true' : 'false'}
+                  aria-describedby="transaction-date-desc"
                 />
+                <span id="transaction-date-desc" className="sr-only">
+                  Campo obbligatorio. Seleziona la data del movimento.
+                </span>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="transaction-amount">Importo (€)</Label>
+                <Label htmlFor="transaction-amount">Importo (€) *</Label>
                 <Input
                   id="transaction-amount"
                   type="number"
@@ -225,51 +265,91 @@ export function TransactionDialog({
                   placeholder="0.00"
                   className="font-mono"
                   autoFocus={!transaction}
+                  required
+                  aria-required="true"
+                  aria-invalid={error.includes('importo') ? 'true' : 'false'}
+                  aria-describedby="transaction-amount-desc"
                 />
+                <span id="transaction-amount-desc" className="sr-only">
+                  Campo obbligatorio. Inserisci l'importo del movimento in euro.
+                </span>
               </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="transaction-account">
-                {tipo === 'trasferimento' ? 'Conto di Origine' : 'Conto'}
+                {tipo === 'trasferimento' ? 'Conto di Origine *' : 'Conto *'}
               </Label>
-              <Select value={contoId} onValueChange={setContoId}>
-                <SelectTrigger id="transaction-account">
+              <Select 
+                value={contoId} 
+                onValueChange={setContoId}
+                required
+              >
+                <SelectTrigger 
+                  id="transaction-account"
+                  aria-required="true"
+                  aria-invalid={error.includes('conto') && !error.includes('destinazione') ? 'true' : 'false'}
+                  aria-describedby="transaction-account-desc"
+                >
                   <SelectValue placeholder="Seleziona un conto" />
                 </SelectTrigger>
                 <SelectContent>
                   {accounts.map(account => (
                     <SelectItem key={account.id} value={account.id}>
-                      {account.nome}
+                      {account.nome} ({account.tipo})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <span id="transaction-account-desc" className="sr-only">
+                Campo obbligatorio. Seleziona il conto {tipo === 'trasferimento' ? 'da cui prelevare' : 'su cui registrare'} il movimento.
+              </span>
             </div>
 
             {tipo === 'trasferimento' && (
               <div className="space-y-2">
-                <Label htmlFor="destination-account">Conto di Destinazione</Label>
-                <Select value={contoDestinazioneId} onValueChange={setContoDestinazioneId}>
-                  <SelectTrigger id="destination-account">
+                <Label htmlFor="destination-account">Conto di Destinazione *</Label>
+                <Select 
+                  value={contoDestinazioneId} 
+                  onValueChange={setContoDestinazioneId}
+                  required
+                >
+                  <SelectTrigger 
+                    id="destination-account"
+                    aria-required="true"
+                    aria-invalid={error.includes('destinazione') ? 'true' : 'false'}
+                    aria-describedby="destination-account-desc"
+                  >
                     <SelectValue placeholder="Seleziona conto di destinazione" />
                   </SelectTrigger>
                   <SelectContent>
                     {availableDestinationAccounts.map(account => (
                       <SelectItem key={account.id} value={account.id}>
-                        {account.nome}
+                        {account.nome} ({account.tipo})
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                <span id="destination-account-desc" className="sr-only">
+                  Campo obbligatorio per trasferimenti. Seleziona il conto su cui depositare il denaro.
+                </span>
               </div>
             )}
 
             {tipo !== 'trasferimento' && (
               <div className="space-y-2">
-                <Label htmlFor="transaction-category">Categoria</Label>
-                <Select value={categoriaId} onValueChange={setCategoriaId}>
-                  <SelectTrigger id="transaction-category">
+                <Label htmlFor="transaction-category">Categoria *</Label>
+                <Select 
+                  value={categoriaId} 
+                  onValueChange={setCategoriaId}
+                  required
+                >
+                  <SelectTrigger 
+                    id="transaction-category"
+                    aria-required="true"
+                    aria-invalid={error.includes('categoria') ? 'true' : 'false'}
+                    aria-describedby="transaction-category-desc"
+                  >
                     <SelectValue placeholder="Seleziona una categoria" />
                   </SelectTrigger>
                   <SelectContent>
@@ -280,6 +360,9 @@ export function TransactionDialog({
                     ))}
                   </SelectContent>
                 </Select>
+                <span id="transaction-category-desc" className="sr-only">
+                  Campo obbligatorio. Seleziona la categoria del movimento per organizzare le tue {tipo === 'entrata' ? 'entrate' : 'uscite'}.
+                </span>
               </div>
             )}
 
@@ -291,7 +374,11 @@ export function TransactionDialog({
                 onChange={(e) => setDescrizione(e.target.value)}
                 placeholder="Aggiungi dettagli sul movimento..."
                 rows={3}
+                aria-describedby="transaction-description-desc"
               />
+              <span id="transaction-description-desc" className="sr-only">
+                Campo opzionale. Aggiungi una nota o descrizione dettagliata del movimento.
+              </span>
             </div>
 
             <div className="space-y-3">
@@ -299,21 +386,39 @@ export function TransactionDialog({
                 <Checkbox
                   id="transaction-recurring"
                   checked={ricorrente}
-                  onCheckedChange={(checked) => setRicorrente(checked as boolean)}
+                  onCheckedChange={(checked) => {
+                    const isChecked = checked as boolean
+                    setRicorrente(isChecked)
+                    if (isChecked) {
+                      screenReader.announce('Movimento ricorrente attivato. Seleziona la frequenza.', 'polite')
+                    } else {
+                      screenReader.announce('Movimento ricorrente disattivato', 'polite')
+                    }
+                  }}
+                  aria-describedby="transaction-recurring-desc"
                 />
                 <Label htmlFor="transaction-recurring" className="font-normal cursor-pointer">
                   Movimento ricorrente
                 </Label>
               </div>
+              <span id="transaction-recurring-desc" className="sr-only">
+                Seleziona questa opzione se il movimento si ripete regolarmente (stipendio, affitto, abbonamenti, etc.).
+              </span>
 
               {ricorrente && (
                 <div className="space-y-2 pl-6">
-                  <Label htmlFor="recurrence-frequency">Frequenza</Label>
+                  <Label htmlFor="recurrence-frequency">Frequenza *</Label>
                   <Select
                     value={frequenzaRicorrenza}
                     onValueChange={(value) => setFrequenzaRicorrenza(value as RecurrenceFrequency)}
+                    required
                   >
-                    <SelectTrigger id="recurrence-frequency">
+                    <SelectTrigger 
+                      id="recurrence-frequency"
+                      aria-required="true"
+                      aria-invalid={error.includes('frequenza') ? 'true' : 'false'}
+                      aria-describedby="recurrence-frequency-desc"
+                    >
                       <SelectValue placeholder="Seleziona frequenza" />
                     </SelectTrigger>
                     <SelectContent>
@@ -324,12 +429,20 @@ export function TransactionDialog({
                       ))}
                     </SelectContent>
                   </Select>
+                  <span id="recurrence-frequency-desc" className="sr-only">
+                    Campo obbligatorio per movimenti ricorrenti. Indica ogni quanto si ripete il movimento.
+                  </span>
                 </div>
               )}
             </div>
 
             {error && (
-              <p className="text-sm text-destructive" role="alert">
+              <p 
+                className="text-sm text-destructive" 
+                role="alert"
+                aria-live="assertive"
+                id="form-error"
+              >
                 {error}
               </p>
             )}

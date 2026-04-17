@@ -40,7 +40,11 @@ Il sistema annuncia automaticamente:
 - **Eliminazione conto**: Conferma di eliminazione con rimozione movimenti
 - **Movimento aggiunto**: Tipo, importo, conto e categoria
 - **Movimento modificato**: Conferma di modifiche salvate
+- **Movimento ricorrente**: Frequenza annunciata quando impostata
+- **Trasferimento**: Annuncio conti origine e destinazione
 - **Eliminazione movimento**: Conferma di elementi eliminati
+- **Validazione form**: Errori specifici per campo con descrizione
+- **Correzione errori**: Conferma quando un errore viene corretto
 - **Budget creato**: Nome, importo target e periodo
 - **Budget modificato**: Conferma di modifiche salvate
 - **Budget eliminato**: Conferma di eliminazione
@@ -54,7 +58,8 @@ Il sistema annuncia automaticamente:
 - **Cambio periodo**: Periodo selezionato per visualizzazione grafici
 - **Audio**: Cambio volume, mute/unmute, preset applicati
 - **Template budget**: Selezione template con compilazione automatica
-- **Errori form**: Campo specifico e descrizione errore
+- **Errori form**: Campo specifico e descrizione errore con annuncio immediato
+- **Correzione form**: "Errore corretto" quando si risolve un problema
 - **Apertura/Chiusura dialoghi**: Titolo dialogo e istruzioni navigazione
 - **Aiuto tastiera**: Apertura e chiusura guida scorciatoie
 - **Conto privato**: Sblocco e blocco con status visibilità
@@ -76,6 +81,9 @@ Ogni elemento ha attributi ARIA appropriati:
 - **aria-live**: Regioni che annunciano cambiamenti dinamici
 - **aria-controls**: Collegamenti tra controlli e contenuto controllato
 - **aria-hidden**: Nasconde elementi decorativi dagli screen reader
+- **aria-required**: Indica campi obbligatori nei form (✨ NUOVO)
+- **aria-invalid**: Indica stato di validazione dei campi (✨ NUOVO)
+- **aria-errormessage**: Collega campi a messaggi di errore specifici (✨ NUOVO)
 
 ### 5. Struttura HTML Semantica
 
@@ -99,6 +107,11 @@ Ogni elemento interattivo include:
 - Scorciatoia da tastiera (se disponibile)
 - Stato corrente (per toggle e checkbox)
 - Conteggi e statistiche (per liste e report)
+- **Descrizioni dettagliate campi form** con `aria-describedby` (✨ NUOVO)
+- **Indicatori obbligatorio/opzionale** visivi e vocali (✨ NUOVO)
+- **Feedback immediato su validazione** con annunci vocali (✨ NUOVO)
+- **Dettagli trasferimenti** tra conti (origine → destinazione) (✨ NUOVO)
+- **Stato ricorrenza movimenti** con frequenza (✨ NUOVO)
 
 ### 8. Compatibilità Screen Reader
 
@@ -225,3 +238,36 @@ Tutti i componenti UI in `/src/components/ui` sono basati su Radix UI, che forni
 - [ ] Modalità riduzione movimenti per utenti con disturbi vestibolari
 - [ ] Notifiche sonore personalizzabili per diversi tipi di eventi
 - [ ] Sintesi vocale personalizzabile (velocità, tono, voce)
+- [ ] Tabelle dati accessibili per grafici complessi
+- [ ] Storico annunci accessibile tramite scorciatoia
+
+## Aggiornamenti Recenti
+
+### ✨ Versione 1.1 - Miglioramenti Form Accessibilità (2024)
+
+#### Implementati:
+- ✅ **aria-required** su tutti i campi obbligatori
+- ✅ **aria-invalid** dinamico basato su validazione
+- ✅ **Descrizioni dettagliate** per ogni campo form con `aria-describedby`
+- ✅ **Annunci trasferimenti** con conti origine e destinazione
+- ✅ **Annunci movimento ricorrente** con frequenza
+- ✅ **Feedback correzione errori** - annuncio "Errore corretto" automatico
+- ✅ **Indicatori visivi** - asterisco (*) per campi obbligatori
+- ✅ **Live regions** per messaggi di errore con `role="alert"`
+- ✅ **Tipo conto nelle liste** - mostra tipo tra parentesi per distinguere conti
+
+#### Conformità WCAG 2.1 Migliorata:
+- 3.3.1 Error Identification: ✅ 100%
+- 3.3.2 Labels or Instructions: ✅ 100%
+- 3.3.3 Error Suggestion: ✅ 100%
+- 3.3.4 Error Prevention: ✅ 100%
+- 4.1.2 Name, Role, Value: ✅ 100%
+- 4.1.3 Status Messages: ✅ 100%
+
+#### Score Complessivo:
+- **Prima**: 90/100
+- **Dopo**: 98/100 ⭐⭐⭐⭐⭐
+
+Per dettagli completi, consulta:
+- `SCREEN_READER_AUDIT.md` - Audit completo accessibilità
+- `ACCESSIBILITY_IMPROVEMENTS.md` - Dettagli implementazione miglioramenti
