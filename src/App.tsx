@@ -20,6 +20,7 @@ import { SavingsGoalDialog } from '@/components/SavingsGoalDialog'
 import { SavingsGoalCard } from '@/components/SavingsGoalCard'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
 import { FocusIndicator } from '@/components/FocusIndicator'
+import { AudioSettings } from '@/components/AudioSettings'
 import { IncomeExpenseChart } from '@/components/IncomeExpenseChart'
 import { MonthlyComparisonChart } from '@/components/MonthlyComparisonChart'
 import { PeriodSelector } from '@/components/PeriodSelector'
@@ -1461,6 +1462,8 @@ function App() {
                 </div>
               </CardContent>
             </Card>
+
+            <AudioSettings />
           </TabsContent>
         </Tabs>
       </main>

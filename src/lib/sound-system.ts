@@ -24,19 +24,40 @@ class SoundSystem {
   private masterGain: GainNode | null = null
   private enabled: boolean = true
   private volume: number = 0.3
+  private initialized: boolean = false
 
   constructor() {
     if (typeof window !== 'undefined') {
+      this.loadSettings()
       this.initialize()
     }
   }
 
+  private async loadSettings() {
+    try {
+      const enabledValue = await window.spark.kv.get<boolean>('audio-enabled')
+      const volumeValue = await window.spark.kv.get<number>('audio-volume')
+      
+      if (enabledValue !== undefined) {
+        this.enabled = enabledValue
+      }
+      if (volumeValue !== undefined) {
+        this.volume = volumeValue
+      }
+    } catch (error) {
+      console.warn('Could not load audio settings:', error)
+    }
+  }
+
   private initialize() {
+    if (this.initialized) return
+    
     try {
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
       this.masterGain = this.audioContext.createGain()
       this.masterGain.gain.value = this.volume
       this.masterGain.connect(this.audioContext.destination)
+      this.initialized = true
     } catch (error) {
       console.warn('Audio context not available:', error)
       this.enabled = false
