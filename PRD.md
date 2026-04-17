@@ -20,11 +20,11 @@ This is a full-featured financial management system with multiple account types,
 - **Success criteria**: Only correct PIN grants access; first-time users create PIN through setup wizard
 
 ### Multi-Account Management
-- **Functionality**: Create and manage 5 types of accounts (bank, prepaid card, cash, savings, private encrypted)
-- **Purpose**: Track money across different financial instruments with appropriate security levels
+- **Functionality**: Create and manage 10 types of accounts (bank, prepaid card, cash, savings, investments, credit card, PayPal, crypto wallet, pension fund, private encrypted)
+- **Purpose**: Track money across different financial instruments with appropriate security levels and distinct visual identity
 - **Trigger**: "Add Account" button or setup wizard
 - **Progression**: Account type selection → Name and initial balance input → Account created → Appears in dashboard
-- **Success criteria**: Each account displays current balance, transaction history, and type-specific icon
+- **Success criteria**: Each account displays current balance, transaction history, and unique type-specific icon with custom coloring
 
 ### Private Encrypted Account
 - **Functionality**: Special account type that requires separate PIN and encrypts all data
@@ -157,7 +157,15 @@ Animations should feel like smooth financial transitions - confident, profession
   - Cards: Subtle hover elevation, selectable state with border highlight, locked state (opacity + lock icon)
   
 - **Icon Selection**: 
-  - Bank/Wallet/PiggyBank/CreditCard/LockKey from Phosphor for account types
+  - Bank (Conto Bancario) - Traditional bank account icon
+  - CreditCard (Carta Prepagata & Carta di Credito) - Card-based payment methods
+  - Wallet (Contanti) - Physical cash icon
+  - PiggyBank (Salvadanaio) - Savings icon
+  - LockKey (Conto Privato) - Encrypted private account
+  - TrendUp (Investimenti) - Investment portfolio icon
+  - Money (PayPal) - Digital payment service
+  - CurrencyBtc (Crypto Wallet) - Cryptocurrency holdings
+  - Briefcase (Fondo Pensione) - Retirement/pension fund
   - Plus/Minus/ArrowsLeftRight for transaction types
   - Lock/LockOpen for private account states
   - FunnelSimple for filters

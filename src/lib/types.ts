@@ -1,4 +1,4 @@
-export type AccountType = 'bancario' | 'prepagata' | 'contanti' | 'salvadanaio' | 'privato'
+export type AccountType = 'bancario' | 'prepagata' | 'contanti' | 'salvadanaio' | 'privato' | 'investimenti' | 'credito' | 'paypal' | 'crypto' | 'pensione'
 
 export type TransactionType = 'entrata' | 'uscita' | 'trasferimento'
 

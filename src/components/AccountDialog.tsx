@@ -16,7 +16,7 @@ interface AccountDialogProps {
   hasPrivateAccount?: boolean
 }
 
-const ACCOUNT_TYPES: AccountType[] = ['bancario', 'prepagata', 'contanti', 'salvadanaio', 'privato']
+const ACCOUNT_TYPES: AccountType[] = ['bancario', 'prepagata', 'contanti', 'salvadanaio', 'investimenti', 'credito', 'paypal', 'crypto', 'pensione', 'privato']
 
 export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccount = false }: AccountDialogProps) {
   const [nome, setNome] = useState(account?.nome || '')

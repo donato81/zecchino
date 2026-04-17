@@ -1,7 +1,7 @@
 import { Account } from '@/lib/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/helpers'
-import { Bank, Wallet, PiggyBank, CreditCard, LockKey } from '@phosphor-icons/react'
+import { Bank, Wallet, PiggyBank, CreditCard, LockKey, TrendUp, Money, CurrencyBtc, Briefcase } from '@phosphor-icons/react'
 import { AccountType } from '@/lib/types'
 import { ACCOUNT_TYPE_LABELS } from '@/lib/constants'
 import { Badge } from '@/components/ui/badge'
@@ -17,7 +17,12 @@ const ACCOUNT_ICONS: Record<AccountType, React.ReactNode> = {
   prepagata: <CreditCard size={32} weight="duotone" />,
   contanti: <Wallet size={32} weight="duotone" />,
   salvadanaio: <PiggyBank size={32} weight="duotone" />,
-  privato: <LockKey size={32} weight="duotone" />
+  privato: <LockKey size={32} weight="duotone" />,
+  investimenti: <TrendUp size={32} weight="duotone" />,
+  credito: <CreditCard size={32} weight="duotone" />,
+  paypal: <Money size={32} weight="duotone" />,
+  crypto: <CurrencyBtc size={32} weight="duotone" />,
+  pensione: <Briefcase size={32} weight="duotone" />
 }
 
 const ACCOUNT_COLORS: Record<AccountType, string> = {
@@ -25,7 +30,12 @@ const ACCOUNT_COLORS: Record<AccountType, string> = {
   prepagata: 'text-accent',
   contanti: 'text-income',
   salvadanaio: 'text-secondary',
-  privato: 'text-destructive'
+  privato: 'text-destructive',
+  investimenti: 'text-[oklch(0.55_0.18_140)]',
+  credito: 'text-[oklch(0.60_0.15_330)]',
+  paypal: 'text-[oklch(0.50_0.15_230)]',
+  crypto: 'text-[oklch(0.65_0.20_50)]',
+  pensione: 'text-[oklch(0.45_0.10_260)]'
 }
 
 export function AccountCard({ account, balance, onClick }: AccountCardProps) {

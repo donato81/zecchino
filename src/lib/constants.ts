@@ -27,7 +27,12 @@ export const ACCOUNT_TYPE_LABELS: Record<string, string> = {
   prepagata: 'Carta Prepagata',
   contanti: 'Contanti',
   salvadanaio: 'Salvadanaio',
-  privato: 'Conto Privato'
+  privato: 'Conto Privato',
+  investimenti: 'Investimenti',
+  credito: 'Carta di Credito',
+  paypal: 'PayPal',
+  crypto: 'Crypto Wallet',
+  pensione: 'Fondo Pensione'
 }
 
 export const TRANSACTION_TYPE_LABELS: Record<string, string> = {
