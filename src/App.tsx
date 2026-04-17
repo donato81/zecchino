@@ -14,6 +14,7 @@ import { BudgetProgressCard } from '@/components/BudgetProgressCard'
 import { BudgetAlertBanner } from '@/components/BudgetAlertBanner'
 import { BudgetHistoryChart } from '@/components/BudgetHistoryChart'
 import { BudgetComparisonCard } from '@/components/BudgetComparisonCard'
+import { BudgetForecastCard } from '@/components/BudgetForecastCard'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
 import { FocusIndicator } from '@/components/FocusIndicator'
 import { IncomeExpenseChart } from '@/components/IncomeExpenseChart'
@@ -25,7 +26,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Plus, LockOpen, ChartLine, List, Gear, DownloadSimple, Trash, PencilSimple, ArrowsLeftRight, Eye, EyeSlash, Keyboard, Target } from '@phosphor-icons/react'
+import { Plus, LockOpen, ChartLine, List, Gear, DownloadSimple, Trash, PencilSimple, ArrowsLeftRight, Eye, EyeSlash, Keyboard, Target, Info } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
@@ -1258,6 +1259,38 @@ function App() {
                         }}
                       />
                     ))}
+                  </div>
+
+                  <div className="space-y-4 mt-6">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-semibold">Previsioni Budget</h3>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="secondary" className="text-xs cursor-help">
+                            <Info size={12} weight="fill" className="mr-1" />
+                            Basato su tendenze
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent variant="accent" className="max-w-sm">
+                          <div className="space-y-1">
+                            <p className="text-xs font-semibold">Previsioni intelligenti</p>
+                            <p className="text-xs opacity-90">
+                              Le previsioni sono calcolate analizzando la tua spesa corrente e confrontandola con i periodi precedenti per stimare la spesa finale del periodo attuale
+                            </p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      {getActiveBudgets(safeBudgets).map(budget => (
+                        <BudgetForecastCard
+                          key={`forecast-${budget.id}`}
+                          budget={budget}
+                          transactions={visibleTransactions}
+                        />
+                      ))}
+                    </div>
                   </div>
 
                   <div className="space-y-6 mt-6">
