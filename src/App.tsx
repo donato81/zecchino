@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Plus, LockOpen, ChartLine, List, Gear, DownloadSimple, Trash, PencilSimple, ArrowsLeftRight, Eye, EyeSlash, Keyboard } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
@@ -475,21 +476,43 @@ function App() {
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-semibold tracking-tight">Zecchino</h1>
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowKeyboardHelp(true)}
-                aria-label="Mostra scorciatoie da tastiera"
-                className="hidden sm:inline-flex"
-              >
-                <Keyboard size={20} weight="duotone" />
-              </Button>
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground">Saldo Totale</p>
-                <p className={`text-2xl font-mono font-semibold ${totalBalance < 0 ? 'text-destructive' : 'text-foreground'}`}>
-                  {formatCurrency(totalBalance)}
-                </p>
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowKeyboardHelp(true)}
+                    aria-label="Mostra scorciatoie da tastiera"
+                    className="hidden sm:inline-flex"
+                  >
+                    <Keyboard size={20} weight="duotone" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent variant="accent">
+                  <div className="space-y-0.5">
+                    <p className="font-semibold">Scorciatoie da Tastiera</p>
+                    <p className="text-xs opacity-90">Premi ? per visualizzare tutti i comandi</p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="text-right cursor-help">
+                    <p className="text-sm text-muted-foreground">Saldo Totale</p>
+                    <p className={`text-2xl font-mono font-semibold ${totalBalance < 0 ? 'text-destructive' : 'text-foreground'}`}>
+                      {formatCurrency(totalBalance)}
+                    </p>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent variant={totalBalance < 0 ? 'destructive' : 'success'}>
+                  <div className="space-y-0.5">
+                    <p className="font-semibold">Saldo Consolidato</p>
+                    <p className="text-xs opacity-90">
+                      Somma di tutti i conti visibili ({visibleAccounts.length} {visibleAccounts.length === 1 ? 'conto' : 'conti'})
+                    </p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
         </div>
@@ -519,36 +542,66 @@ function App() {
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
               <h2 className="text-2xl font-semibold">I Tuoi Conti</h2>
               <div className="flex gap-2 flex-wrap">
-                <Button 
-                  onClick={() => { setEditingTransaction(undefined); setShowTransactionDialog(true) }} 
-                  className="gap-2"
-                  data-focus-info="Aggiungi nuovo movimento (Ctrl+N)"
-                >
-                  <Plus size={18} weight="bold" />
-                  Movimento
-                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 bg-primary-foreground/20 hidden sm:inline-flex">Ctrl+N</Badge>
-                </Button>
-                <Button 
-                  onClick={() => { setEditingAccount(undefined); setShowAccountDialog(true) }} 
-                  variant="outline" 
-                  className="gap-2"
-                  data-focus-info="Aggiungi nuovo conto (Ctrl+M)"
-                >
-                  <Plus size={18} weight="bold" />
-                  Conto
-                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex">Ctrl+M</Badge>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      onClick={() => { setEditingTransaction(undefined); setShowTransactionDialog(true) }} 
+                      className="gap-2"
+                      data-focus-info="Aggiungi nuovo movimento (Ctrl+N)"
+                    >
+                      <Plus size={18} weight="bold" />
+                      Movimento
+                      <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 bg-primary-foreground/20 hidden sm:inline-flex">Ctrl+N</Badge>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent variant="accent">
+                    <div className="space-y-0.5">
+                      <p className="font-semibold">Nuovo Movimento</p>
+                      <p className="text-xs opacity-90">Aggiungi entrata, uscita o trasferimento (Ctrl+N)</p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      onClick={() => { setEditingAccount(undefined); setShowAccountDialog(true) }} 
+                      variant="outline" 
+                      className="gap-2"
+                      data-focus-info="Aggiungi nuovo conto (Ctrl+M)"
+                    >
+                      <Plus size={18} weight="bold" />
+                      Conto
+                      <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex">Ctrl+M</Badge>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent variant="secondary">
+                    <div className="space-y-0.5">
+                      <p className="font-semibold">Nuovo Conto</p>
+                      <p className="text-xs opacity-90">Aggiungi bancario, digitale, risparmio o investimenti (Ctrl+M)</p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
                 {hasPrivateAccount && !isPrivateUnlocked && (
-                  <Button 
-                    onClick={() => setShowPrivatePinDialog(true)} 
-                    variant="secondary" 
-                    className="gap-2"
-                    data-focus-info="Sblocca conto privato (Ctrl+U)"
-                  >
-                    <LockOpen size={18} weight="duotone" />
-                    Sblocca Privato
-                    <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex">Ctrl+U</Badge>
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        onClick={() => setShowPrivatePinDialog(true)} 
+                        variant="secondary" 
+                        className="gap-2"
+                        data-focus-info="Sblocca conto privato (Ctrl+U)"
+                      >
+                        <LockOpen size={18} weight="duotone" />
+                        Sblocca Privato
+                        <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex">Ctrl+U</Badge>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent variant="private">
+                      <div className="space-y-0.5">
+                        <p className="font-semibold">Sblocca Conto Privato</p>
+                        <p className="text-xs opacity-90">Inserisci PIN per accedere ai conti protetti (Ctrl+U)</p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
                 )}
               </div>
             </div>
@@ -568,37 +621,57 @@ function App() {
                 {groupedAccounts.length > 0 && (
                   <div className="flex flex-wrap gap-2 items-center">
                     <span className="text-sm text-muted-foreground self-center mr-2">Filtra categorie:</span>
-                    <Button
-                      onClick={toggleAllCategories}
-                      variant={allCategoriesVisible ? 'default' : 'outline'}
-                      size="sm"
-                      className="gap-2"
-                      aria-label={allCategoriesVisible ? 'Nascondi tutte le categorie' : 'Mostra tutte le categorie'}
-                      data-focus-info={`${allCategoriesVisible ? 'Nascondi' : 'Mostra'} tutte le categorie (Ctrl+A)`}
-                    >
-                      {allCategoriesVisible ? <EyeSlash size={16} weight="duotone" /> : <Eye size={16} weight="duotone" />}
-                      <span className="text-xs font-medium">{allCategoriesVisible ? 'Nascondi tutto' : 'Mostra tutto'}</span>
-                      <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 hidden sm:inline-flex">Ctrl+A</Badge>
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={toggleAllCategories}
+                          variant={allCategoriesVisible ? 'default' : 'outline'}
+                          size="sm"
+                          className="gap-2"
+                          aria-label={allCategoriesVisible ? 'Nascondi tutte le categorie' : 'Mostra tutte le categorie'}
+                          data-focus-info={`${allCategoriesVisible ? 'Nascondi' : 'Mostra'} tutte le categorie (Ctrl+A)`}
+                        >
+                          {allCategoriesVisible ? <EyeSlash size={16} weight="duotone" /> : <Eye size={16} weight="duotone" />}
+                          <span className="text-xs font-medium">{allCategoriesVisible ? 'Nascondi tutto' : 'Mostra tutto'}</span>
+                          <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 hidden sm:inline-flex">Ctrl+A</Badge>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent variant={allCategoriesVisible ? 'muted' : 'accent'}>
+                        <div className="space-y-0.5">
+                          <p className="font-semibold">{allCategoriesVisible ? 'Nascondi Tutte le Categorie' : 'Mostra Tutte le Categorie'}</p>
+                          <p className="text-xs opacity-90">Toggle visibilità di tutte le categorie (Ctrl+A)</p>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
                     <Separator orientation="vertical" className="h-6" />
                     {groupedAccounts.map((category, index) => {
                       const isActive = (visibleCategories || []).includes(category.id)
                       const keyNumber = index + 1
                       return (
-                        <Button
-                          key={category.id}
-                          onClick={() => toggleCategoryVisibility(category.id)}
-                          variant={isActive ? category.badgeVariant : 'outline'}
-                          size="sm"
-                          className="gap-2"
-                          data-focus-info={`Filtra ${category.label} (${category.accounts.length} conti) - Tasto ${keyNumber}`}
-                        >
-                          <Badge variant={category.badgeVariant} className="text-xs px-0 border-0 bg-transparent">
-                            {category.label}
-                          </Badge>
-                          <span className="text-xs">({category.accounts.length})</span>
-                          <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 hidden sm:inline-flex">{keyNumber}</Badge>
-                        </Button>
+                        <Tooltip key={category.id}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={() => toggleCategoryVisibility(category.id)}
+                              variant={isActive ? category.badgeVariant : 'outline'}
+                              size="sm"
+                              className="gap-2"
+                              data-focus-info={`Filtra ${category.label} (${category.accounts.length} conti) - Tasto ${keyNumber}`}
+                            >
+                              <Badge variant={category.badgeVariant} className="text-xs px-0 border-0 bg-transparent">
+                                {category.label}
+                              </Badge>
+                              <span className="text-xs">({category.accounts.length})</span>
+                              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 hidden sm:inline-flex">{keyNumber}</Badge>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent variant={category.id as any}>
+                            <div className="space-y-0.5">
+                              <p className="font-semibold">{category.label}</p>
+                              <p className="text-xs opacity-90">{category.description}</p>
+                              <p className="text-xs opacity-75 mt-1">{category.accounts.length} {category.accounts.length === 1 ? 'conto' : 'conti'} • Tasto {keyNumber}</p>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
                       )
                     })}
                   </div>
