@@ -6,6 +6,8 @@ import { DEFAULT_CATEGORIES, ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from
 import { generateId, calculateAccountBalance, getTotalBalance, formatCurrency, exportToCSV, downloadFile, getActiveBudgets, getBudgetProgress } from '@/lib/helpers'
 import { generateBudgetAlerts, shouldShowBudgetNotification, getBudgetNotificationTitle } from '@/lib/budget-alerts'
 import { soundSystem } from '@/lib/sound-system'
+import { useScreenReader } from '@/hooks/use-screen-reader'
+import { SkipLink } from '@/components/SkipLink'
 import { PinDialog } from '@/components/PinDialog'
 import { AccountCard } from '@/components/AccountCard'
 import { AccountDialog } from '@/components/AccountDialog'
@@ -37,6 +39,8 @@ import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { useListNavigation } from '@/hooks/use-list-navigation'
 
 function App() {
+  const screenReader = useScreenReader()
+  
   const [globalPinHash, setGlobalPinHash] = useKV<string>('global-pin-hash', '')
   const [privatePinHash, setPrivatePinHash] = useKV<string>('private-pin-hash', '')
   const [accounts, setAccounts] = useKV<Account[]>('accounts', [])
@@ -95,13 +99,6 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (activeTab !== previousTab && isAuthenticated) {
-      setPreviousTab(activeTab)
-      soundSystem.play('tab-change')
-    }
-  }, [activeTab, previousTab, isAuthenticated])
-
-  useEffect(() => {
     if (showDeleteDialog) {
       soundSystem.play('dialog-open')
     }
@@ -116,6 +113,7 @@ function App() {
       setIsSetupMode(false)
       soundSystem.play('pin-success')
       toast.success('PIN globale creato con successo')
+      screenReader.announceSuccess('PIN globale creato. Accesso all\'applicazione consentito.')
     } else {
       const isValid = await verifyPin(pin, globalPinHash || '')
       if (isValid) {
@@ -123,9 +121,11 @@ function App() {
         setShowPinDialog(false)
         soundSystem.play('unlock')
         toast.success('Accesso consentito')
+        screenReader.announceSuccess('Accesso consentito. Benvenuto in Zecchino.')
       } else {
         soundSystem.play('pin-error')
         toast.error('PIN non corretto')
+        screenReader.announceError('PIN non corretto. Riprova.')
       }
     }
   }
@@ -138,6 +138,7 @@ function App() {
       setShowPrivatePinDialog(false)
       soundSystem.play('private-unlock')
       toast.success('PIN privato creato e conto sbloccato')
+      screenReader.announceSuccess('PIN privato creato. Conto privato ora sbloccato.')
     } else {
       const isValid = await verifyPin(pin, privatePinHash)
       if (isValid) {
@@ -148,10 +149,14 @@ function App() {
         if (privateAccount) {
           const balance = calculateAccountBalance(privateAccount, visibleTransactions)
           toast.success(`Conto privato sbloccato. Saldo: ${formatCurrency(balance)}`)
+          screenReader.announceBalance('Conto privato', balance)
+        } else {
+          screenReader.announceSuccess('Conto privato sbloccato.')
         }
       } else {
         soundSystem.play('pin-error')
         toast.error('PIN privato non corretto')
+        screenReader.announceError('PIN privato non corretto. Riprova.')
       }
     }
   }
@@ -165,10 +170,12 @@ function App() {
         updated[existingIndex] = account
         soundSystem.play('save')
         toast.success('Conto modificato')
+        screenReader.announceSuccess(`Conto ${account.nome} modificato con successo.`)
         return updated
       } else {
         soundSystem.play('account-created')
         toast.success(`Conto "${account.nome}" creato`)
+        screenReader.announceSuccess(`Nuovo conto ${account.nome} di tipo ${account.tipo} creato con saldo iniziale di ${formatCurrency(account.saldoIniziale)}.`)
         return [...current, account]
       }
     })
@@ -186,6 +193,7 @@ function App() {
         updated[existingIndex] = transaction
         soundSystem.play('save')
         toast.success('Movimento modificato')
+        screenReader.announceSuccess('Movimento modificato con successo.')
         updatedTransactions = updated
       } else {
         if (transaction.tipo === 'entrata') {
@@ -196,7 +204,14 @@ function App() {
           soundSystem.play('transfer')
         }
         const account = safeAccounts.find(a => a.id === transaction.contoId)
+        const category = safeCategories.find(c => c.id === transaction.categoriaId)
         toast.success(`Movimento aggiunto: ${transaction.tipo} ${formatCurrency(transaction.importo)} - ${account?.nome || ''}`)
+        screenReader.announceTransaction(
+          transaction.tipo,
+          transaction.importo,
+          account?.nome || 'Conto sconosciuto',
+          category?.nome
+        )
         updatedTransactions = [...current, transaction]
       }
       
@@ -260,10 +275,12 @@ function App() {
         updated[existingIndex] = budget
         soundSystem.play('save')
         toast.success('Budget modificato')
+        screenReader.announceSuccess(`Budget ${budget.nome} modificato.`)
         return updated
       } else {
         soundSystem.play('budget-created')
         toast.success(`Budget "${budget.nome}" creato`)
+        screenReader.announceSuccess(`Nuovo budget ${budget.nome} creato. Importo target: ${formatCurrency(budget.importoTarget)} per periodo ${budget.periodo}.`)
         return [...current, budget]
       }
     })
@@ -279,10 +296,12 @@ function App() {
         updated[existingIndex] = goal
         soundSystem.play('save')
         toast.success('Obiettivo di risparmio modificato')
+        screenReader.announceSuccess(`Obiettivo ${goal.nome} modificato.`)
         return updated
       } else {
         soundSystem.play('goal-created')
         toast.success(`Obiettivo "${goal.nome}" creato`)
+        screenReader.announceSuccess(`Nuovo obiettivo di risparmio ${goal.nome} creato. Target: ${formatCurrency(goal.importoTarget)}.`)
         return [...current, goal]
       }
     })
@@ -299,20 +318,39 @@ function App() {
 
     soundSystem.play('delete')
     if (deletingItem.type === 'account') {
+      const account = safeAccounts.find(a => a.id === deletingItem.id)
       setAccounts((current) => (current || []).filter(a => a.id !== deletingItem.id))
       setTransactions((current) => (current || []).filter(t => t.contoId !== deletingItem.id && t.contoDestinazioneId !== deletingItem.id))
       soundSystem.play('account-deleted')
       toast.success('Conto eliminato')
+      if (account) {
+        screenReader.announceSuccess(`Conto ${account.nome} eliminato. Tutti i movimenti associati sono stati rimossi.`)
+      } else {
+        screenReader.announceSuccess('Conto eliminato.')
+      }
     } else if (deletingItem.type === 'transaction') {
       setTransactions((current) => (current || []).filter(t => t.id !== deletingItem.id))
       toast.success('Movimento eliminato')
+      screenReader.announceSuccess('Movimento eliminato.')
     } else if (deletingItem.type === 'budget') {
+      const budget = safeBudgets.find(b => b.id === deletingItem.id)
       setBudgets((current) => (current || []).filter(b => b.id !== deletingItem.id))
       soundSystem.play('budget-deleted')
       toast.success('Budget eliminato')
+      if (budget) {
+        screenReader.announceSuccess(`Budget ${budget.nome} eliminato.`)
+      } else {
+        screenReader.announceSuccess('Budget eliminato.')
+      }
     } else if (deletingItem.type === 'savingsGoal') {
+      const goal = safeSavingsGoals.find(g => g.id === deletingItem.id)
       setSavingsGoals((current) => (current || []).filter(g => g.id !== deletingItem.id))
       toast.success('Obiettivo di risparmio eliminato')
+      if (goal) {
+        screenReader.announceSuccess(`Obiettivo ${goal.nome} eliminato.`)
+      } else {
+        screenReader.announceSuccess('Obiettivo eliminato.')
+      }
     }
 
     setDeletingItem(null)
@@ -324,6 +362,7 @@ function App() {
     downloadFile(csv, `zecchino-export-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv')
     soundSystem.play('export')
     toast.success('Dati esportati in CSV')
+    screenReader.announceSuccess(`Dati esportati. ${visibleTransactions.length} movimenti salvati in formato CSV.`)
   }
 
   const visibleAccounts = useMemo(() => {
@@ -346,6 +385,37 @@ function App() {
   const totalBalance = useMemo(() => {
     return getTotalBalance(visibleAccounts, visibleTransactions)
   }, [visibleAccounts, visibleTransactions])
+
+  useEffect(() => {
+    if (activeTab !== previousTab && isAuthenticated) {
+      setPreviousTab(activeTab)
+      soundSystem.play('tab-change')
+      
+      let tabName = ''
+      if (activeTab === 'dashboard') tabName = 'Dashboard'
+      else if (activeTab === 'transactions') tabName = 'Movimenti'
+      else if (activeTab === 'reports') tabName = 'Report'
+      
+      if (tabName) {
+        screenReader.announceNavigation(tabName)
+        
+        if (activeTab === 'dashboard') {
+          screenReader.announceCount('conti', visibleAccounts.length)
+          setTimeout(() => {
+            screenReader.announce(`Saldo totale: ${formatCurrency(totalBalance)}`, 'polite')
+          }, 500)
+        } else if (activeTab === 'transactions') {
+          screenReader.announceCount('movimenti', visibleTransactions.length)
+        } else if (activeTab === 'reports') {
+          const totalIncome = visibleTransactions.filter(t => t.tipo === 'entrata').reduce((sum, t) => sum + t.importo, 0)
+          const totalExpenses = visibleTransactions.filter(t => t.tipo === 'uscita').reduce((sum, t) => sum + t.importo, 0)
+          setTimeout(() => {
+            screenReader.announce(`Entrate: ${formatCurrency(totalIncome)}. Uscite: ${formatCurrency(totalExpenses)}`, 'polite')
+          }, 500)
+        }
+      }
+    }
+  }, [activeTab, previousTab, isAuthenticated, visibleAccounts, visibleTransactions, totalBalance, screenReader])
 
   const recentTransactions = useMemo(() => {
     return [...visibleTransactions]
@@ -380,11 +450,16 @@ function App() {
   const toggleCategoryVisibility = (categoryId: string) => {
     setVisibleCategories((current) => {
       const currentCategories = current || []
+      const category = ACCOUNT_CATEGORIES.find(c => c.id === categoryId)
+      const categoryName = category?.label || 'Categoria'
+      
       if (currentCategories.includes(categoryId)) {
         soundSystem.play('filter-toggle')
+        screenReader.announceFilter(categoryName, false)
         return currentCategories.filter(id => id !== categoryId)
       } else {
         soundSystem.play('category-toggle')
+        screenReader.announceFilter(categoryName, true)
         return [...currentCategories, categoryId]
       }
     })
@@ -657,102 +732,125 @@ function App() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5">
-        <PinDialog
-          open={showPinDialog}
-          title={isSetupMode ? 'Imposta PIN Globale' : 'Inserisci PIN'}
-          description={isSetupMode ? 'Crea un PIN per proteggere l\'applicazione' : 'Inserisci il tuo PIN per accedere'}
-          onSubmit={handleGlobalPinSubmit}
-          confirmMode={isSetupMode}
-        />
-      </div>
+      <>
+        <SkipLink />
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5" role="main" aria-label="Schermata di autenticazione">
+          <PinDialog
+            open={showPinDialog}
+            title={isSetupMode ? 'Imposta PIN Globale' : 'Inserisci PIN'}
+            description={isSetupMode ? 'Crea un PIN per proteggere l\'applicazione' : 'Inserisci il tuo PIN per accedere'}
+            onSubmit={handleGlobalPinSubmit}
+            confirmMode={isSetupMode}
+          />
+        </div>
+      </>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
-      <FocusIndicator />
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-semibold tracking-tight">Zecchino</h1>
-            <div className="flex items-center gap-4">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowKeyboardHelp(true)}
-                    aria-label="Mostra scorciatoie da tastiera"
-                    className="hidden sm:inline-flex"
-                  >
-                    <Keyboard size={20} weight="duotone" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent variant="accent">
-                  <div className="space-y-0.5">
-                    <p className="font-semibold">Scorciatoie da Tastiera</p>
-                    <p className="text-xs opacity-90">Premi ? per visualizzare tutti i comandi</p>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="text-right cursor-help">
-                    <p className="text-sm text-muted-foreground">Saldo Totale</p>
-                    <p className={`text-2xl font-mono font-semibold ${totalBalance < 0 ? 'text-destructive' : 'text-foreground'}`}>
-                      {formatCurrency(totalBalance)}
-                    </p>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent variant={totalBalance < 0 ? 'destructive' : 'success'}>
-                  <div className="space-y-0.5">
-                    <p className="font-semibold">Saldo Consolidato</p>
-                    <p className="text-xs opacity-90">
-                      Somma di tutti i conti visibili ({visibleAccounts.length} {visibleAccounts.length === 1 ? 'conto' : 'conti'})
-                    </p>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
+    <>
+      <SkipLink />
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+        <FocusIndicator />
+        <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10" role="banner">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <h1 className="text-3xl font-semibold tracking-tight" id="app-title">Zecchino</h1>
+              <div className="flex items-center gap-4" role="region" aria-label="Informazioni saldo e azioni rapide">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowKeyboardHelp(true)}
+                      aria-label="Mostra scorciatoie da tastiera"
+                      className="hidden sm:inline-flex"
+                    >
+                      <Keyboard size={20} weight="duotone" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent variant="accent">
+                    <div className="space-y-0.5">
+                      <p className="font-semibold">Scorciatoie da Tastiera</p>
+                      <p className="text-xs opacity-90">Premi ? per visualizzare tutti i comandi</p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="text-right cursor-help" role="status" aria-live="polite" aria-label={`Saldo totale: ${formatCurrency(totalBalance)}`}>
+                      <p className="text-sm text-muted-foreground" id="total-balance-label">Saldo Totale</p>
+                      <p className={`text-2xl font-mono font-semibold ${totalBalance < 0 ? 'text-destructive' : 'text-foreground'}`} aria-labelledby="total-balance-label">
+                        {formatCurrency(totalBalance)}
+                      </p>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent variant={totalBalance < 0 ? 'destructive' : 'success'}>
+                    <div className="space-y-0.5">
+                      <p className="font-semibold">Saldo Consolidato</p>
+                      <p className="text-xs opacity-90">
+                        Somma di tutti i conti visibili ({visibleAccounts.length} {visibleAccounts.length === 1 ? 'conto' : 'conti'})
+                      </p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="container mx-auto px-4 py-6">
-        {budgetAlerts.length > 0 && (
-          <div className="mb-6">
-            <BudgetAlertBanner
-              alerts={budgetAlerts}
-              onDismiss={handleDismissBudgetAlert}
-              onViewBudget={handleViewBudget}
-            />
-          </div>
-        )}
+        <main className="container mx-auto px-4 py-6" id="main-content" role="main" aria-label="Contenuto principale dell'applicazione">
+          {budgetAlerts.length > 0 && (
+            <div className="mb-6" role="region" aria-label="Avvisi budget" aria-live="polite">
+              <BudgetAlertBanner
+                alerts={budgetAlerts}
+                onDismiss={handleDismissBudgetAlert}
+                onViewBudget={handleViewBudget}
+              />
+            </div>
+          )}
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
-            <TabsTrigger value="dashboard" className="gap-2" data-focus-info="Scheda Dashboard - Visualizza conti e movimenti recenti (Ctrl+D)">
-              <List size={18} weight="duotone" />
+          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid" role="tablist" aria-label="Navigazione principale">
+            <TabsTrigger 
+              value="dashboard" 
+              className="gap-2" 
+              data-focus-info="Scheda Dashboard - Visualizza conti e movimenti recenti (Ctrl+D)"
+              aria-label="Dashboard - Visualizza conti e movimenti recenti. Scorciatoia: Control più D"
+              aria-controls="dashboard-panel"
+            >
+              <List size={18} weight="duotone" aria-hidden="true" />
               <span className="hidden sm:inline">Dashboard</span>
-              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex">Ctrl+D</Badge>
+              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex" aria-hidden="true">Ctrl+D</Badge>
             </TabsTrigger>
-            <TabsTrigger value="transactions" className="gap-2" data-focus-info="Scheda Movimenti - Visualizza tutti i movimenti (Ctrl+T)">
-              <ArrowsLeftRight size={18} weight="duotone" />
+            <TabsTrigger 
+              value="transactions" 
+              className="gap-2" 
+              data-focus-info="Scheda Movimenti - Visualizza tutti i movimenti (Ctrl+T)"
+              aria-label="Movimenti - Visualizza tutti i movimenti. Scorciatoia: Control più T"
+              aria-controls="transactions-panel"
+            >
+              <ArrowsLeftRight size={18} weight="duotone" aria-hidden="true" />
               <span className="hidden sm:inline">Movimenti</span>
-              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex">Ctrl+T</Badge>
+              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex" aria-hidden="true">Ctrl+T</Badge>
             </TabsTrigger>
-            <TabsTrigger value="reports" className="gap-2" data-focus-info="Scheda Report - Visualizza statistiche finanziarie (Ctrl+R)">
-              <ChartLine size={18} weight="duotone" />
+            <TabsTrigger 
+              value="reports" 
+              className="gap-2" 
+              data-focus-info="Scheda Report - Visualizza statistiche finanziarie (Ctrl+R)"
+              aria-label="Report - Visualizza statistiche finanziarie. Scorciatoia: Control più R"
+              aria-controls="reports-panel"
+            >
+              <ChartLine size={18} weight="duotone" aria-hidden="true" />
               <span className="hidden sm:inline">Report</span>
-              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex">Ctrl+R</Badge>
+              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex" aria-hidden="true">Ctrl+R</Badge>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="dashboard" className="space-y-6">
+          <TabsContent value="dashboard" className="space-y-6" id="dashboard-panel" role="tabpanel" aria-labelledby="dashboard-tab">
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
               <h2 className="text-2xl font-semibold">I Tuoi Conti</h2>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-2 flex-wrap" role="group" aria-label="Azioni rapide">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button 
@@ -1026,40 +1124,42 @@ function App() {
             </div>
           </TabsContent>
 
-          <TabsContent value="transactions" className="space-y-6">
+          <TabsContent value="transactions" className="space-y-6" id="transactions-panel" role="tabpanel" aria-labelledby="transactions-tab">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Tutti i Movimenti</h2>
-              <div className="flex gap-2">
+              <div className="flex gap-2" role="group" aria-label="Azioni movimenti">
                 <Button 
                   onClick={handleExportCSV} 
                   variant="outline" 
                   className="gap-2"
                   data-focus-info="Esporta movimenti in formato CSV (Ctrl+E)"
+                  aria-label="Esporta movimenti in formato CSV. Scorciatoia: Control più E"
                 >
-                  <DownloadSimple size={18} weight="duotone" />
+                  <DownloadSimple size={18} weight="duotone" aria-hidden="true" />
                   Esporta CSV
-                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex">Ctrl+E</Badge>
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex" aria-hidden="true">Ctrl+E</Badge>
                 </Button>
                 <Button 
                   onClick={() => { setEditingTransaction(undefined); setShowTransactionDialog(true) }} 
                   className="gap-2"
                   data-focus-info="Aggiungi nuovo movimento (Ctrl+N)"
+                  aria-label="Aggiungi nuovo movimento. Scorciatoia: Control più N"
                 >
-                  <Plus size={18} weight="bold" />
+                  <Plus size={18} weight="bold" aria-hidden="true" />
                   Nuovo Movimento
-                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 bg-primary-foreground/20 hidden sm:inline-flex">Ctrl+N</Badge>
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 bg-primary-foreground/20 hidden sm:inline-flex" aria-hidden="true">Ctrl+N</Badge>
                 </Button>
               </div>
             </div>
 
             {visibleTransactions.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="text-xs" role="note" aria-label="Istruzioni navigazione: freccia su e freccia giù per navigare, Enter o E per modificare, Canc per eliminare, Home e End per primo e ultimo">
                 ↑/↓ Naviga · Enter Modifica · E Modifica · Del Elimina · Home/End Primo/Ultimo
               </Badge>
             )}
 
             <Card>
-              <CardContent className="p-0">
+              <CardContent className="p-0" role="region" aria-label="Lista movimenti" aria-live="polite">
                 {visibleTransactions.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <p className="text-muted-foreground mb-4">Nessun movimento da visualizzare</p>
@@ -1162,20 +1262,25 @@ function App() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="reports" className="space-y-6">
+          <TabsContent value="reports" className="space-y-6" id="reports-panel" role="tabpanel" aria-labelledby="reports-tab">
             <h2 className="text-2xl font-semibold">Report Finanziario</h2>
 
             <MonthlyComparisonChart transactions={visibleTransactions} />
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-3" role="region" aria-label="Statistiche finanziarie principali">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Card className="cursor-help transition-all hover:shadow-md" data-focus-info="Saldo totale di tutti i conti visibili">
+                  <Card 
+                    className="cursor-help transition-all hover:shadow-md" 
+                    data-focus-info="Saldo totale di tutti i conti visibili"
+                    role="article"
+                    aria-label={`Saldo totale: ${formatCurrency(totalBalance)}`}
+                  >
                     <CardHeader>
                       <CardTitle className="text-base">Saldo Totale</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className={`text-3xl font-mono font-bold ${totalBalance < 0 ? 'text-destructive' : 'text-foreground'}`}>
+                      <p className={`text-3xl font-mono font-bold ${totalBalance < 0 ? 'text-destructive' : 'text-foreground'}`} aria-live="polite">
                         {formatCurrency(totalBalance)}
                       </p>
                     </CardContent>
@@ -1559,6 +1664,7 @@ function App() {
         onClose={() => setShowKeyboardHelp(false)}
       />
     </div>
+    </>
   )
 }
 
