@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Warning, TrendUp, X, Target } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { soundSystem } from '@/lib/sound-system'
 
 interface BudgetAlertBannerProps {
   alerts: BudgetAlert[]
@@ -80,7 +81,10 @@ export function BudgetAlertBanner({ alerts, onDismiss, onViewBudget }: BudgetAle
                         size="icon"
                         variant="ghost"
                         className="h-7 w-7 shrink-0"
-                        onClick={() => onDismiss(alert.budgetId)}
+                        onClick={() => {
+                          soundSystem.play('dialog-close')
+                          onDismiss(alert.budgetId)
+                        }}
                         aria-label="Chiudi notifica"
                       >
                         <X size={14} />
