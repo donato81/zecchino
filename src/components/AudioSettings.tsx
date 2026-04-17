@@ -6,8 +6,16 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
-import { SpeakerHigh, SpeakerSlash, SpeakerLow, SpeakerSimpleHigh } from '@phosphor-icons/react'
+import { Badge } from '@/components/ui/badge'
+import { SpeakerHigh, SpeakerSlash, SpeakerLow, SpeakerSimpleHigh, SpeakerSimpleLow, SpeakerSimpleSlash, SpeakerX } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+
+const VOLUME_PRESETS = [
+  { name: 'Silenzioso', value: 10, icon: SpeakerSimpleSlash, variant: 'secondary' as const, description: '10%' },
+  { name: 'Basso', value: 30, icon: SpeakerSimpleLow, variant: 'outline' as const, description: '30%' },
+  { name: 'Medio', value: 60, icon: SpeakerLow, variant: 'outline' as const, description: '60%' },
+  { name: 'Alto', value: 90, icon: SpeakerSimpleHigh, variant: 'outline' as const, description: '90%' }
+] as const
 
 export function AudioSettings() {
   const [audioEnabled, setAudioEnabled] = useKV<boolean>('audio-enabled', true)
@@ -46,12 +54,23 @@ export function AudioSettings() {
     toast('Suono di test riprodotto')
   }
 
+  const handlePresetVolume = (value: number) => {
+    setLocalVolume(value)
+    soundSystem.play('click')
+    const presetName = VOLUME_PRESETS.find(p => p.value === value)?.name || 'personalizzato'
+    toast.success(`Volume impostato: ${presetName} (${value}%)`)
+  }
+
   const getVolumeIcon = () => {
     if (!localEnabled) return <SpeakerSlash size={20} weight="duotone" />
     if (localVolume === 0) return <SpeakerSlash size={20} weight="duotone" />
     if (localVolume < 33) return <SpeakerLow size={20} weight="duotone" />
     if (localVolume < 66) return <SpeakerHigh size={20} weight="duotone" />
     return <SpeakerSimpleHigh size={20} weight="duotone" />
+  }
+
+  const getCurrentPreset = () => {
+    return VOLUME_PRESETS.find(p => p.value === localVolume)
   }
 
   return (
@@ -83,29 +102,64 @@ export function AudioSettings() {
           />
         </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="volume-slider" className="text-base font-medium">
-              Volume
-            </Label>
-            <span className="text-sm font-mono text-muted-foreground">
-              {Math.round(localVolume)}%
-            </span>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-base font-medium">Preset Volume</Label>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {VOLUME_PRESETS.map((preset) => {
+                const Icon = preset.icon
+                const isActive = getCurrentPreset()?.value === preset.value
+                return (
+                  <Button
+                    key={preset.name}
+                    onClick={() => handlePresetVolume(preset.value)}
+                    variant={isActive ? 'default' : preset.variant}
+                    size="sm"
+                    disabled={!localEnabled}
+                    className="gap-2 flex-col h-auto py-3 relative"
+                    data-focus-info={`Preset ${preset.name}: ${preset.description}`}
+                  >
+                    <Icon size={20} weight="duotone" />
+                    <span className="text-xs font-medium">{preset.name}</span>
+                    <span className="text-[10px] opacity-75">{preset.description}</span>
+                    {isActive && (
+                      <Badge 
+                        variant="secondary" 
+                        className="absolute -top-1 -right-1 h-4 px-1 text-[9px] bg-accent text-accent-foreground"
+                      >
+                        Attivo
+                      </Badge>
+                    )}
+                  </Button>
+                )
+              })}
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <SpeakerSlash size={18} className="text-muted-foreground shrink-0" />
-            <Slider
-              id="volume-slider"
-              value={[localVolume]}
-              onValueChange={handleVolumeChange}
-              min={0}
-              max={100}
-              step={5}
-              disabled={!localEnabled}
-              className="flex-1"
-              aria-label={`Volume: ${Math.round(localVolume)}%`}
-            />
-            <SpeakerSimpleHigh size={18} className="text-muted-foreground shrink-0" />
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="volume-slider" className="text-base font-medium">
+                Volume Personalizzato
+              </Label>
+              <span className="text-sm font-mono text-muted-foreground">
+                {Math.round(localVolume)}%
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <SpeakerX size={18} className="text-muted-foreground shrink-0" />
+              <Slider
+                id="volume-slider"
+                value={[localVolume]}
+                onValueChange={handleVolumeChange}
+                min={0}
+                max={100}
+                step={1}
+                disabled={!localEnabled}
+                className="flex-1"
+                aria-label={`Volume: ${Math.round(localVolume)}%`}
+              />
+              <SpeakerSimpleHigh size={18} className="text-muted-foreground shrink-0" />
+            </div>
           </div>
         </div>
 
