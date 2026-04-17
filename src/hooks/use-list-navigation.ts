@@ -1,0 +1,88 @@
+import { useEffect, useState, useCallback, RefObject } from 'react'
+
+interface UseListNavigationProps {
+  itemCount: number
+  onEnter?: (index: number) => void
+  onDelete?: (index: number) => void
+  onEdit?: (index: number) => void
+  enabled?: boolean
+  containerRef?: RefObject<HTMLElement>
+}
+
+export function useListNavigation({
+  itemCount,
+  onEnter,
+  onDelete,
+  onEdit,
+  enabled = true,
+  containerRef
+}: UseListNavigationProps) {
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1)
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (!enabled || itemCount === 0) return
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setFocusedIndex((prev) => {
+        const next = prev + 1
+        return next >= itemCount ? 0 : next
+      })
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setFocusedIndex((prev) => {
+        const next = prev - 1
+        return next < 0 ? itemCount - 1 : next
+      })
+    } else if (e.key === 'Home') {
+      e.preventDefault()
+      setFocusedIndex(0)
+    } else if (e.key === 'End') {
+      e.preventDefault()
+      setFocusedIndex(itemCount - 1)
+    } else if (e.key === 'Enter' && focusedIndex >= 0) {
+      e.preventDefault()
+      onEnter?.(focusedIndex)
+    } else if (e.key === 'Delete' && focusedIndex >= 0 && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault()
+      onDelete?.(focusedIndex)
+    } else if ((e.key === 'e' || e.key === 'E') && focusedIndex >= 0 && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault()
+      onEdit?.(focusedIndex)
+    }
+  }, [enabled, itemCount, focusedIndex, onEnter, onDelete, onEdit])
+
+  useEffect(() => {
+    const target = containerRef?.current || document
+
+    target.addEventListener('keydown', handleKeyDown as EventListener)
+    return () => {
+      target.removeEventListener('keydown', handleKeyDown as EventListener)
+    }
+  }, [handleKeyDown, containerRef])
+
+  useEffect(() => {
+    if (itemCount === 0) {
+      setFocusedIndex(-1)
+    } else if (focusedIndex >= itemCount) {
+      setFocusedIndex(itemCount - 1)
+    }
+  }, [itemCount, focusedIndex])
+
+  const resetFocus = useCallback(() => {
+    setFocusedIndex(-1)
+  }, [])
+
+  const setFocus = useCallback((index: number) => {
+    if (index >= 0 && index < itemCount) {
+      setFocusedIndex(index)
+    }
+  }, [itemCount])
+
+  return {
+    focusedIndex,
+    setFocusedIndex: setFocus,
+    resetFocus,
+    isFocused: (index: number) => index === focusedIndex
+  }
+}

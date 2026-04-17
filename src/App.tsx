@@ -18,6 +18,7 @@ import { Plus, LockOpen, ChartLine, List, Gear, DownloadSimple, Trash, PencilSim
 import { toast } from 'sonner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
+import { useListNavigation } from '@/hooks/use-list-navigation'
 
 function App() {
   const [globalPinHash, setGlobalPinHash] = useKV<string>('global-pin-hash', '')
@@ -243,6 +244,61 @@ function App() {
     const currentCategories = visibleCategories || []
     return currentCategories.length === ACCOUNT_CATEGORIES.map(c => c.id).length
   }, [visibleCategories])
+
+  const recentTransactionsNav = useListNavigation({
+    itemCount: recentTransactions.length,
+    enabled: isAuthenticated && activeTab === 'dashboard',
+    onEnter: (index) => {
+      const transaction = recentTransactions[index]
+      if (transaction) {
+        setEditingTransaction(transaction)
+        setShowTransactionDialog(true)
+      }
+    },
+    onDelete: (index) => {
+      const transaction = recentTransactions[index]
+      if (transaction) {
+        setDeletingItem({ type: 'transaction', id: transaction.id })
+        setShowDeleteDialog(true)
+      }
+    },
+    onEdit: (index) => {
+      const transaction = recentTransactions[index]
+      if (transaction) {
+        setEditingTransaction(transaction)
+        setShowTransactionDialog(true)
+      }
+    }
+  })
+
+  const allTransactionsNav = useListNavigation({
+    itemCount: visibleTransactions.length,
+    enabled: isAuthenticated && activeTab === 'transactions',
+    onEnter: (index) => {
+      const sortedTransactions = [...visibleTransactions].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
+      const transaction = sortedTransactions[index]
+      if (transaction) {
+        setEditingTransaction(transaction)
+        setShowTransactionDialog(true)
+      }
+    },
+    onDelete: (index) => {
+      const sortedTransactions = [...visibleTransactions].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
+      const transaction = sortedTransactions[index]
+      if (transaction) {
+        setDeletingItem({ type: 'transaction', id: transaction.id })
+        setShowDeleteDialog(true)
+      }
+    },
+    onEdit: (index) => {
+      const sortedTransactions = [...visibleTransactions].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
+      const transaction = sortedTransactions[index]
+      if (transaction) {
+        setEditingTransaction(transaction)
+        setShowTransactionDialog(true)
+      }
+    }
+  })
 
   useKeyboardShortcuts([
     {
@@ -576,7 +632,14 @@ function App() {
             <Separator />
 
             <div>
-              <h3 className="text-xl font-semibold mb-4">Movimenti Recenti</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold">Movimenti Recenti</h3>
+                {recentTransactions.length > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    ↑/↓ Naviga · Enter Modifica · E Modifica · Del Elimina
+                  </Badge>
+                )}
+              </div>
               {recentTransactions.length === 0 ? (
                 <Card>
                   <CardContent className="flex flex-col items-center justify-center py-8 text-center">
@@ -587,14 +650,23 @@ function App() {
                 <Card>
                   <CardContent className="p-0">
                     <div className="divide-y">
-                      {recentTransactions.map(transaction => {
+                      {recentTransactions.map((transaction, index) => {
                         const account = visibleAccounts.find(a => a.id === transaction.contoId)
                         const category = safeCategories.find(c => c.id === transaction.categoriaId)
                         const isIncome = transaction.tipo === 'entrata'
                         const isTransfer = transaction.tipo === 'trasferimento'
+                        const isFocused = recentTransactionsNav.isFocused(index)
 
                         return (
-                          <div key={transaction.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                          <div 
+                            key={transaction.id} 
+                            className={`p-4 flex items-center justify-between transition-all ${
+                              isFocused 
+                                ? 'bg-accent/10 border-l-4 border-l-accent ring-2 ring-accent/20' 
+                                : 'hover:bg-muted/50'
+                            }`}
+                            onClick={() => recentTransactionsNav.setFocusedIndex(index)}
+                          >
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
                                 <p className="font-medium truncate">
@@ -618,7 +690,8 @@ function App() {
                                 <Button
                                   size="icon"
                                   variant="ghost"
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation()
                                     setEditingTransaction(transaction)
                                     setShowTransactionDialog(true)
                                   }}
@@ -629,7 +702,8 @@ function App() {
                                 <Button
                                   size="icon"
                                   variant="ghost"
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation()
                                     setDeletingItem({ type: 'transaction', id: transaction.id })
                                     setShowDeleteDialog(true)
                                   }}
@@ -666,6 +740,12 @@ function App() {
               </div>
             </div>
 
+            {visibleTransactions.length > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                ↑/↓ Naviga · Enter Modifica · E Modifica · Del Elimina · Home/End Primo/Ultimo
+              </Badge>
+            )}
+
             <Card>
               <CardContent className="p-0">
                 {visibleTransactions.length === 0 ? (
@@ -680,7 +760,7 @@ function App() {
                   <div className="divide-y max-h-[600px] overflow-y-auto">
                     {[...visibleTransactions]
                       .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
-                      .map(transaction => {
+                      .map((transaction, index) => {
                         const account = visibleAccounts.find(a => a.id === transaction.contoId)
                         const destAccount = transaction.contoDestinazioneId
                           ? visibleAccounts.find(a => a.id === transaction.contoDestinazioneId)
@@ -688,9 +768,18 @@ function App() {
                         const category = safeCategories.find(c => c.id === transaction.categoriaId)
                         const isIncome = transaction.tipo === 'entrata'
                         const isTransfer = transaction.tipo === 'trasferimento'
+                        const isFocused = allTransactionsNav.isFocused(index)
 
                         return (
-                          <div key={transaction.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                          <div 
+                            key={transaction.id} 
+                            className={`p-4 flex items-center justify-between transition-all ${
+                              isFocused 
+                                ? 'bg-accent/10 border-l-4 border-l-accent ring-2 ring-accent/20' 
+                                : 'hover:bg-muted/50'
+                            }`}
+                            onClick={() => allTransactionsNav.setFocusedIndex(index)}
+                          >
                             <div className="flex-1 min-w-0 space-y-1">
                               <div className="flex items-center gap-2">
                                 <p className="font-medium">
@@ -728,7 +817,8 @@ function App() {
                                 <Button
                                   size="icon"
                                   variant="ghost"
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation()
                                     setEditingTransaction(transaction)
                                     setShowTransactionDialog(true)
                                   }}
@@ -739,7 +829,8 @@ function App() {
                                 <Button
                                   size="icon"
                                   variant="ghost"
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation()
                                     setDeletingItem({ type: 'transaction', id: transaction.id })
                                     setShowDeleteDialog(true)
                                   }}

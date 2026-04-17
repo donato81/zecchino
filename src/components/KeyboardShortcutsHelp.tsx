@@ -26,6 +26,18 @@ const shortcutGroups: ShortcutGroup[] = [
     ]
   },
   {
+    title: 'Navigazione Liste',
+    shortcuts: [
+      { keys: ['↑'], description: 'Movimento precedente' },
+      { keys: ['↓'], description: 'Movimento successivo' },
+      { keys: ['Home'], description: 'Primo movimento' },
+      { keys: ['End'], description: 'Ultimo movimento' },
+      { keys: ['Enter'], description: 'Modifica movimento selezionato' },
+      { keys: ['E'], description: 'Modifica movimento selezionato' },
+      { keys: ['Delete'], description: 'Elimina movimento selezionato' }
+    ]
+  },
+  {
     title: 'Azioni Rapide',
     shortcuts: [
       { keys: ['Ctrl', 'N'], description: 'Nuovo Movimento' },

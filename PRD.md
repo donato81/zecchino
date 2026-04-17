@@ -62,11 +62,18 @@ This is a full-featured financial management system with multiple account types,
 - **Success criteria**: All category filters respond to keyboard input; shortcuts shown as visual badges on filter buttons; works only on dashboard tab to avoid conflicts
 
 ### Comprehensive Keyboard Shortcuts
-- **Functionality**: Full keyboard navigation and quick actions throughout the app (Ctrl+N for new transaction, Ctrl+M for new account, Ctrl+D/T/R for tab navigation, Ctrl+E for export, Ctrl+U to unlock private account, ? to show help)
+- **Functionality**: Full keyboard navigation and quick actions throughout the app (Ctrl+N for new transaction, Ctrl+M for new account, Ctrl+D/T/R for tab navigation, Ctrl+E for export, Ctrl+U to unlock private account, arrow keys for list navigation, ? to show help)
 - **Purpose**: Enable power users and accessibility users to navigate and perform actions without mouse interaction
 - **Trigger**: Keyboard combinations pressed anywhere in the app (except when typing in input fields)
 - **Progression**: Press shortcut → Action executes immediately → Toast confirms action → UI updates
-- **Success criteria**: All shortcuts work reliably; keyboard help dialog (?) displays complete reference; visual badges on buttons show shortcuts; no conflicts with browser shortcuts
+- **Success criteria**: All shortcuts work reliably; arrow keys navigate transaction lists with visual focus; keyboard help dialog (?) displays complete reference; visual badges on buttons show shortcuts; no conflicts with browser shortcuts
+
+### List Keyboard Navigation
+- **Functionality**: Navigate transaction lists using arrow keys (↑/↓), jump to first/last with Home/End, edit with Enter or E key, delete with Delete key
+- **Purpose**: Provide efficient, accessible navigation for screen reader users and keyboard-only users through transaction lists
+- **Trigger**: Arrow keys, Home, End, Enter, E, or Delete pressed when viewing transaction lists (Recent Transactions or All Transactions)
+- **Progression**: Press arrow key → Focus moves to next/previous item with visual highlight → Press Enter/E → Edit dialog opens → Or press Delete → Confirmation dialog appears
+- **Success criteria**: Visual focus indicator clearly shows selected transaction; navigation wraps from last to first; actions work on focused item; keyboard hints displayed above lists; focus state persists during navigation
 
 ### Comprehensive Reporting
 - **Functionality**: Generate financial insights by period, category, and account
