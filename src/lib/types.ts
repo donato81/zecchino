@@ -37,12 +37,27 @@ export interface Category {
   predefinita: boolean
 }
 
+export type BudgetPeriod = 'mensile' | 'trimestrale' | 'annuale'
+
+export interface Budget {
+  id: string
+  nome: string
+  importoTarget: number
+  periodo: BudgetPeriod
+  categoriaId?: string
+  contoId?: string
+  dataInizio: string
+  dataFine: string
+  attivo: boolean
+}
+
 export interface AppState {
   isAuthenticated: boolean
   isPrivateUnlocked: boolean
   accounts: Account[]
   transactions: Transaction[]
   categories: Category[]
+  budgets: Budget[]
   globalPinHash: string
   privatePinHash: string
 }

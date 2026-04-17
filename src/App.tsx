@@ -1,13 +1,15 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Account, Transaction, Category } from '@/lib/types'
+import { Account, Transaction, Category, Budget } from '@/lib/types'
 import { hashPin, verifyPin } from '@/lib/crypto'
 import { DEFAULT_CATEGORIES, ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from '@/lib/constants'
-import { generateId, calculateAccountBalance, getTotalBalance, formatCurrency, exportToCSV, downloadFile } from '@/lib/helpers'
+import { generateId, calculateAccountBalance, getTotalBalance, formatCurrency, exportToCSV, downloadFile, getActiveBudgets } from '@/lib/helpers'
 import { PinDialog } from '@/components/PinDialog'
 import { AccountCard } from '@/components/AccountCard'
 import { AccountDialog } from '@/components/AccountDialog'
 import { TransactionDialog } from '@/components/TransactionDialog'
+import { BudgetDialog } from '@/components/BudgetDialog'
+import { BudgetProgressCard } from '@/components/BudgetProgressCard'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
 import { FocusIndicator } from '@/components/FocusIndicator'
 import { IncomeExpenseChart } from '@/components/IncomeExpenseChart'
@@ -19,7 +21,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Plus, LockOpen, ChartLine, List, Gear, DownloadSimple, Trash, PencilSimple, ArrowsLeftRight, Eye, EyeSlash, Keyboard } from '@phosphor-icons/react'
+import { Plus, LockOpen, ChartLine, List, Gear, DownloadSimple, Trash, PencilSimple, ArrowsLeftRight, Eye, EyeSlash, Keyboard, Target } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
@@ -31,6 +33,7 @@ function App() {
   const [accounts, setAccounts] = useKV<Account[]>('accounts', [])
   const [transactions, setTransactions] = useKV<Transaction[]>('transactions', [])
   const [categories, setCategories] = useKV<Category[]>('categories', [])
+  const [budgets, setBudgets] = useKV<Budget[]>('budgets', [])
 
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isPrivateUnlocked, setIsPrivateUnlocked] = useState(false)
@@ -40,12 +43,14 @@ function App() {
   const [showPrivatePinDialog, setShowPrivatePinDialog] = useState(false)
   const [showAccountDialog, setShowAccountDialog] = useState(false)
   const [showTransactionDialog, setShowTransactionDialog] = useState(false)
+  const [showBudgetDialog, setShowBudgetDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
 
   const [editingAccount, setEditingAccount] = useState<Account | undefined>()
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>()
-  const [deletingItem, setDeletingItem] = useState<{ type: 'account' | 'transaction', id: string } | null>(null)
+  const [editingBudget, setEditingBudget] = useState<Budget | undefined>()
+  const [deletingItem, setDeletingItem] = useState<{ type: 'account' | 'transaction' | 'budget', id: string } | null>(null)
 
   const [activeTab, setActiveTab] = useState('dashboard')
   const [visibleCategories, setVisibleCategories] = useKV<string[]>('visible-categories', ACCOUNT_CATEGORIES.map(c => c.id))
@@ -54,6 +59,7 @@ function App() {
   const safeAccounts = accounts || []
   const safeTransactions = transactions || []
   const safeCategories = categories || []
+  const safeBudgets = budgets || []
 
   useEffect(() => {
     if (!globalPinHash) {
@@ -150,6 +156,23 @@ function App() {
     setEditingTransaction(undefined)
   }
 
+  const handleSaveBudget = (budget: Budget) => {
+    setBudgets((currentBudgets) => {
+      const current = currentBudgets || []
+      const existingIndex = current.findIndex(b => b.id === budget.id)
+      if (existingIndex >= 0) {
+        const updated = [...current]
+        updated[existingIndex] = budget
+        toast.success('Budget modificato')
+        return updated
+      } else {
+        toast.success(`Budget "${budget.nome}" creato`)
+        return [...current, budget]
+      }
+    })
+    setEditingBudget(undefined)
+  }
+
   const handleDeleteConfirm = () => {
     if (!deletingItem) return
 
@@ -157,9 +180,12 @@ function App() {
       setAccounts((current) => (current || []).filter(a => a.id !== deletingItem.id))
       setTransactions((current) => (current || []).filter(t => t.contoId !== deletingItem.id && t.contoDestinazioneId !== deletingItem.id))
       toast.success('Conto eliminato')
-    } else {
+    } else if (deletingItem.type === 'transaction') {
       setTransactions((current) => (current || []).filter(t => t.id !== deletingItem.id))
       toast.success('Movimento eliminato')
+    } else if (deletingItem.type === 'budget') {
+      setBudgets((current) => (current || []).filter(b => b.id !== deletingItem.id))
+      toast.success('Budget eliminato')
     }
 
     setDeletingItem(null)
@@ -1098,6 +1124,56 @@ function App() {
               <IncomeExpenseChart transactions={visibleTransactions} period={chartPeriod} />
             </div>
 
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold flex items-center gap-2">
+                  <Target size={24} weight="duotone" />
+                  Budget e Obiettivi
+                </h3>
+                <Button 
+                  onClick={() => { setEditingBudget(undefined); setShowBudgetDialog(true) }} 
+                  className="gap-2"
+                >
+                  <Plus size={18} weight="bold" />
+                  Nuovo Budget
+                </Button>
+              </div>
+
+              {getActiveBudgets(safeBudgets).length === 0 ? (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                    <Target size={48} weight="duotone" className="text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground mb-4">Nessun budget attivo</p>
+                    <p className="text-sm text-muted-foreground mb-6">Crea un budget per monitorare le tue spese e raggiungere i tuoi obiettivi finanziari</p>
+                    <Button onClick={() => setShowBudgetDialog(true)} className="gap-2">
+                      <Plus size={18} weight="bold" />
+                      Crea il Primo Budget
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {getActiveBudgets(safeBudgets).map(budget => (
+                    <BudgetProgressCard
+                      key={budget.id}
+                      budget={budget}
+                      transactions={visibleTransactions}
+                      categories={safeCategories}
+                      accounts={visibleAccounts}
+                      onEdit={(b) => {
+                        setEditingBudget(b)
+                        setShowBudgetDialog(true)
+                      }}
+                      onDelete={(b) => {
+                        setDeletingItem({ type: 'budget', id: b.id })
+                        setShowDeleteDialog(true)
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
             <Card>
               <CardHeader>
                 <CardTitle>Dettaglio Conti</CardTitle>
@@ -1149,6 +1225,15 @@ function App() {
         categories={safeCategories}
       />
 
+      <BudgetDialog
+        open={showBudgetDialog}
+        onClose={() => { setShowBudgetDialog(false); setEditingBudget(undefined) }}
+        onSave={handleSaveBudget}
+        budget={editingBudget}
+        categories={safeCategories}
+        accounts={visibleAccounts}
+      />
+
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -1156,6 +1241,8 @@ function App() {
             <AlertDialogDescription>
               {deletingItem?.type === 'account'
                 ? 'Eliminando questo conto verranno rimossi anche tutti i movimenti associati. Questa azione non può essere annullata.'
+                : deletingItem?.type === 'budget'
+                ? 'Questa azione eliminerà definitivamente il budget. Non può essere annullata.'
                 : 'Questa azione eliminerà definitivamente il movimento. Non può essere annullata.'}
             </AlertDialogDescription>
           </AlertDialogHeader>

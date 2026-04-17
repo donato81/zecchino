@@ -1,4 +1,4 @@
-import { Account, Transaction } from './types'
+import { Account, Transaction, Budget, Category } from './types'
 
 export function calculateAccountBalance(
   account: Account,
@@ -132,4 +132,74 @@ export function downloadFile(content: string, filename: string, type: string) {
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
+}
+
+export function getBudgetProgress(
+  budget: Budget,
+  transactions: Transaction[]
+): { spent: number; percentage: number; remaining: number; isOverBudget: boolean } {
+  const budgetTransactions = transactions.filter(t => {
+    const transactionDate = new Date(t.data)
+    const startDate = new Date(budget.dataInizio)
+    const endDate = new Date(budget.dataFine)
+    
+    const inDateRange = transactionDate >= startDate && transactionDate <= endDate
+    
+    if (!inDateRange) return false
+    
+    if (budget.categoriaId) {
+      return t.categoriaId === budget.categoriaId && t.tipo === 'uscita'
+    }
+    
+    if (budget.contoId) {
+      return t.contoId === budget.contoId && t.tipo === 'uscita'
+    }
+    
+    return t.tipo === 'uscita'
+  })
+  
+  const spent = budgetTransactions.reduce((sum, t) => sum + t.importo, 0)
+  const percentage = budget.importoTarget > 0 ? (spent / budget.importoTarget) * 100 : 0
+  const remaining = budget.importoTarget - spent
+  const isOverBudget = spent > budget.importoTarget
+  
+  return { spent, percentage, remaining, isOverBudget }
+}
+
+export function getActiveBudgets(budgets: Budget[]): Budget[] {
+  const now = new Date()
+  return budgets.filter(budget => {
+    if (!budget.attivo) return false
+    const endDate = new Date(budget.dataFine)
+    return endDate >= now
+  })
+}
+
+export function getBudgetPeriodDates(periodo: Budget['periodo'], startDate: Date = new Date()): { dataInizio: string; dataFine: string } {
+  const start = new Date(startDate)
+  start.setHours(0, 0, 0, 0)
+  
+  const end = new Date(start)
+  
+  switch (periodo) {
+    case 'mensile':
+      end.setMonth(end.getMonth() + 1)
+      end.setDate(end.getDate() - 1)
+      break
+    case 'trimestrale':
+      end.setMonth(end.getMonth() + 3)
+      end.setDate(end.getDate() - 1)
+      break
+    case 'annuale':
+      end.setFullYear(end.getFullYear() + 1)
+      end.setDate(end.getDate() - 1)
+      break
+  }
+  
+  end.setHours(23, 59, 59, 999)
+  
+  return {
+    dataInizio: start.toISOString(),
+    dataFine: end.toISOString()
+  }
 }
