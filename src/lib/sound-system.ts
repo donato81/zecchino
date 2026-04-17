@@ -18,6 +18,31 @@ type SoundType =
   | 'budget-critical'
   | 'budget-exceeded'
   | 'milestone'
+  | 'dialog-open'
+  | 'dialog-close'
+  | 'tab-change'
+  | 'filter-toggle'
+  | 'category-toggle'
+  | 'export'
+  | 'settings-change'
+  | 'volume-change'
+  | 'preset-applied'
+  | 'account-created'
+  | 'account-deleted'
+  | 'goal-created'
+  | 'goal-completed'
+  | 'goal-progress'
+  | 'budget-created'
+  | 'budget-deleted'
+  | 'chart-loaded'
+  | 'data-refresh'
+  | 'keyboard-shortcut'
+  | 'pin-error'
+  | 'pin-success'
+  | 'private-unlock'
+  | 'private-lock'
+  | 'alert-dismissed'
+  | 'period-change'
 
 class SoundSystem {
   private audioContext: AudioContext | null = null
@@ -268,6 +293,183 @@ class SoundSystem {
           { freq: 659.25, duration: 0.1, type: 'sine', delay: 80 },
           { freq: 783.99, duration: 0.1, type: 'sine', delay: 80 },
           { freq: 1046.50, duration: 0.2, type: 'sine', delay: 80 }
+        ])
+        break
+
+      case 'dialog-open':
+        this.playSequence([
+          { freq: 659.25, duration: 0.06, type: 'sine' },
+          { freq: 783.99, duration: 0.08, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'dialog-close':
+        this.playSequence([
+          { freq: 783.99, duration: 0.06, type: 'sine' },
+          { freq: 659.25, duration: 0.08, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'tab-change':
+        this.playTone(650, 0.05, 'sine', { attack: 0.001, decay: 0.015, sustain: 0.4, release: 0.035 })
+        break
+
+      case 'filter-toggle':
+        this.playTone(550, 0.06, 'triangle', { attack: 0.005, decay: 0.02, sustain: 0.5, release: 0.035 })
+        break
+
+      case 'category-toggle':
+        this.playSequence([
+          { freq: 523.25, duration: 0.05, type: 'sine' },
+          { freq: 659.25, duration: 0.06, type: 'sine', delay: 40 }
+        ])
+        break
+
+      case 'export':
+        this.playSequence([
+          { freq: 659.25, duration: 0.08, type: 'sine' },
+          { freq: 783.99, duration: 0.08, type: 'sine', delay: 70 },
+          { freq: 1046.50, duration: 0.12, type: 'sine', delay: 70 }
+        ])
+        break
+
+      case 'settings-change':
+        this.playSequence([
+          { freq: 523.25, duration: 0.07, type: 'sine' },
+          { freq: 587.33, duration: 0.09, type: 'sine', delay: 60 }
+        ])
+        break
+
+      case 'volume-change':
+        this.playTone(440, 0.05, 'sine', { attack: 0.005, decay: 0.015, sustain: 0.5, release: 0.03 })
+        break
+
+      case 'preset-applied':
+        this.playSequence([
+          { freq: 523.25, duration: 0.06, type: 'sine' },
+          { freq: 659.25, duration: 0.06, type: 'sine', delay: 50 },
+          { freq: 523.25, duration: 0.08, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'account-created':
+        this.playSequence([
+          { freq: 523.25, duration: 0.09, type: 'sine' },
+          { freq: 659.25, duration: 0.09, type: 'sine', delay: 70 },
+          { freq: 783.99, duration: 0.12, type: 'sine', delay: 70 }
+        ])
+        break
+
+      case 'account-deleted':
+        this.playSequence([
+          { freq: 523.25, duration: 0.1, type: 'sawtooth' },
+          { freq: 392, duration: 0.15, type: 'sawtooth', delay: 90 }
+        ])
+        break
+
+      case 'goal-created':
+        this.playSequence([
+          { freq: 587.33, duration: 0.08, type: 'sine' },
+          { freq: 659.25, duration: 0.08, type: 'sine', delay: 60 },
+          { freq: 783.99, duration: 0.08, type: 'sine', delay: 60 },
+          { freq: 880, duration: 0.12, type: 'sine', delay: 60 }
+        ])
+        break
+
+      case 'goal-completed':
+        this.playSequence([
+          { freq: 523.25, duration: 0.1, type: 'sine' },
+          { freq: 659.25, duration: 0.1, type: 'sine', delay: 80 },
+          { freq: 783.99, duration: 0.1, type: 'sine', delay: 80 },
+          { freq: 1046.50, duration: 0.15, type: 'sine', delay: 80 },
+          { freq: 1318.51, duration: 0.2, type: 'sine', delay: 80 }
+        ])
+        break
+
+      case 'goal-progress':
+        this.playSequence([
+          { freq: 659.25, duration: 0.08, type: 'sine' },
+          { freq: 783.99, duration: 0.1, type: 'sine', delay: 70 }
+        ])
+        break
+
+      case 'budget-created':
+        this.playSequence([
+          { freq: 587.33, duration: 0.08, type: 'triangle' },
+          { freq: 659.25, duration: 0.08, type: 'triangle', delay: 65 },
+          { freq: 783.99, duration: 0.11, type: 'triangle', delay: 65 }
+        ])
+        break
+
+      case 'budget-deleted':
+        this.playSequence([
+          { freq: 440, duration: 0.1, type: 'sawtooth' },
+          { freq: 349.23, duration: 0.15, type: 'sawtooth', delay: 85 }
+        ])
+        break
+
+      case 'chart-loaded':
+        this.playSequence([
+          { freq: 523.25, duration: 0.05, type: 'sine' },
+          { freq: 587.33, duration: 0.05, type: 'sine', delay: 40 },
+          { freq: 659.25, duration: 0.06, type: 'sine', delay: 40 }
+        ])
+        break
+
+      case 'data-refresh':
+        this.playTone(700, 0.05, 'sine', { attack: 0.002, decay: 0.02, sustain: 0.4, release: 0.028 })
+        break
+
+      case 'keyboard-shortcut':
+        this.playTone(750, 0.04, 'square', { attack: 0.001, decay: 0.015, sustain: 0.3, release: 0.025 })
+        break
+
+      case 'pin-error':
+        this.playSequence([
+          { freq: 349.23, duration: 0.12, type: 'square' },
+          { freq: 293.66, duration: 0.12, type: 'square', delay: 100 },
+          { freq: 261.63, duration: 0.15, type: 'square', delay: 100 }
+        ])
+        break
+
+      case 'pin-success':
+        this.playSequence([
+          { freq: 523.25, duration: 0.08, type: 'sine' },
+          { freq: 659.25, duration: 0.08, type: 'sine', delay: 60 },
+          { freq: 783.99, duration: 0.12, type: 'sine', delay: 60 }
+        ])
+        break
+
+      case 'private-unlock':
+        this.playSequence([
+          { freq: 587.33, duration: 0.08, type: 'sine' },
+          { freq: 659.25, duration: 0.08, type: 'sine', delay: 60 },
+          { freq: 783.99, duration: 0.08, type: 'sine', delay: 60 },
+          { freq: 880, duration: 0.08, type: 'sine', delay: 60 },
+          { freq: 1046.50, duration: 0.14, type: 'sine', delay: 60 }
+        ])
+        break
+
+      case 'private-lock':
+        this.playSequence([
+          { freq: 880, duration: 0.07, type: 'sine' },
+          { freq: 783.99, duration: 0.07, type: 'sine', delay: 55 },
+          { freq: 659.25, duration: 0.07, type: 'sine', delay: 55 },
+          { freq: 587.33, duration: 0.1, type: 'sine', delay: 55 }
+        ])
+        break
+
+      case 'alert-dismissed':
+        this.playSequence([
+          { freq: 523.25, duration: 0.06, type: 'sine' },
+          { freq: 440, duration: 0.08, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'period-change':
+        this.playSequence([
+          { freq: 587.33, duration: 0.05, type: 'sine' },
+          { freq: 659.25, duration: 0.07, type: 'sine', delay: 45 }
         ])
         break
 

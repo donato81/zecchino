@@ -97,6 +97,7 @@ function App() {
   useEffect(() => {
     if (activeTab !== previousTab && isAuthenticated) {
       setPreviousTab(activeTab)
+      soundSystem.play('tab-change')
     }
   }, [activeTab, previousTab, isAuthenticated])
 
@@ -107,7 +108,7 @@ function App() {
       setIsAuthenticated(true)
       setShowPinDialog(false)
       setIsSetupMode(false)
-      soundSystem.play('unlock')
+      soundSystem.play('pin-success')
       toast.success('PIN globale creato con successo')
     } else {
       const isValid = await verifyPin(pin, globalPinHash || '')
@@ -117,7 +118,7 @@ function App() {
         soundSystem.play('unlock')
         toast.success('Accesso consentito')
       } else {
-        soundSystem.play('error')
+        soundSystem.play('pin-error')
         toast.error('PIN non corretto')
       }
     }
@@ -129,21 +130,21 @@ function App() {
       setPrivatePinHash(hash)
       setIsPrivateUnlocked(true)
       setShowPrivatePinDialog(false)
-      soundSystem.play('unlock')
+      soundSystem.play('private-unlock')
       toast.success('PIN privato creato e conto sbloccato')
     } else {
       const isValid = await verifyPin(pin, privatePinHash)
       if (isValid) {
         setIsPrivateUnlocked(true)
         setShowPrivatePinDialog(false)
-        soundSystem.play('unlock')
+        soundSystem.play('private-unlock')
         const privateAccount = visibleAccounts.find(a => a.isPrivato)
         if (privateAccount) {
           const balance = calculateAccountBalance(privateAccount, visibleTransactions)
           toast.success(`Conto privato sbloccato. Saldo: ${formatCurrency(balance)}`)
         }
       } else {
-        soundSystem.play('error')
+        soundSystem.play('pin-error')
         toast.error('PIN privato non corretto')
       }
     }
@@ -160,7 +161,7 @@ function App() {
         toast.success('Conto modificato')
         return updated
       } else {
-        soundSystem.play('success')
+        soundSystem.play('account-created')
         toast.success(`Conto "${account.nome}" creato`)
         return [...current, account]
       }
@@ -255,7 +256,7 @@ function App() {
         toast.success('Budget modificato')
         return updated
       } else {
-        soundSystem.play('success')
+        soundSystem.play('budget-created')
         toast.success(`Budget "${budget.nome}" creato`)
         return [...current, budget]
       }
@@ -274,7 +275,7 @@ function App() {
         toast.success('Obiettivo di risparmio modificato')
         return updated
       } else {
-        soundSystem.play('milestone')
+        soundSystem.play('goal-created')
         toast.success(`Obiettivo "${goal.nome}" creato`)
         return [...current, goal]
       }
@@ -294,12 +295,14 @@ function App() {
     if (deletingItem.type === 'account') {
       setAccounts((current) => (current || []).filter(a => a.id !== deletingItem.id))
       setTransactions((current) => (current || []).filter(t => t.contoId !== deletingItem.id && t.contoDestinazioneId !== deletingItem.id))
+      soundSystem.play('account-deleted')
       toast.success('Conto eliminato')
     } else if (deletingItem.type === 'transaction') {
       setTransactions((current) => (current || []).filter(t => t.id !== deletingItem.id))
       toast.success('Movimento eliminato')
     } else if (deletingItem.type === 'budget') {
       setBudgets((current) => (current || []).filter(b => b.id !== deletingItem.id))
+      soundSystem.play('budget-deleted')
       toast.success('Budget eliminato')
     } else if (deletingItem.type === 'savingsGoal') {
       setSavingsGoals((current) => (current || []).filter(g => g.id !== deletingItem.id))
@@ -313,7 +316,7 @@ function App() {
   const handleExportCSV = () => {
     const csv = exportToCSV(visibleTransactions, visibleAccounts, safeCategories)
     downloadFile(csv, `zecchino-export-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv')
-    soundSystem.play('success')
+    soundSystem.play('export')
     toast.success('Dati esportati in CSV')
   }
 
@@ -372,8 +375,10 @@ function App() {
     setVisibleCategories((current) => {
       const currentCategories = current || []
       if (currentCategories.includes(categoryId)) {
+        soundSystem.play('filter-toggle')
         return currentCategories.filter(id => id !== categoryId)
       } else {
+        soundSystem.play('category-toggle')
         return [...currentCategories, categoryId]
       }
     })
@@ -384,8 +389,10 @@ function App() {
       const currentCategories = current || []
       const allCategoryIds = ACCOUNT_CATEGORIES.map(c => c.id)
       if (currentCategories.length === allCategoryIds.length) {
+        soundSystem.play('filter-toggle')
         return []
       } else {
+        soundSystem.play('category-toggle')
         return allCategoryIds
       }
     })
@@ -405,11 +412,13 @@ function App() {
   const handleDismissBudgetAlert = (budgetId: string) => {
     setDismissedAlerts((current) => {
       const currentDismissed = current || []
+      soundSystem.play('alert-dismissed')
       return [...currentDismissed, budgetId]
     })
   }
 
   const handleViewBudget = (budgetId: string) => {
+    soundSystem.play('dialog-open')
     setActiveTab('reports')
     const budget = safeBudgets.find(b => b.id === budgetId)
     if (budget) {

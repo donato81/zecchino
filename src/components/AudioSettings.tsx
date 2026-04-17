@@ -39,6 +39,7 @@ export function AudioSettings() {
   const handleToggleAudio = () => {
     setLocalEnabled((current) => !current)
     if (!localEnabled) {
+      soundSystem.play('settings-change')
       toast.success('Audio abilitato')
       setTimeout(() => soundSystem.play('success'), 100)
     } else {
@@ -48,6 +49,7 @@ export function AudioSettings() {
 
   const handleVolumeChange = (values: number[]) => {
     setLocalVolume(values[0])
+    soundSystem.play('volume-change')
   }
 
   const handleTestSound = () => {
@@ -57,7 +59,7 @@ export function AudioSettings() {
 
   const handlePresetVolume = (value: number) => {
     setLocalVolume(value)
-    soundSystem.play('click')
+    soundSystem.play('preset-applied')
     const presetName = VOLUME_PRESETS.find(p => p.value === value)?.name || 'personalizzato'
     toast.success(`Volume impostato: ${presetName} (${value}%)`)
   }

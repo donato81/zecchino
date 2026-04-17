@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { soundSystem } from '@/lib/sound-system'
 
 type Period = 'week' | 'month' | '3months' | '6months' | 'year'
 
@@ -17,13 +18,18 @@ const periods: { value: Period; label: string }[] = [
 ]
 
 export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
+  const handlePeriodChange = (period: Period) => {
+    soundSystem.play('period-change')
+    onChange(period)
+  }
+
   return (
     <div className="flex flex-wrap gap-2">
       <span className="text-sm text-muted-foreground self-center mr-2">Periodo:</span>
       {periods.map((period) => (
         <Button
           key={period.value}
-          onClick={() => onChange(period.value)}
+          onClick={() => handlePeriodChange(period.value)}
           variant={value === period.value ? 'default' : 'outline'}
           size="sm"
           className="gap-2"
