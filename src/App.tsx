@@ -12,6 +12,8 @@ import { TransactionDialog } from '@/components/TransactionDialog'
 import { BudgetDialog } from '@/components/BudgetDialog'
 import { BudgetProgressCard } from '@/components/BudgetProgressCard'
 import { BudgetAlertBanner } from '@/components/BudgetAlertBanner'
+import { BudgetHistoryChart } from '@/components/BudgetHistoryChart'
+import { BudgetComparisonCard } from '@/components/BudgetComparisonCard'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
 import { FocusIndicator } from '@/components/FocusIndicator'
 import { IncomeExpenseChart } from '@/components/IncomeExpenseChart'
@@ -1237,25 +1239,45 @@ function App() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {getActiveBudgets(safeBudgets).map(budget => (
-                    <BudgetProgressCard
-                      key={budget.id}
-                      budget={budget}
-                      transactions={visibleTransactions}
-                      categories={safeCategories}
-                      accounts={visibleAccounts}
-                      onEdit={(b) => {
-                        setEditingBudget(b)
-                        setShowBudgetDialog(true)
-                      }}
-                      onDelete={(b) => {
-                        setDeletingItem({ type: 'budget', id: b.id })
-                        setShowDeleteDialog(true)
-                      }}
-                    />
-                  ))}
-                </div>
+                <>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {getActiveBudgets(safeBudgets).map(budget => (
+                      <BudgetProgressCard
+                        key={budget.id}
+                        budget={budget}
+                        transactions={visibleTransactions}
+                        categories={safeCategories}
+                        accounts={visibleAccounts}
+                        onEdit={(b) => {
+                          setEditingBudget(b)
+                          setShowBudgetDialog(true)
+                        }}
+                        onDelete={(b) => {
+                          setDeletingItem({ type: 'budget', id: b.id })
+                          setShowDeleteDialog(true)
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="space-y-6 mt-6">
+                    <h3 className="text-xl font-semibold">Analisi Storica Budget</h3>
+                    
+                    {getActiveBudgets(safeBudgets).map(budget => (
+                      <div key={`history-${budget.id}`} className="space-y-4">
+                        <BudgetHistoryChart
+                          budget={budget}
+                          transactions={visibleTransactions}
+                          periodsToShow={6}
+                        />
+                        <BudgetComparisonCard
+                          budget={budget}
+                          transactions={visibleTransactions}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
 
