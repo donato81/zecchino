@@ -58,6 +58,15 @@ const shortcutGroups: ShortcutGroup[] = [
     ]
   },
   {
+    title: 'Preset Volume Audio',
+    shortcuts: [
+      { keys: ['Alt', '1'], description: 'Volume Silenzioso (10%)' },
+      { keys: ['Alt', '2'], description: 'Volume Basso (30%)' },
+      { keys: ['Alt', '3'], description: 'Volume Medio (60%)' },
+      { keys: ['Alt', '4'], description: 'Volume Alto (90%)' }
+    ]
+  },
+  {
     title: 'Generali',
     shortcuts: [
       { keys: ['?'], description: 'Mostra questa guida' },

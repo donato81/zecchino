@@ -9,12 +9,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SpeakerHigh, SpeakerSlash, SpeakerLow, SpeakerSimpleHigh, SpeakerSimpleLow, SpeakerSimpleSlash, SpeakerX } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 
 const VOLUME_PRESETS = [
-  { name: 'Silenzioso', value: 10, icon: SpeakerSimpleSlash, variant: 'secondary' as const, description: '10%' },
-  { name: 'Basso', value: 30, icon: SpeakerSimpleLow, variant: 'outline' as const, description: '30%' },
-  { name: 'Medio', value: 60, icon: SpeakerLow, variant: 'outline' as const, description: '60%' },
-  { name: 'Alto', value: 90, icon: SpeakerSimpleHigh, variant: 'outline' as const, description: '90%' }
+  { name: 'Silenzioso', value: 10, icon: SpeakerSimpleSlash, variant: 'secondary' as const, description: '10%', key: '1' },
+  { name: 'Basso', value: 30, icon: SpeakerSimpleLow, variant: 'outline' as const, description: '30%', key: '2' },
+  { name: 'Medio', value: 60, icon: SpeakerLow, variant: 'outline' as const, description: '60%', key: '3' },
+  { name: 'Alto', value: 90, icon: SpeakerSimpleHigh, variant: 'outline' as const, description: '90%', key: '4' }
 ] as const
 
 export function AudioSettings() {
@@ -61,6 +62,22 @@ export function AudioSettings() {
     toast.success(`Volume impostato: ${presetName} (${value}%)`)
   }
 
+  useKeyboardShortcuts(
+    VOLUME_PRESETS.map((preset) => ({
+      key: preset.key,
+      alt: true,
+      callback: () => {
+        if (localEnabled) {
+          handlePresetVolume(preset.value)
+        } else {
+          toast.warning(`Audio disabilitato. Abilita l'audio per usare i preset di volume.`)
+        }
+      },
+      description: `Set volume to ${preset.name} (${preset.value}%)`
+    })),
+    true
+  )
+
   const getVolumeIcon = () => {
     if (!localEnabled) return <SpeakerSlash size={20} weight="duotone" />
     if (localVolume === 0) return <SpeakerSlash size={20} weight="duotone" />
@@ -105,6 +122,9 @@ export function AudioSettings() {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-base font-medium">Preset Volume</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Usa Alt+1, Alt+2, Alt+3, Alt+4 per cambiare rapidamente il volume
+            </p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {VOLUME_PRESETS.map((preset) => {
                 const Icon = preset.icon
@@ -117,15 +137,21 @@ export function AudioSettings() {
                     size="sm"
                     disabled={!localEnabled}
                     className="gap-2 flex-col h-auto py-3 relative"
-                    data-focus-info={`Preset ${preset.name}: ${preset.description}`}
+                    data-focus-info={`Preset ${preset.name}: ${preset.description} - Scorciatoia Alt+${preset.key}`}
                   >
                     <Icon size={20} weight="duotone" />
                     <span className="text-xs font-medium">{preset.name}</span>
                     <span className="text-[10px] opacity-75">{preset.description}</span>
+                    <Badge 
+                      variant="secondary" 
+                      className="absolute -top-1 -right-1 h-4 px-1 text-[9px]"
+                    >
+                      Alt+{preset.key}
+                    </Badge>
                     {isActive && (
                       <Badge 
                         variant="secondary" 
-                        className="absolute -top-1 -right-1 h-4 px-1 text-[9px] bg-accent text-accent-foreground"
+                        className="absolute -bottom-1 -right-1 h-4 px-1 text-[9px] bg-accent text-accent-foreground"
                       >
                         Attivo
                       </Badge>
