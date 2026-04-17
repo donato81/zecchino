@@ -101,6 +101,12 @@ function App() {
     }
   }, [activeTab, previousTab, isAuthenticated])
 
+  useEffect(() => {
+    if (showDeleteDialog) {
+      soundSystem.play('dialog-open')
+    }
+  }, [showDeleteDialog])
+
   const handleGlobalPinSubmit = async (pin: string) => {
     if (isSetupMode) {
       const hash = await hashPin(pin)
@@ -1520,7 +1526,12 @@ function App() {
         accounts={visibleAccounts}
       />
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialog open={showDeleteDialog} onOpenChange={(open) => {
+        if (!open) {
+          soundSystem.play('dialog-close')
+        }
+        setShowDeleteDialog(open)
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Conferma Eliminazione</AlertDialogTitle>
@@ -1535,7 +1546,7 @@ function App() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => soundSystem.play('dialog-close')}>Annulla</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Elimina
             </AlertDialogAction>
