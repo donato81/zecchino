@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,7 @@ import { generateId } from '@/lib/helpers'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { soundSystem } from '@/lib/sound-system'
 
 interface AccountDialogProps {
   open: boolean
@@ -23,6 +24,12 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
   const [tipo, setTipo] = useState<AccountType>(account?.tipo || 'bancario')
   const [saldoIniziale, setSaldoIniziale] = useState(account?.saldoIniziale.toString() || '0')
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (open) {
+      soundSystem.play('dialog-open')
+    }
+  }, [open])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,6 +66,7 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
   }
 
   const handleClose = () => {
+    soundSystem.play('dialog-close')
     setNome('')
     setTipo('bancario')
     setSaldoIniziale('0')

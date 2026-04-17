@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { soundSystem } from '@/lib/sound-system'
 import { 
   PiggyBank, 
   Airplane, 
@@ -50,6 +51,12 @@ export function SavingsGoalDialog({ open, onClose, onSave, goal, accounts }: Sav
   const [contoAssociato, setContoAssociato] = useState<string>('')
   const [selectedIcon, setSelectedIcon] = useState('piggy-bank')
   const [selectedColor, setSelectedColor] = useState(GOAL_ICONS[0].color)
+
+  useEffect(() => {
+    if (open) {
+      soundSystem.play('dialog-open')
+    }
+  }, [open])
 
   useEffect(() => {
     if (goal) {
@@ -110,11 +117,17 @@ export function SavingsGoalDialog({ open, onClose, onSave, goal, accounts }: Sav
     }
 
     onSave(newGoal)
+    soundSystem.play('dialog-close')
+    onClose()
+  }
+
+  const handleClose = () => {
+    soundSystem.play('dialog-close')
     onClose()
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{goal ? 'Modifica Obiettivo di Risparmio' : 'Nuovo Obiettivo di Risparmio'}</DialogTitle>

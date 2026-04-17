@@ -2,6 +2,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Keyboard } from '@phosphor-icons/react'
+import { soundSystem } from '@/lib/sound-system'
+import { useEffect } from 'react'
 
 interface KeyboardShortcutsHelpProps {
   open: boolean
@@ -76,8 +78,19 @@ const shortcutGroups: ShortcutGroup[] = [
 ]
 
 export function KeyboardShortcutsHelp({ open, onClose }: KeyboardShortcutsHelpProps) {
+  useEffect(() => {
+    if (open) {
+      soundSystem.play('dialog-open')
+    }
+  }, [open])
+
+  const handleClose = () => {
+    soundSystem.play('dialog-close')
+    onClose()
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

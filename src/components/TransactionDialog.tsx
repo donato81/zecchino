@@ -10,6 +10,7 @@ import { Transaction, TransactionType, Account, Category, RecurrenceFrequency } 
 import { TRANSACTION_TYPE_LABELS, RECURRENCE_LABELS } from '@/lib/constants'
 import { generateId } from '@/lib/helpers'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { soundSystem } from '@/lib/sound-system'
 
 interface TransactionDialogProps {
   open: boolean
@@ -46,8 +47,11 @@ export function TransactionDialog({
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (open && !transaction) {
-      resetForm()
+    if (open) {
+      soundSystem.play('dialog-open')
+      if (!transaction) {
+        resetForm()
+      }
     }
   }, [open, transaction])
 
@@ -145,6 +149,7 @@ export function TransactionDialog({
   }
 
   const handleClose = () => {
+    soundSystem.play('dialog-close')
     if (!transaction) {
       resetForm()
     }

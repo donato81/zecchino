@@ -14,6 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Lightbulb } from '@phosphor-icons/react'
+import { soundSystem } from '@/lib/sound-system'
 
 interface BudgetDialogProps {
   open: boolean
@@ -53,6 +54,12 @@ export function BudgetDialog({ open, onClose, onSave, budget, categories, accoun
     
     setShowTemplates(false)
   }
+
+  useEffect(() => {
+    if (open) {
+      soundSystem.play('dialog-open')
+    }
+  }, [open])
 
   useEffect(() => {
     if (budget) {
@@ -106,13 +113,19 @@ export function BudgetDialog({ open, onClose, onSave, budget, categories, accoun
     }
 
     onSave(newBudget)
+    soundSystem.play('dialog-close')
+    onClose()
+  }
+
+  const handleClose = () => {
+    soundSystem.play('dialog-close')
     onClose()
   }
 
   const expenseCategories = categories.filter(c => c.tipo === 'uscita')
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>{budget ? 'Modifica Budget' : 'Nuovo Budget'}</DialogTitle>

@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Eye, EyeSlash, LockKey } from '@phosphor-icons/react'
+import { soundSystem } from '@/lib/sound-system'
 
 interface PinDialogProps {
   open: boolean
@@ -26,6 +27,12 @@ export function PinDialog({
   const [confirmPin, setConfirmPin] = useState('')
   const [showPin, setShowPin] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (open) {
+      soundSystem.play('dialog-open')
+    }
+  }, [open])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,8 +60,13 @@ export function PinDialog({
     setError('')
   }
 
+  const handleClose = () => {
+    soundSystem.play('dialog-close')
+    onCancel?.()
+  }
+
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel?.()}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent aria-labelledby="pin-dialog-title" aria-describedby="pin-dialog-description">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
