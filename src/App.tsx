@@ -955,38 +955,136 @@ function App() {
             <h2 className="text-2xl font-semibold">Report Finanziario</h2>
 
             <div className="grid gap-4 md:grid-cols-3">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Saldo Totale</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className={`text-3xl font-mono font-bold ${totalBalance < 0 ? 'text-destructive' : 'text-foreground'}`}>
-                    {formatCurrency(totalBalance)}
-                  </p>
-                </CardContent>
-              </Card>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Card className="cursor-help transition-all hover:shadow-md" data-focus-info="Saldo totale di tutti i conti visibili">
+                    <CardHeader>
+                      <CardTitle className="text-base">Saldo Totale</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className={`text-3xl font-mono font-bold ${totalBalance < 0 ? 'text-destructive' : 'text-foreground'}`}>
+                        {formatCurrency(totalBalance)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </TooltipTrigger>
+                <TooltipContent variant={totalBalance < 0 ? 'destructive' : 'success'} className="max-w-xs">
+                  <div className="space-y-1.5">
+                    <p className="font-semibold">Saldo Consolidato</p>
+                    <p className="text-xs opacity-90">
+                      Somma di tutti i {visibleAccounts.length} conti visibili
+                    </p>
+                    <div className="pt-1 border-t border-current/20 space-y-0.5">
+                      <p className="text-xs">Entrate totali: {formatCurrency(visibleTransactions.filter(t => t.tipo === 'entrata').reduce((sum, t) => sum + t.importo, 0))}</p>
+                      <p className="text-xs">Uscite totali: {formatCurrency(visibleTransactions.filter(t => t.tipo === 'uscita').reduce((sum, t) => sum + t.importo, 0))}</p>
+                      <p className="text-xs font-medium">Saldo netto: {formatCurrency(
+                        visibleTransactions.filter(t => t.tipo === 'entrata').reduce((sum, t) => sum + t.importo, 0) -
+                        visibleTransactions.filter(t => t.tipo === 'uscita').reduce((sum, t) => sum + t.importo, 0)
+                      )}</p>
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Totale Entrate</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-mono font-bold text-income">
-                    {formatCurrency(visibleTransactions.filter(t => t.tipo === 'entrata').reduce((sum, t) => sum + t.importo, 0))}
-                  </p>
-                </CardContent>
-              </Card>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Card className="cursor-help transition-all hover:shadow-md" data-focus-info="Totale entrate registrate in tutti i conti">
+                    <CardHeader>
+                      <CardTitle className="text-base">Totale Entrate</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-3xl font-mono font-bold text-income">
+                        {formatCurrency(visibleTransactions.filter(t => t.tipo === 'entrata').reduce((sum, t) => sum + t.importo, 0))}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </TooltipTrigger>
+                <TooltipContent variant="success" className="max-w-xs">
+                  <div className="space-y-1.5">
+                    <p className="font-semibold">Dettaglio Entrate</p>
+                    <p className="text-xs opacity-90">
+                      {visibleTransactions.filter(t => t.tipo === 'entrata').length} movimenti di entrata
+                    </p>
+                    <div className="pt-1 border-t border-current/20 space-y-0.5">
+                      {(() => {
+                        const incomeByCategory = visibleTransactions
+                          .filter(t => t.tipo === 'entrata')
+                          .reduce((acc, t) => {
+                            const category = safeCategories.find(c => c.id === t.categoriaId)
+                            const catName = category?.nome || 'Senza categoria'
+                            acc[catName] = (acc[catName] || 0) + t.importo
+                            return acc
+                          }, {} as Record<string, number>)
+                        
+                        const topCategories = Object.entries(incomeByCategory)
+                          .sort((a, b) => b[1] - a[1])
+                          .slice(0, 3)
+                        
+                        return topCategories.length > 0 ? (
+                          <>
+                            <p className="text-xs font-medium mt-1">Top categorie:</p>
+                            {topCategories.map(([cat, amount]) => (
+                              <p key={cat} className="text-xs">• {cat}: {formatCurrency(amount)}</p>
+                            ))}
+                          </>
+                        ) : (
+                          <p className="text-xs opacity-75">Nessuna entrata registrata</p>
+                        )
+                      })()}
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Totale Uscite</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-mono font-bold text-expense">
-                    {formatCurrency(visibleTransactions.filter(t => t.tipo === 'uscita').reduce((sum, t) => sum + t.importo, 0))}
-                  </p>
-                </CardContent>
-              </Card>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Card className="cursor-help transition-all hover:shadow-md" data-focus-info="Totale uscite registrate in tutti i conti">
+                    <CardHeader>
+                      <CardTitle className="text-base">Totale Uscite</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-3xl font-mono font-bold text-expense">
+                        {formatCurrency(visibleTransactions.filter(t => t.tipo === 'uscita').reduce((sum, t) => sum + t.importo, 0))}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </TooltipTrigger>
+                <TooltipContent variant="destructive" className="max-w-xs">
+                  <div className="space-y-1.5">
+                    <p className="font-semibold">Dettaglio Uscite</p>
+                    <p className="text-xs opacity-90">
+                      {visibleTransactions.filter(t => t.tipo === 'uscita').length} movimenti di uscita
+                    </p>
+                    <div className="pt-1 border-t border-current/20 space-y-0.5">
+                      {(() => {
+                        const expenseByCategory = visibleTransactions
+                          .filter(t => t.tipo === 'uscita')
+                          .reduce((acc, t) => {
+                            const category = safeCategories.find(c => c.id === t.categoriaId)
+                            const catName = category?.nome || 'Senza categoria'
+                            acc[catName] = (acc[catName] || 0) + t.importo
+                            return acc
+                          }, {} as Record<string, number>)
+                        
+                        const topCategories = Object.entries(expenseByCategory)
+                          .sort((a, b) => b[1] - a[1])
+                          .slice(0, 3)
+                        
+                        return topCategories.length > 0 ? (
+                          <>
+                            <p className="text-xs font-medium mt-1">Top categorie:</p>
+                            {topCategories.map(([cat, amount]) => (
+                              <p key={cat} className="text-xs">• {cat}: {formatCurrency(amount)}</p>
+                            ))}
+                          </>
+                        ) : (
+                          <p className="text-xs opacity-75">Nessuna uscita registrata</p>
+                        )
+                      })()}
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
             </div>
 
             <Card>

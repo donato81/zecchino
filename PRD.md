@@ -83,11 +83,11 @@ This is a full-featured financial management system with multiple account types,
 - **Success criteria**: Tooltips appear for all interactive elements (buttons, tabs, transaction rows, category filters); tooltip text is descriptive and includes shortcuts; tooltip positioning adapts to avoid screen edges; only appears during keyboard navigation, not mouse hover
 
 ### Comprehensive Reporting
-- **Functionality**: Generate financial insights by period, category, and account
-- **Purpose**: Visualize financial health, trends, and spending patterns
-- **Trigger**: Navigate to Reports section
-- **Progression**: Select period filter → View total income/expenses → Analyze by category → Review monthly trends → Export data
-- **Success criteria**: Reports show accurate calculations, clear visualizations, and export to CSV/text
+- **Functionality**: Generate financial insights by period, category, and account with interactive tooltips showing detailed statistics
+- **Purpose**: Visualize financial health, trends, and spending patterns with instant access to breakdowns
+- **Trigger**: Navigate to Reports section or hover/focus on stat cards
+- **Progression**: Select period filter → View total income/expenses → Hover/focus on cards for detailed breakdowns → Analyze by category → Review monthly trends → Export data
+- **Success criteria**: Reports show accurate calculations, clear visualizations, interactive tooltips with top categories and transaction counts, and export to CSV/text
 
 ### Data Export & Backup
 - **Functionality**: Export transactions as CSV or backup entire database
