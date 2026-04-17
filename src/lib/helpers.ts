@@ -203,3 +203,89 @@ export function getBudgetPeriodDates(periodo: Budget['periodo'], startDate: Date
     dataFine: end.toISOString()
   }
 }
+
+export function getSavingsGoalProgress(goal: {
+  importoTarget: number
+  importoCorrente: number
+  dataInizio: string
+  dataScadenza?: string
+}): {
+  percentage: number
+  remaining: number
+  daysRemaining?: number
+  isComplete: boolean
+  isOverdue: boolean
+} {
+  const percentage = (goal.importoCorrente / goal.importoTarget) * 100
+  const remaining = goal.importoTarget - goal.importoCorrente
+  const isComplete = goal.importoCorrente >= goal.importoTarget
+  
+  let daysRemaining: number | undefined
+  let isOverdue = false
+  
+  if (goal.dataScadenza) {
+    const today = new Date()
+    const deadline = new Date(goal.dataScadenza)
+    const diffTime = deadline.getTime() - today.getTime()
+    daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    isOverdue = daysRemaining < 0 && !isComplete
+  }
+  
+  return {
+    percentage: Math.min(percentage, 100),
+    remaining: Math.max(remaining, 0),
+    daysRemaining,
+    isComplete,
+    isOverdue
+  }
+}
+
+export function calculateSavingsProjection(goal: {
+  importoTarget: number
+  importoCorrente: number
+  dataInizio: string
+  dataScadenza?: string
+}): {
+  projectedCompletion?: string
+  weeklyRequired: number
+  monthlyRequired: number
+  onTrack: boolean
+} | null {
+  if (!goal.dataScadenza) {
+    return null
+  }
+  
+  const today = new Date()
+  const start = new Date(goal.dataInizio)
+  const deadline = new Date(goal.dataScadenza)
+  
+  const totalDays = (deadline.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+  const elapsedDays = (today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+  const remainingDays = Math.max(0, (deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  
+  const remaining = goal.importoTarget - goal.importoCorrente
+  
+  const weeklyRequired = remainingDays > 0 ? (remaining / remainingDays) * 7 : 0
+  const monthlyRequired = remainingDays > 0 ? (remaining / remainingDays) * 30 : 0
+  
+  const expectedProgress = (elapsedDays / totalDays) * goal.importoTarget
+  const actualProgress = goal.importoCorrente
+  const onTrack = actualProgress >= expectedProgress * 0.9
+  
+  let projectedCompletion: string | undefined
+  if (goal.importoCorrente > 0 && elapsedDays > 0) {
+    const dailyRate = goal.importoCorrente / elapsedDays
+    if (dailyRate > 0) {
+      const daysToComplete = remaining / dailyRate
+      const completionDate = new Date(today.getTime() + daysToComplete * 24 * 60 * 60 * 1000)
+      projectedCompletion = completionDate.toISOString()
+    }
+  }
+  
+  return {
+    projectedCompletion,
+    weeklyRequired: Math.max(0, weeklyRequired),
+    monthlyRequired: Math.max(0, monthlyRequired),
+    onTrack
+  }
+}

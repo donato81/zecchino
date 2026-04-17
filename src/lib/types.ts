@@ -51,6 +51,21 @@ export interface Budget {
   attivo: boolean
 }
 
+export interface SavingsGoal {
+  id: string
+  nome: string
+  descrizione: string
+  importoTarget: number
+  importoCorrente: number
+  dataInizio: string
+  dataScadenza?: string
+  contoAssociato?: string
+  colore: string
+  icona: string
+  completato: boolean
+  dataCompletamento?: string
+}
+
 export interface AppState {
   isAuthenticated: boolean
   isPrivateUnlocked: boolean
@@ -58,6 +73,7 @@ export interface AppState {
   transactions: Transaction[]
   categories: Category[]
   budgets: Budget[]
+  savingsGoals: SavingsGoal[]
   globalPinHash: string
   privatePinHash: string
 }

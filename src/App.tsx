@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Account, Transaction, Category, Budget } from '@/lib/types'
+import { Account, Transaction, Category, Budget, SavingsGoal } from '@/lib/types'
 import { hashPin, verifyPin } from '@/lib/crypto'
 import { DEFAULT_CATEGORIES, ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from '@/lib/constants'
 import { generateId, calculateAccountBalance, getTotalBalance, formatCurrency, exportToCSV, downloadFile, getActiveBudgets, getBudgetProgress } from '@/lib/helpers'
@@ -15,6 +15,8 @@ import { BudgetAlertBanner } from '@/components/BudgetAlertBanner'
 import { BudgetHistoryChart } from '@/components/BudgetHistoryChart'
 import { BudgetComparisonCard } from '@/components/BudgetComparisonCard'
 import { BudgetForecastCard } from '@/components/BudgetForecastCard'
+import { SavingsGoalDialog } from '@/components/SavingsGoalDialog'
+import { SavingsGoalCard } from '@/components/SavingsGoalCard'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
 import { FocusIndicator } from '@/components/FocusIndicator'
 import { IncomeExpenseChart } from '@/components/IncomeExpenseChart'
@@ -26,7 +28,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Plus, LockOpen, ChartLine, List, Gear, DownloadSimple, Trash, PencilSimple, ArrowsLeftRight, Eye, EyeSlash, Keyboard, Target, Info } from '@phosphor-icons/react'
+import { Plus, LockOpen, ChartLine, List, Gear, DownloadSimple, Trash, PencilSimple, ArrowsLeftRight, Eye, EyeSlash, Keyboard, Target, Info, PiggyBank } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
@@ -39,6 +41,7 @@ function App() {
   const [transactions, setTransactions] = useKV<Transaction[]>('transactions', [])
   const [categories, setCategories] = useKV<Category[]>('categories', [])
   const [budgets, setBudgets] = useKV<Budget[]>('budgets', [])
+  const [savingsGoals, setSavingsGoals] = useKV<SavingsGoal[]>('savings-goals', [])
 
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isPrivateUnlocked, setIsPrivateUnlocked] = useState(false)
@@ -49,13 +52,15 @@ function App() {
   const [showAccountDialog, setShowAccountDialog] = useState(false)
   const [showTransactionDialog, setShowTransactionDialog] = useState(false)
   const [showBudgetDialog, setShowBudgetDialog] = useState(false)
+  const [showSavingsGoalDialog, setShowSavingsGoalDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
 
   const [editingAccount, setEditingAccount] = useState<Account | undefined>()
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>()
   const [editingBudget, setEditingBudget] = useState<Budget | undefined>()
-  const [deletingItem, setDeletingItem] = useState<{ type: 'account' | 'transaction' | 'budget', id: string } | null>(null)
+  const [editingSavingsGoal, setEditingSavingsGoal] = useState<SavingsGoal | undefined>()
+  const [deletingItem, setDeletingItem] = useState<{ type: 'account' | 'transaction' | 'budget' | 'savingsGoal', id: string } | null>(null)
 
   const [activeTab, setActiveTab] = useState('dashboard')
   const [visibleCategories, setVisibleCategories] = useKV<string[]>('visible-categories', ACCOUNT_CATEGORIES.map(c => c.id))
@@ -67,6 +72,7 @@ function App() {
   const safeTransactions = transactions || []
   const safeCategories = categories || []
   const safeBudgets = budgets || []
+  const safeSavingsGoals = savingsGoals || []
 
   useEffect(() => {
     if (!globalPinHash) {
@@ -227,6 +233,28 @@ function App() {
     setEditingBudget(undefined)
   }
 
+  const handleSaveSavingsGoal = (goal: SavingsGoal) => {
+    setSavingsGoals((currentGoals) => {
+      const current = currentGoals || []
+      const existingIndex = current.findIndex(g => g.id === goal.id)
+      if (existingIndex >= 0) {
+        const updated = [...current]
+        updated[existingIndex] = goal
+        toast.success('Obiettivo di risparmio modificato')
+        return updated
+      } else {
+        toast.success(`Obiettivo "${goal.nome}" creato`)
+        return [...current, goal]
+      }
+    })
+    setEditingSavingsGoal(undefined)
+  }
+
+  const handleAddFundsToGoal = (goal: SavingsGoal) => {
+    setEditingSavingsGoal(goal)
+    setShowSavingsGoalDialog(true)
+  }
+
   const handleDeleteConfirm = () => {
     if (!deletingItem) return
 
@@ -240,6 +268,9 @@ function App() {
     } else if (deletingItem.type === 'budget') {
       setBudgets((current) => (current || []).filter(b => b.id !== deletingItem.id))
       toast.success('Budget eliminato')
+    } else if (deletingItem.type === 'savingsGoal') {
+      setSavingsGoals((current) => (current || []).filter(g => g.id !== deletingItem.id))
+      toast.success('Obiettivo di risparmio eliminato')
     }
 
     setDeletingItem(null)
@@ -1314,6 +1345,55 @@ function App() {
               )}
             </div>
 
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold flex items-center gap-2">
+                  <PiggyBank size={24} weight="duotone" />
+                  Obiettivi di Risparmio
+                </h3>
+                <Button 
+                  onClick={() => { setEditingSavingsGoal(undefined); setShowSavingsGoalDialog(true) }} 
+                  className="gap-2"
+                >
+                  <Plus size={18} weight="bold" />
+                  Nuovo Obiettivo
+                </Button>
+              </div>
+
+              {safeSavingsGoals.length === 0 ? (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                    <PiggyBank size={48} weight="duotone" className="text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground mb-4">Nessun obiettivo di risparmio</p>
+                    <p className="text-sm text-muted-foreground mb-6">Crea un obiettivo per tracciare i tuoi progressi di risparmio e raggiungere i tuoi traguardi finanziari</p>
+                    <Button onClick={() => setShowSavingsGoalDialog(true)} className="gap-2">
+                      <Plus size={18} weight="bold" />
+                      Crea il Primo Obiettivo
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {safeSavingsGoals.map(goal => (
+                    <SavingsGoalCard
+                      key={goal.id}
+                      goal={goal}
+                      accounts={safeAccounts}
+                      onEdit={(g) => {
+                        setEditingSavingsGoal(g)
+                        setShowSavingsGoalDialog(true)
+                      }}
+                      onDelete={(g) => {
+                        setDeletingItem({ type: 'savingsGoal', id: g.id })
+                        setShowDeleteDialog(true)
+                      }}
+                      onAddFunds={handleAddFundsToGoal}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
             <Card>
               <CardHeader>
                 <CardTitle>Dettaglio Conti</CardTitle>
@@ -1374,6 +1454,14 @@ function App() {
         accounts={visibleAccounts}
       />
 
+      <SavingsGoalDialog
+        open={showSavingsGoalDialog}
+        onClose={() => { setShowSavingsGoalDialog(false); setEditingSavingsGoal(undefined) }}
+        onSave={handleSaveSavingsGoal}
+        goal={editingSavingsGoal}
+        accounts={visibleAccounts}
+      />
+
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -1383,6 +1471,8 @@ function App() {
                 ? 'Eliminando questo conto verranno rimossi anche tutti i movimenti associati. Questa azione non può essere annullata.'
                 : deletingItem?.type === 'budget'
                 ? 'Questa azione eliminerà definitivamente il budget. Non può essere annullata.'
+                : deletingItem?.type === 'savingsGoal'
+                ? 'Questa azione eliminerà definitivamente l\'obiettivo di risparmio. Non può essere annullata.'
                 : 'Questa azione eliminerà definitivamente il movimento. Non può essere annullata.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
