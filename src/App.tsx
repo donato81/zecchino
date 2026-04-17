@@ -3,13 +3,15 @@ import { useKV } from '@github/spark/hooks'
 import { Account, Transaction, Category, Budget } from '@/lib/types'
 import { hashPin, verifyPin } from '@/lib/crypto'
 import { DEFAULT_CATEGORIES, ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from '@/lib/constants'
-import { generateId, calculateAccountBalance, getTotalBalance, formatCurrency, exportToCSV, downloadFile, getActiveBudgets } from '@/lib/helpers'
+import { generateId, calculateAccountBalance, getTotalBalance, formatCurrency, exportToCSV, downloadFile, getActiveBudgets, getBudgetProgress } from '@/lib/helpers'
+import { generateBudgetAlerts, shouldShowBudgetNotification, getBudgetNotificationTitle } from '@/lib/budget-alerts'
 import { PinDialog } from '@/components/PinDialog'
 import { AccountCard } from '@/components/AccountCard'
 import { AccountDialog } from '@/components/AccountDialog'
 import { TransactionDialog } from '@/components/TransactionDialog'
 import { BudgetDialog } from '@/components/BudgetDialog'
 import { BudgetProgressCard } from '@/components/BudgetProgressCard'
+import { BudgetAlertBanner } from '@/components/BudgetAlertBanner'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
 import { FocusIndicator } from '@/components/FocusIndicator'
 import { IncomeExpenseChart } from '@/components/IncomeExpenseChart'
@@ -55,6 +57,8 @@ function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [visibleCategories, setVisibleCategories] = useKV<string[]>('visible-categories', ACCOUNT_CATEGORIES.map(c => c.id))
   const [chartPeriod, setChartPeriod] = useState<'week' | 'month' | '3months' | '6months' | 'year'>('month')
+  const [dismissedAlerts, setDismissedAlerts] = useKV<string[]>('dismissed-budget-alerts', [])
+  const [budgetPercentages, setBudgetPercentages] = useKV<Record<string, number>>('budget-percentages', {})
 
   const safeAccounts = accounts || []
   const safeTransactions = transactions || []
@@ -142,18 +146,65 @@ function App() {
     setTransactions((currentTransactions) => {
       const current = currentTransactions || []
       const existingIndex = current.findIndex(t => t.id === transaction.id)
+      
+      let updatedTransactions: Transaction[]
       if (existingIndex >= 0) {
         const updated = [...current]
         updated[existingIndex] = transaction
         toast.success('Movimento modificato')
-        return updated
+        updatedTransactions = updated
       } else {
         const account = safeAccounts.find(a => a.id === transaction.contoId)
         toast.success(`Movimento aggiunto: ${transaction.tipo} ${formatCurrency(transaction.importo)} - ${account?.nome || ''}`)
-        return [...current, transaction]
+        updatedTransactions = [...current, transaction]
       }
+      
+      if (transaction.tipo === 'uscita') {
+        checkBudgetNotifications(updatedTransactions)
+      }
+      
+      return updatedTransactions
     })
     setEditingTransaction(undefined)
+  }
+
+  const checkBudgetNotifications = (updatedTransactions: Transaction[]) => {
+    const activeBudgets = getActiveBudgets(safeBudgets)
+    const currentPercentages = budgetPercentages || {}
+    
+    activeBudgets.forEach(budget => {
+      const { percentage: newPercentage } = getBudgetProgress(budget, updatedTransactions)
+      const previousPercentage = currentPercentages[budget.id] || 0
+      
+      const { shouldShow, level } = shouldShowBudgetNotification(budget, previousPercentage, newPercentage)
+      
+      if (shouldShow && level) {
+        const title = getBudgetNotificationTitle(level)
+        const { spent, remaining } = getBudgetProgress(budget, updatedTransactions)
+        
+        let message = ''
+        if (level === 'exceeded') {
+          message = `Budget "${budget.nome}" superato! Hai speso ${formatCurrency(spent)} su ${formatCurrency(budget.importoTarget)}.`
+        } else if (level === 'critical') {
+          message = `Attenzione! Il budget "${budget.nome}" è al ${Math.round(newPercentage)}%. Rimangono ${formatCurrency(remaining)}.`
+        } else if (level === 'warning') {
+          message = `Il budget "${budget.nome}" ha raggiunto il ${Math.round(newPercentage)}%.`
+        }
+        
+        if (level === 'exceeded') {
+          toast.error(title, { description: message, duration: 6000 })
+        } else if (level === 'critical') {
+          toast.warning(title, { description: message, duration: 5000 })
+        } else {
+          toast(title, { description: message, duration: 4000 })
+        }
+      }
+      
+      setBudgetPercentages((current) => ({
+        ...(current || {}),
+        [budget.id]: newPercentage
+      }))
+    })
   }
 
   const handleSaveBudget = (budget: Budget) => {
@@ -276,6 +327,30 @@ function App() {
     const currentCategories = visibleCategories || []
     return currentCategories.length === ACCOUNT_CATEGORIES.map(c => c.id).length
   }, [visibleCategories])
+
+  const budgetAlerts = useMemo(() => {
+    const alerts = generateBudgetAlerts(safeBudgets, visibleTransactions)
+    const dismissedIds = dismissedAlerts || []
+    return alerts.filter(alert => !dismissedIds.includes(alert.budgetId))
+  }, [safeBudgets, visibleTransactions, dismissedAlerts])
+
+  const handleDismissBudgetAlert = (budgetId: string) => {
+    setDismissedAlerts((current) => {
+      const currentDismissed = current || []
+      return [...currentDismissed, budgetId]
+    })
+  }
+
+  const handleViewBudget = (budgetId: string) => {
+    setActiveTab('reports')
+    const budget = safeBudgets.find(b => b.id === budgetId)
+    if (budget) {
+      setTimeout(() => {
+        setEditingBudget(budget)
+        setShowBudgetDialog(true)
+      }, 300)
+    }
+  }
 
   const recentTransactionsNav = useListNavigation({
     itemCount: recentTransactions.length,
@@ -549,6 +624,16 @@ function App() {
       </header>
 
       <main className="container mx-auto px-4 py-6">
+        {budgetAlerts.length > 0 && (
+          <div className="mb-6">
+            <BudgetAlertBanner
+              alerts={budgetAlerts}
+              onDismiss={handleDismissBudgetAlert}
+              onViewBudget={handleViewBudget}
+            />
+          </div>
+        )}
+        
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
             <TabsTrigger value="dashboard" className="gap-2" data-focus-info="Scheda Dashboard - Visualizza conti e movimenti recenti (Ctrl+D)">
