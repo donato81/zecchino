@@ -14,7 +14,49 @@
     font-family: 'JetBrains Mono', monospace;
     font-variant-numeric: tabular-nums;
   }
+
+  body[data-talkback="true"] {
+    font-size: 106%;
+  }
+
+  body.talkback-enhanced-targets button,
+  body.talkback-enhanced-targets [role="button"],
+  body.talkback-enhanced-targets a,
+  body.talkback-enhanced-targets input,
+  body.talkback-enhanced-targets select,
+  body.talkback-enhanced-targets textarea {
+    min-height: 56px;
+    min-width: 56px;
+  }
+
+  body.talkback-enhanced-targets .talkback-exception {
+    min-height: auto;
+    min-width: auto;
+  }
+
+  body.talkback-high-contrast {
+    --background: oklch(0.10 0.06 265);
+    --foreground: oklch(1 0 0);
+    --border: oklch(0.40 0.08 265);
+    --primary: oklch(0.75 0.32 275);
+    --muted: oklch(0.20 0.06 265);
+  }
+
+  body.talkback-reduced-motion *,
+  body.talkback-reduced-motion *::before,
+  body.talkback-reduced-motion *::after {
+    animation-duration: 0.05s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.05s !important;
+  }
+
+  [data-talkback-focus="true"] {
+    outline: 3px solid var(--color-ring);
+    outline-offset: 3px;
+    border-radius: var(--radius-md);
+  }
 }
+
 
 @layer utilities {
   .sr-only {

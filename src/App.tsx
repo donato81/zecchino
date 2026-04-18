@@ -27,6 +27,7 @@ import { FocusIndicator } from '@/components/FocusIndicator'
 import { AudioSettings } from '@/components/AudioSettings'
 import { HapticSettings } from '@/components/HapticSettings'
 import { ScreenReaderSettings } from '@/components/ScreenReaderSettings'
+import { TalkBackSettings } from '@/components/TalkBackSettings'
 import { DisplaySettings } from '@/components/DisplaySettings'
 import { SecuritySettings } from '@/components/SecuritySettings'
 import { CategoryManagement } from '@/components/CategoryManagement'
@@ -1718,6 +1719,7 @@ function App() {
               <AudioSettings />
               <HapticSettings />
               <ScreenReaderSettings />
+              <TalkBackSettings />
             </div>
           </TabsContent>
         </Tabs>
