@@ -7,6 +7,7 @@ import { generateId, calculateAccountBalance, getTotalBalance, formatCurrency, e
 import { generateBudgetAlerts, shouldShowBudgetNotification, getBudgetNotificationTitle } from '@/lib/budget-alerts'
 import { soundSystem } from '@/lib/sound-system'
 import { useScreenReader } from '@/hooks/use-screen-reader'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { SkipLink } from '@/components/SkipLink'
 import { PinDialog } from '@/components/PinDialog'
 import { AccountCard } from '@/components/AccountCard'
@@ -46,6 +47,7 @@ import { useListNavigation } from '@/hooks/use-list-navigation'
 
 function App() {
   const screenReader = useScreenReader()
+  const isMobile = useIsMobile()
   
   const [globalPinHash, setGlobalPinHash] = useKV<string>('global-pin-hash', '')
   const [privatePinHash, setPrivatePinHash] = useKV<string>('private-pin-hash', '')
@@ -740,7 +742,11 @@ function App() {
     return (
       <>
         <SkipLink />
-        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background" role="main" aria-label="Schermata di autenticazione">
+        <div 
+          className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background touch-manipulation" 
+          role="main" 
+          aria-label="Schermata di autenticazione Zecchino"
+        >
           <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-secondary/80 to-accent/90"></div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.15),transparent_60%),radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.12),transparent_60%)]"></div>
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]"></div>
@@ -760,46 +766,72 @@ function App() {
   return (
     <>
       <SkipLink />
-      <div className="min-h-screen relative overflow-hidden bg-background">
+      <div className="min-h-screen relative overflow-hidden bg-background touch-manipulation">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-accent/25"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(165,120,255,0.15),transparent_50%),radial-gradient(circle_at_80%_70%,rgba(90,200,250,0.15),transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[conic-gradient(from_45deg_at_30%_50%,transparent,rgba(165,120,255,0.08)_25%,transparent_50%)] animate-pulse" style={{ animationDuration: '8s' }}></div>
         <div className="relative">
         <FocusIndicator />
-        <header className="border-b border-primary/30 bg-card/90 backdrop-blur-lg sticky top-0 z-10 shadow-lg shadow-primary/10" role="banner">
-          <div className="container mx-auto px-4 py-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center shadow-lg shadow-primary/30 ring-2 ring-primary/40">
-                  <span className="text-2xl font-bold text-primary-foreground drop-shadow-md">Z</span>
+        <header 
+          className="border-b border-primary/30 bg-card/90 backdrop-blur-lg sticky top-0 z-10 shadow-lg shadow-primary/10" 
+          role="banner"
+          aria-label="Intestazione principale applicazione Zecchino"
+        >
+          <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center shadow-lg shadow-primary/30 ring-2 ring-primary/40 flex-shrink-0">
+                  <span className="text-xl sm:text-2xl font-bold text-primary-foreground drop-shadow-md" aria-hidden="true">Z</span>
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent drop-shadow-sm" id="app-title">Zecchino</h1>
+                <h1 
+                  className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent drop-shadow-sm truncate" 
+                  id="app-title"
+                >
+                  Zecchino
+                </h1>
               </div>
-              <div className="flex items-center gap-4" role="region" aria-label="Informazioni saldo e azioni rapide">
+              <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0" role="region" aria-label="Informazioni saldo e azioni rapide">
+                {!isMobile && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          soundSystem.play('dialog-open')
+                          setShowKeyboardHelp(true)
+                        }}
+                        aria-label="Mostra scorciatoie da tastiera. Apre finestra di dialogo con elenco comandi tastiera disponibili."
+                        className="hidden sm:inline-flex hover:bg-accent/30 hover:text-accent transition-all hover:shadow-md hover:shadow-accent/20"
+                      >
+                        <Keyboard size={20} weight="duotone" aria-hidden="true" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent variant="accent">
+                      <div className="space-y-0.5">
+                        <p className="font-semibold">Scorciatoie da Tastiera</p>
+                        <p className="text-xs opacity-90">Premi ? per visualizzare tutti i comandi</p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setShowKeyboardHelp(true)}
-                      aria-label="Mostra scorciatoie da tastiera"
-                      className="hidden sm:inline-flex hover:bg-accent/30 hover:text-accent transition-all hover:shadow-md hover:shadow-accent/20"
+                    <div 
+                      className="text-right cursor-help bg-gradient-to-br from-card to-primary/10 px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-primary/30 shadow-md shadow-primary/10 min-w-0" 
+                      role="status" 
+                      aria-live="polite" 
+                      aria-atomic="true"
+                      aria-label={`Saldo totale: ${formatCurrency(totalBalance)}`}
+                      tabIndex={0}
                     >
-                      <Keyboard size={20} weight="duotone" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent variant="accent">
-                    <div className="space-y-0.5">
-                      <p className="font-semibold">Scorciatoie da Tastiera</p>
-                      <p className="text-xs opacity-90">Premi ? per visualizzare tutti i comandi</p>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="text-right cursor-help bg-gradient-to-br from-card to-primary/10 px-4 py-2 rounded-xl border border-primary/30 shadow-md shadow-primary/10" role="status" aria-live="polite" aria-label={`Saldo totale: ${formatCurrency(totalBalance)}`}>
-                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider" id="total-balance-label">Saldo Totale</p>
-                      <p className={`text-2xl font-mono font-bold ${totalBalance < 0 ? 'text-destructive drop-shadow-md' : 'bg-gradient-to-r from-income via-success to-accent bg-clip-text text-transparent drop-shadow-sm'}`} aria-labelledby="total-balance-label">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-wider" id="total-balance-label">
+                        {isMobile ? 'Saldo' : 'Saldo Totale'}
+                      </p>
+                      <p 
+                        className={`text-lg sm:text-2xl font-mono font-bold ${totalBalance < 0 ? 'text-destructive drop-shadow-md' : 'bg-gradient-to-r from-income via-success to-accent bg-clip-text text-transparent drop-shadow-sm'} truncate`} 
+                        aria-labelledby="total-balance-label"
+                      >
                         {formatCurrency(totalBalance)}
                       </p>
                     </div>
@@ -818,9 +850,9 @@ function App() {
           </div>
         </header>
 
-        <main className="container mx-auto px-4 py-6" id="main-content" role="main" aria-label="Contenuto principale dell'applicazione">
+        <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-20 sm:pb-6" id="main-content" role="main" aria-label="Contenuto principale dell'applicazione Zecchino">
           {budgetAlerts.length > 0 && (
-            <div className="mb-6" role="region" aria-label="Avvisi budget" aria-live="polite">
+            <div className="mb-4 sm:mb-6" role="region" aria-label="Avvisi budget" aria-live="polite">
               <BudgetAlertBanner
                 alerts={budgetAlerts}
                 onDismiss={handleDismissBudgetAlert}
@@ -829,108 +861,137 @@ function App() {
             </div>
           )}
         
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid" role="tablist" aria-label="Navigazione principale">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          <TabsList 
+            className="grid w-full grid-cols-3 gap-1 p-1 bg-muted/50 rounded-xl h-auto" 
+            role="tablist" 
+            aria-label="Navigazione principale dell'applicazione"
+          >
             <TabsTrigger 
               value="dashboard" 
-              className="gap-2" 
+              className="gap-1.5 sm:gap-2 py-3 sm:py-2.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all" 
               data-focus-info="Scheda Dashboard - Visualizza conti e movimenti recenti (Ctrl+D)"
-              aria-label="Dashboard - Visualizza conti e movimenti recenti. Scorciatoia: Control più D"
+              aria-label="Dashboard. Visualizza conti e movimenti recenti. Scorciatoia tastiera: Control più D"
               aria-controls="dashboard-panel"
+              aria-selected={activeTab === 'dashboard'}
             >
-              <List size={18} weight="duotone" aria-hidden="true" />
-              <span className="hidden sm:inline">Dashboard</span>
-              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex" aria-hidden="true">Ctrl+D</Badge>
+              <List size={isMobile ? 20 : 18} weight="duotone" aria-hidden="true" />
+              <span className="font-medium">Dashboard</span>
+              {!isMobile && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex" aria-hidden="true">Ctrl+D</Badge>}
             </TabsTrigger>
             <TabsTrigger 
               value="transactions" 
-              className="gap-2" 
+              className="gap-1.5 sm:gap-2 py-3 sm:py-2.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all" 
               data-focus-info="Scheda Movimenti - Visualizza tutti i movimenti (Ctrl+T)"
-              aria-label="Movimenti - Visualizza tutti i movimenti. Scorciatoia: Control più T"
+              aria-label="Movimenti. Visualizza tutti i movimenti. Scorciatoia tastiera: Control più T"
               aria-controls="transactions-panel"
+              aria-selected={activeTab === 'transactions'}
             >
-              <ArrowsLeftRight size={18} weight="duotone" aria-hidden="true" />
-              <span className="hidden sm:inline">Movimenti</span>
-              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex" aria-hidden="true">Ctrl+T</Badge>
+              <ArrowsLeftRight size={isMobile ? 20 : 18} weight="duotone" aria-hidden="true" />
+              <span className="font-medium">Movimenti</span>
+              {!isMobile && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex" aria-hidden="true">Ctrl+T</Badge>}
             </TabsTrigger>
             <TabsTrigger 
               value="reports" 
-              className="gap-2" 
+              className="gap-1.5 sm:gap-2 py-3 sm:py-2.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all" 
               data-focus-info="Scheda Report - Visualizza statistiche finanziarie (Ctrl+R)"
-              aria-label="Report - Visualizza statistiche finanziarie. Scorciatoia: Control più R"
+              aria-label="Report. Visualizza statistiche finanziarie. Scorciatoia tastiera: Control più R"
               aria-controls="reports-panel"
+              aria-selected={activeTab === 'reports'}
             >
-              <ChartLine size={18} weight="duotone" aria-hidden="true" />
-              <span className="hidden sm:inline">Report</span>
-              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex" aria-hidden="true">Ctrl+R</Badge>
+              <ChartLine size={isMobile ? 20 : 18} weight="duotone" aria-hidden="true" />
+              <span className="font-medium">Report</span>
+              {!isMobile && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden lg:inline-flex" aria-hidden="true">Ctrl+R</Badge>}
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="dashboard" className="space-y-6" id="dashboard-panel" role="tabpanel" aria-labelledby="dashboard-tab">
-            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-              <h2 className="text-2xl font-semibold">I Tuoi Conti</h2>
-              <div className="flex gap-2 flex-wrap" role="group" aria-label="Azioni rapide">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      onClick={() => { setEditingTransaction(undefined); setShowTransactionDialog(true) }} 
-                      className="gap-2"
-                      data-focus-info="Aggiungi nuovo movimento (Ctrl+N)"
-                    >
-                      <Plus size={18} weight="bold" />
-                      Movimento
-                      <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 bg-primary-foreground/20 hidden sm:inline-flex">Ctrl+N</Badge>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent variant="accent">
-                    <div className="space-y-0.5">
-                      <p className="font-semibold">Nuovo Movimento</p>
-                      <p className="text-xs opacity-90">Aggiungi entrata, uscita o trasferimento (Ctrl+N)</p>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      onClick={() => { setEditingAccount(undefined); setShowAccountDialog(true) }} 
-                      variant="outline" 
-                      className="gap-2"
-                      data-focus-info="Aggiungi nuovo conto (Ctrl+M)"
-                    >
-                      <Plus size={18} weight="bold" />
-                      Conto
-                      <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex">Ctrl+M</Badge>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent variant="secondary">
-                    <div className="space-y-0.5">
-                      <p className="font-semibold">Nuovo Conto</p>
-                      <p className="text-xs opacity-90">Aggiungi bancario, digitale, risparmio o investimenti (Ctrl+M)</p>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-                {hasPrivateAccount && !isPrivateUnlocked && (
+          <TabsContent value="dashboard" className="space-y-4 sm:space-y-6" id="dashboard-panel" role="tabpanel" aria-labelledby="dashboard-tab">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-stretch sm:items-center">
+                <h2 className="text-xl sm:text-2xl font-semibold">I Tuoi Conti</h2>
+                <div className="flex gap-2 flex-wrap" role="group" aria-label="Azioni rapide conti e movimenti">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button 
-                        onClick={() => setShowPrivatePinDialog(true)} 
-                        variant="secondary" 
-                        className="gap-2"
-                        data-focus-info="Sblocca conto privato (Ctrl+U)"
+                        onClick={() => { 
+                          soundSystem.play('dialog-open')
+                          setEditingTransaction(undefined)
+                          setShowTransactionDialog(true)
+                        }} 
+                        className={`gap-2 flex-1 sm:flex-none ${isMobile ? 'min-h-[48px] text-base' : ''}`}
+                        aria-label="Aggiungi nuovo movimento. Apre finestra di dialogo per inserire entrata, uscita o trasferimento. Scorciatoia tastiera: Control più N"
+                        data-focus-info="Aggiungi nuovo movimento (Ctrl+N)"
                       >
-                        <LockOpen size={18} weight="duotone" />
-                        Sblocca Privato
-                        <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex">Ctrl+U</Badge>
+                        <Plus size={isMobile ? 22 : 18} weight="bold" aria-hidden="true" />
+                        <span>Movimento</span>
+                        {!isMobile && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 bg-primary-foreground/20 hidden sm:inline-flex" aria-hidden="true">Ctrl+N</Badge>}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent variant="private">
-                      <div className="space-y-0.5">
-                        <p className="font-semibold">Sblocca Conto Privato</p>
-                        <p className="text-xs opacity-90">Inserisci PIN per accedere ai conti protetti (Ctrl+U)</p>
-                      </div>
-                    </TooltipContent>
+                    {!isMobile && (
+                      <TooltipContent variant="accent">
+                        <div className="space-y-0.5">
+                          <p className="font-semibold">Nuovo Movimento</p>
+                          <p className="text-xs opacity-90">Aggiungi entrata, uscita o trasferimento (Ctrl+N)</p>
+                        </div>
+                      </TooltipContent>
+                    )}
                   </Tooltip>
-                )}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        onClick={() => { 
+                          soundSystem.play('dialog-open')
+                          setEditingAccount(undefined)
+                          setShowAccountDialog(true)
+                        }} 
+                        variant="outline" 
+                        className={`gap-2 flex-1 sm:flex-none ${isMobile ? 'min-h-[48px] text-base' : ''}`}
+                        aria-label="Aggiungi nuovo conto. Apre finestra di dialogo per creare conto bancario, digitale, risparmio o investimenti. Scorciatoia tastiera: Control più M"
+                        data-focus-info="Aggiungi nuovo conto (Ctrl+M)"
+                      >
+                        <Plus size={isMobile ? 22 : 18} weight="bold" aria-hidden="true" />
+                        <span>Conto</span>
+                        {!isMobile && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex" aria-hidden="true">Ctrl+M</Badge>}
+                      </Button>
+                    </TooltipTrigger>
+                    {!isMobile && (
+                      <TooltipContent variant="secondary">
+                        <div className="space-y-0.5">
+                          <p className="font-semibold">Nuovo Conto</p>
+                          <p className="text-xs opacity-90">Aggiungi bancario, digitale, risparmio o investimenti (Ctrl+M)</p>
+                        </div>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                  {hasPrivateAccount && !isPrivateUnlocked && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          onClick={() => {
+                            soundSystem.play('dialog-open')
+                            setShowPrivatePinDialog(true)
+                          }} 
+                          variant="secondary" 
+                          className={`gap-2 w-full sm:w-auto ${isMobile ? 'min-h-[48px] text-base' : ''}`}
+                          aria-label="Sblocca conto privato. Richiede inserimento PIN privato per accedere ai conti protetti. Scorciatoia tastiera: Control più U"
+                          data-focus-info="Sblocca conto privato (Ctrl+U)"
+                        >
+                          <LockOpen size={isMobile ? 22 : 18} weight="duotone" aria-hidden="true" />
+                          <span>Sblocca Privato</span>
+                          {!isMobile && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex" aria-hidden="true">Ctrl+U</Badge>}
+                        </Button>
+                      </TooltipTrigger>
+                      {!isMobile && (
+                        <TooltipContent variant="private">
+                          <div className="space-y-0.5">
+                            <p className="font-semibold">Sblocca Conto Privato</p>
+                            <p className="text-xs opacity-90">Inserisci PIN per accedere ai conti protetti (Ctrl+U)</p>
+                          </div>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  )}
+                </div>
               </div>
             </div>
 
