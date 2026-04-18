@@ -44,11 +44,15 @@ export function AccountCard({ account, balance, onClick }: AccountCardProps) {
   const categoryId = ACCOUNT_TYPE_TO_CATEGORY[account.tipo]
   const categoryInfo = ACCOUNT_CATEGORIES.find(cat => cat.id === categoryId)
 
+  const ariaLabel = onClick 
+    ? `${account.nome}, ${ACCOUNT_TYPE_LABELS[account.tipo]}, saldo ${formatCurrency(balance, account.valuta)}. Premi per aprire dettagli.`
+    : `${account.nome}, ${ACCOUNT_TYPE_LABELS[account.tipo]}, saldo ${formatCurrency(balance, account.valuta)}`
+
   return (
     <Card
       onClick={onClick}
-      className={`transition-all hover:shadow-lg hover:scale-[1.02] relative overflow-hidden border-2 ${onClick ? 'cursor-pointer' : ''}`}
-      role={onClick ? 'button' : undefined}
+      className={`transition-all hover:shadow-lg hover:scale-[1.02] relative overflow-hidden border-2 touch-manipulation ${onClick ? 'cursor-pointer' : ''}`}
+      role={onClick ? 'button' : 'article'}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={(e) => {
         if (onClick && (e.key === 'Enter' || e.key === ' ')) {
@@ -56,7 +60,8 @@ export function AccountCard({ account, balance, onClick }: AccountCardProps) {
           onClick()
         }
       }}
-      aria-label={`${account.nome}, ${ACCOUNT_TYPE_LABELS[account.tipo]}, saldo ${formatCurrency(balance, account.valuta)}`}
+      aria-label={ariaLabel}
+      aria-roledescription={onClick ? 'carta conto interattiva' : 'carta conto'}
     >
       <div className={`absolute inset-0 bg-gradient-to-br ${ACCOUNT_GRADIENTS[account.tipo]} opacity-50`}></div>
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/10 to-transparent rounded-bl-full"></div>
@@ -66,8 +71,12 @@ export function AccountCard({ account, balance, onClick }: AccountCardProps) {
         </CardTitle>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="cursor-help p-2 rounded-xl bg-card/80 backdrop-blur-sm shadow-sm">
-              <Icon size={28} weight="duotone" className={ACCOUNT_COLORS[account.tipo]} />
+            <div 
+              className="cursor-help p-2 rounded-xl bg-card/80 backdrop-blur-sm shadow-sm"
+              aria-label={`Tipo conto: ${ACCOUNT_TYPE_LABELS[account.tipo]}. ${ACCOUNT_TYPE_DESCRIPTIONS[account.tipo]}`}
+              role="img"
+            >
+              <Icon size={28} weight="duotone" className={ACCOUNT_COLORS[account.tipo]} aria-hidden="true" />
             </div>
           </TooltipTrigger>
           <TooltipContent variant={categoryId}>
