@@ -54,10 +54,23 @@ export function BudgetProgressCard({
     return <Target size={20} weight="duotone" className="text-accent" />
   }
 
+  const statusText = isOverBudget 
+    ? `Budget superato di ${formatCurrency(Math.abs(remaining))}`
+    : percentage >= 90
+    ? `Attenzione, quasi a limite: ${Math.round(percentage)}%`
+    : `In corso, speso ${Math.round(percentage)}%`
+
+  const ariaLabel = `Budget ${budget.nome}, ${periodLabel}, ${scopeLabel}. ${statusText}. Speso ${formatCurrency(spent)} su ${formatCurrency(budget.importoTarget)}. ${isOverBudget ? '' : `Rimangono ${formatCurrency(remaining)}.`}`
+
   return (
-    <Card className={`transition-all hover:shadow-xl relative overflow-hidden ${!budget.attivo ? 'opacity-60' : ''}`}>
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-50"></div>
-      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-accent/10 to-transparent rounded-bl-full"></div>
+    <Card 
+      className={`transition-all hover:shadow-xl relative overflow-hidden ${!budget.attivo ? 'opacity-60' : ''}`}
+      role="article"
+      aria-label={ariaLabel}
+      aria-roledescription="carta budget"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-50" aria-hidden="true"></div>
+      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-accent/10 to-transparent rounded-bl-full" aria-hidden="true"></div>
       <CardHeader className="pb-3 relative z-10">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0 space-y-1">
@@ -133,7 +146,7 @@ export function BudgetProgressCard({
         <div className="grid grid-cols-3 gap-3 pt-2">
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="space-y-1 cursor-help">
+              <div className="space-y-1 cursor-help" role="status" aria-label={`Speso: ${formatCurrency(spent)}`}>
                 <p className="text-xs text-muted-foreground">Speso</p>
                 <p className="text-sm font-mono font-semibold text-foreground">
                   {formatCurrency(spent)}
@@ -147,7 +160,7 @@ export function BudgetProgressCard({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="space-y-1 cursor-help">
+              <div className="space-y-1 cursor-help" role="status" aria-label={`Budget target: ${formatCurrency(budget.importoTarget)}`}>
                 <p className="text-xs text-muted-foreground">Budget</p>
                 <p className="text-sm font-mono font-semibold text-foreground">
                   {formatCurrency(budget.importoTarget)}
@@ -161,7 +174,11 @@ export function BudgetProgressCard({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="space-y-1 cursor-help">
+              <div 
+                className="space-y-1 cursor-help" 
+                role="status" 
+                aria-label={`${isOverBudget ? 'Budget superato di' : 'Importo rimanente'}: ${formatCurrency(Math.abs(remaining))}`}
+              >
                 <p className="text-xs text-muted-foreground">
                   {isOverBudget ? 'Oltre' : 'Rimasto'}
                 </p>
@@ -183,18 +200,18 @@ export function BudgetProgressCard({
         </div>
 
         {isOverBudget && (
-          <div className="pt-2 border-t">
+          <div className="pt-2 border-t" role="alert" aria-live="polite">
             <p className="text-xs text-destructive flex items-center gap-2">
-              <Warning size={14} weight="fill" />
+              <Warning size={14} weight="fill" aria-hidden="true" />
               Hai superato il budget del {((percentage - 100)).toFixed(0)}%
             </p>
           </div>
         )}
         
         {!isOverBudget && percentage >= 90 && (
-          <div className="pt-2 border-t">
+          <div className="pt-2 border-t" role="alert" aria-live="polite">
             <p className="text-xs text-amber-600 flex items-center gap-2">
-              <Warning size={14} weight="fill" />
+              <Warning size={14} weight="fill" aria-hidden="true" />
               Attenzione: stai per raggiungere il limite del budget
             </p>
           </div>

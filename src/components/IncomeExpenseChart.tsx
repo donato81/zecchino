@@ -167,15 +167,25 @@ export function IncomeExpenseChart({ transactions, period = 'month' }: IncomeExp
     return null
   }
 
+  const periodLabel = {
+    week: 'ultima settimana',
+    month: 'ultimo mese',
+    '3months': 'ultimi 3 mesi',
+    '6months': 'ultimi 6 mesi',
+    year: 'ultimo anno'
+  }[period]
+
+  const chartAriaLabel = `Grafico andamento entrate e uscite per ${periodLabel}. Entrate totali: ${formatCurrency(totalIncome)}. Uscite totali: ${formatCurrency(totalExpenses)}. Saldo netto: ${formatCurrency(netBalance)}.`
+
   return (
-    <Card>
+    <Card role="region" aria-label={chartAriaLabel}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Andamento Entrate vs Uscite</CardTitle>
             <CardDescription>Visualizzazione trend finanziari nel tempo</CardDescription>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2" role="status" aria-live="polite">
             <Badge variant="default" className="bg-income text-income-foreground">
               Entrate: {formatCurrency(totalIncome)}
             </Badge>
@@ -190,11 +200,16 @@ export function IncomeExpenseChart({ transactions, period = 'month' }: IncomeExp
       </CardHeader>
       <CardContent>
         {chartData.length === 0 ? (
-          <div className="flex items-center justify-center h-80 text-muted-foreground">
+          <div 
+            className="flex items-center justify-center h-80 text-muted-foreground"
+            role="status"
+            aria-label="Nessun dato disponibile per il periodo selezionato"
+          >
             Nessun dato disponibile per il periodo selezionato
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={400}>
+          <div role="img" aria-label={chartAriaLabel}>
+            <ResponsiveContainer width="100%" height={400}>
             <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorEntrate" x1="0" y1="0" x2="0" y2="1">
@@ -247,6 +262,7 @@ export function IncomeExpenseChart({ transactions, period = 'month' }: IncomeExp
               />
             </AreaChart>
           </ResponsiveContainer>
+          </div>
         )}
       </CardContent>
     </Card>

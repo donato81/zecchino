@@ -77,18 +77,32 @@ export function SavingsGoalCard({ goal, accounts, onEdit, onDelete, onAddFunds }
     return date.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })
   }
 
+  const progressStatusText = progress.isComplete 
+    ? 'Obiettivo completato'
+    : progress.isOverdue 
+    ? `Scaduto, ${Math.round(progress.percentage)}% completato`
+    : `In corso, ${Math.round(progress.percentage)}% completato`
+
+  const ariaLabel = `Obiettivo di risparmio ${goal.nome}. ${progressStatusText}. Risparmiato ${formatCurrency(goal.importoCorrente)} su ${formatCurrency(goal.importoTarget)}. ${progress.remaining > 0 ? `Mancano ${formatCurrency(progress.remaining)}.` : ''} ${goal.dataScadenza ? `Scadenza: ${formatDeadline(goal.dataScadenza)}.` : ''}`
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="relative overflow-hidden transition-all hover:shadow-xl border-2">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-50"></div>
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/10 to-transparent rounded-bl-full"></div>
+      <Card 
+        className="relative overflow-hidden transition-all hover:shadow-xl border-2"
+        role="article"
+        aria-label={ariaLabel}
+        aria-roledescription="carta obiettivo di risparmio"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-50" aria-hidden="true"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/10 to-transparent rounded-bl-full" aria-hidden="true"></div>
         <div 
           className="absolute top-0 left-0 w-2 h-full shadow-lg"
           style={{ backgroundColor: goal.colore }}
+          aria-hidden="true"
         />
         
         <CardHeader className="pb-3 relative z-10">
@@ -97,8 +111,10 @@ export function SavingsGoalCard({ goal, accounts, onEdit, onDelete, onAddFunds }
               <div 
                 className="p-3 rounded-xl shadow-md"
                 style={{ backgroundColor: `${goal.colore}20`, color: goal.colore }}
+                role="img"
+                aria-label={`Icona obiettivo: ${goal.nome}`}
               >
-                <Icon size={32} weight="duotone" />
+                <Icon size={32} weight="duotone" aria-hidden="true" />
               </div>
               
               <div className="flex-1 min-w-0">
@@ -165,7 +181,12 @@ export function SavingsGoalCard({ goal, accounts, onEdit, onDelete, onAddFunds }
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <div className="flex justify-between items-baseline">
-              <span className="text-2xl font-mono font-bold" style={{ color: getStatusColor() }}>
+              <span 
+                className="text-2xl font-mono font-bold" 
+                style={{ color: getStatusColor() }}
+                role="status"
+                aria-label={`Importo risparmiato: ${formatCurrency(goal.importoCorrente)}`}
+              >
                 {formatCurrency(goal.importoCorrente)}
               </span>
               <span className="text-sm text-muted-foreground">
@@ -173,10 +194,18 @@ export function SavingsGoalCard({ goal, accounts, onEdit, onDelete, onAddFunds }
               </span>
             </div>
 
-            <div className="relative h-3 w-full overflow-hidden rounded-full bg-primary/20">
+            <div 
+              className="relative h-3 w-full overflow-hidden rounded-full bg-primary/20"
+              role="progressbar"
+              aria-valuenow={Math.round(progress.percentage)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Progresso obiettivo: ${Math.round(progress.percentage)}%`}
+            >
               <div 
                 className={`h-full transition-all ${getProgressColor()}`}
                 style={{ width: `${Math.min(progress.percentage, 100)}%` }}
+                aria-hidden="true"
               />
             </div>
 
@@ -191,8 +220,8 @@ export function SavingsGoalCard({ goal, accounts, onEdit, onDelete, onAddFunds }
           </div>
 
           {goal.dataScadenza && (
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar size={16} weight="duotone" className="text-muted-foreground" />
+            <div className="flex items-center gap-2 text-sm" role="status">
+              <Calendar size={16} weight="duotone" className="text-muted-foreground" aria-hidden="true" />
               <span className={progress.isOverdue && !progress.isComplete ? 'text-destructive font-medium' : 'text-muted-foreground'}>
                 {progress.isOverdue && !progress.isComplete ? 'Scaduto il ' : 'Scadenza: '}
                 {formatDeadline(goal.dataScadenza)}
@@ -206,37 +235,37 @@ export function SavingsGoalCard({ goal, accounts, onEdit, onDelete, onAddFunds }
           )}
 
           {projection && !progress.isComplete && (
-            <div className="space-y-2 pt-2 border-t">
+            <div className="space-y-2 pt-2 border-t" role="region" aria-label="Proiezioni di risparmio">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <TrendUp size={14} weight="duotone" />
+                <TrendUp size={14} weight="duotone" aria-hidden="true" />
                 <span className="font-medium">Proiezioni Risparmio</span>
               </div>
               
               <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="space-y-1">
+                <div className="space-y-1" role="status" aria-label={`Risparmio settimanale richiesto: ${formatCurrency(projection.weeklyRequired)}`}>
                   <p className="text-muted-foreground">Settimanale</p>
                   <p className="font-mono font-semibold">{formatCurrency(projection.weeklyRequired)}</p>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1" role="status" aria-label={`Risparmio mensile richiesto: ${formatCurrency(projection.monthlyRequired)}`}>
                   <p className="text-muted-foreground">Mensile</p>
                   <p className="font-mono font-semibold">{formatCurrency(projection.monthlyRequired)}</p>
                 </div>
               </div>
 
               {projection.projectedCompletion && (
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-xs" role="status">
                   <Badge 
                     variant={projection.onTrack ? 'default' : 'destructive'}
                     className={projection.onTrack ? 'bg-accent text-accent-foreground' : ''}
                   >
                     {projection.onTrack ? (
                       <>
-                        <ArrowUp size={12} weight="bold" className="mr-1" />
+                        <ArrowUp size={12} weight="bold" className="mr-1" aria-hidden="true" />
                         In linea
                       </>
                     ) : (
                       <>
-                        <Warning size={12} weight="fill" className="mr-1" />
+                        <Warning size={12} weight="fill" className="mr-1" aria-hidden="true" />
                         In ritardo
                       </>
                     )}

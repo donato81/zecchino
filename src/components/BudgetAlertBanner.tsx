@@ -17,7 +17,7 @@ export function BudgetAlertBanner({ alerts, onDismiss, onViewBudget }: BudgetAle
   if (alerts.length === 0) return null
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" role="region" aria-label="Avvisi budget" aria-live="polite">
       <AnimatePresence mode="popLayout">
         {alerts.map((alert) => (
           <motion.div
@@ -35,16 +35,19 @@ export function BudgetAlertBanner({ alerts, onDismiss, onViewBudget }: BudgetAle
                   ? 'border-l-amber-500 bg-amber-50/50'
                   : 'border-l-yellow-500 bg-yellow-50/50'
               }`}
+              role="alert"
+              aria-live="assertive"
+              aria-label={`${alert.level === 'exceeded' ? 'Budget superato' : alert.level === 'critical' ? 'Budget critico' : 'Avviso budget'}: ${alert.message}`}
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className={`mt-0.5 ${getAlertIconColor(alert.level)}`}>
+                  <div className={`mt-0.5 ${getAlertIconColor(alert.level)}`} aria-hidden="true">
                     {alert.level === 'exceeded' ? (
-                      <Warning size={24} weight="fill" />
+                      <Warning size={24} weight="fill" aria-hidden="true" />
                     ) : alert.level === 'critical' ? (
-                      <TrendUp size={24} weight="duotone" />
+                      <TrendUp size={24} weight="duotone" aria-hidden="true" />
                     ) : (
-                      <Target size={24} weight="duotone" />
+                      <Target size={24} weight="duotone" aria-hidden="true" />
                     )}
                   </div>
                   
