@@ -4,6 +4,7 @@ import "@github/spark/spark"
 
 import App from './App.tsx'
 import { ErrorFallback } from './ErrorFallback.tsx'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 import "./main.css"
 import "./styles/theme.css"
@@ -11,6 +12,8 @@ import "./index.css"
 
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary FallbackComponent={ErrorFallback}>
-    <App />
+    <TooltipProvider delayDuration={200}>
+      <App />
+    </TooltipProvider>
    </ErrorBoundary>
 )
