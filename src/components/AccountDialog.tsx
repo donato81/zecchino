@@ -37,17 +37,20 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
 
     if (!nome.trim()) {
       setError('Il nome del conto è obbligatorio')
+      soundSystem.play('validation-error')
       return
     }
 
     if (tipo === 'privato' && !account && hasPrivateAccount) {
       setError('È possibile avere un solo conto privato')
+      soundSystem.play('validation-error')
       return
     }
 
     const saldo = parseFloat(saldoIniziale)
     if (isNaN(saldo)) {
       setError('Il saldo deve essere un numero valido')
+      soundSystem.play('validation-error')
       return
     }
 
@@ -61,6 +64,7 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
       dataCreazione: account?.dataCreazione || new Date().toISOString()
     }
 
+    soundSystem.play('form-submit')
     onSave(newAccount)
     handleClose()
   }
@@ -72,6 +76,11 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
     setSaldoIniziale('0')
     setError('')
     onClose()
+  }
+
+  const handleCancel = () => {
+    soundSystem.play('cancel')
+    handleClose()
   }
 
   return (
@@ -129,7 +138,12 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
                               isSelected && 'ring-2 ring-primary bg-primary/5',
                               disabled && 'opacity-50 cursor-not-allowed'
                             )}
-                            onClick={() => !disabled && setTipo(type)}
+                            onClick={() => {
+                              if (!disabled) {
+                                soundSystem.play('select-option')
+                                setTipo(type)
+                              }
+                            }}
                           >
                             <CardContent className="p-3 flex flex-col items-center gap-2 text-center">
                               <Icon 
@@ -184,7 +198,7 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose}>
+            <Button type="button" variant="outline" onClick={handleCancel}>
               Annulla
             </Button>
             <Button type="submit">

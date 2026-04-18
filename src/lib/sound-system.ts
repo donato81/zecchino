@@ -43,6 +43,53 @@ type SoundType =
   | 'private-lock'
   | 'alert-dismissed'
   | 'period-change'
+  | 'card-open'
+  | 'card-close'
+  | 'edit'
+  | 'cancel'
+  | 'confirm'
+  | 'toggle-on'
+  | 'toggle-off'
+  | 'slider-change'
+  | 'dropdown-open'
+  | 'dropdown-close'
+  | 'select-option'
+  | 'form-submit'
+  | 'form-error'
+  | 'input-focus'
+  | 'input-blur'
+  | 'tooltip-show'
+  | 'tooltip-hide'
+  | 'account-edit'
+  | 'transaction-edit'
+  | 'budget-edit'
+  | 'goal-edit'
+  | 'category-created'
+  | 'category-deleted'
+  | 'category-edited'
+  | 'import-start'
+  | 'import-success'
+  | 'import-error'
+  | 'backup-created'
+  | 'restore-complete'
+  | 'list-scroll'
+  | 'page-load'
+  | 'refresh'
+  | 'search-start'
+  | 'search-complete'
+  | 'filter-apply'
+  | 'filter-clear'
+  | 'sort-change'
+  | 'menu-open'
+  | 'menu-close'
+  | 'submenu-open'
+  | 'panel-expand'
+  | 'panel-collapse'
+  | 'test-sound'
+  | 'preset-change'
+  | 'settings-reset'
+  | 'validation-error'
+  | 'validation-success'
 
 class SoundSystem {
   private audioContext: AudioContext | null = null
@@ -470,6 +517,330 @@ class SoundSystem {
         this.playSequence([
           { freq: 587.33, duration: 0.05, type: 'sine' },
           { freq: 659.25, duration: 0.07, type: 'sine', delay: 45 }
+        ])
+        break
+
+      case 'card-open':
+        this.playSequence([
+          { freq: 523.25, duration: 0.06, type: 'sine' },
+          { freq: 659.25, duration: 0.08, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'card-close':
+        this.playSequence([
+          { freq: 659.25, duration: 0.06, type: 'sine' },
+          { freq: 523.25, duration: 0.08, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'edit':
+        this.playSequence([
+          { freq: 659.25, duration: 0.07, type: 'sine' },
+          { freq: 783.99, duration: 0.08, type: 'sine', delay: 55 }
+        ])
+        break
+
+      case 'cancel':
+        this.playSequence([
+          { freq: 523.25, duration: 0.08, type: 'triangle' },
+          { freq: 440, duration: 0.1, type: 'triangle', delay: 70 }
+        ])
+        break
+
+      case 'confirm':
+        this.playSequence([
+          { freq: 659.25, duration: 0.08, type: 'sine' },
+          { freq: 783.99, duration: 0.08, type: 'sine', delay: 60 },
+          { freq: 1046.50, duration: 0.1, type: 'sine', delay: 60 }
+        ])
+        break
+
+      case 'toggle-on':
+        this.playSequence([
+          { freq: 523.25, duration: 0.05, type: 'sine' },
+          { freq: 659.25, duration: 0.06, type: 'sine', delay: 40 }
+        ])
+        break
+
+      case 'toggle-off':
+        this.playSequence([
+          { freq: 659.25, duration: 0.05, type: 'sine' },
+          { freq: 523.25, duration: 0.06, type: 'sine', delay: 40 }
+        ])
+        break
+
+      case 'slider-change':
+        this.playTone(500, 0.03, 'sine', { attack: 0.001, decay: 0.01, sustain: 0.4, release: 0.02 })
+        break
+
+      case 'dropdown-open':
+        this.playSequence([
+          { freq: 523.25, duration: 0.05, type: 'sine' },
+          { freq: 587.33, duration: 0.06, type: 'sine', delay: 40 }
+        ])
+        break
+
+      case 'dropdown-close':
+        this.playSequence([
+          { freq: 587.33, duration: 0.05, type: 'sine' },
+          { freq: 523.25, duration: 0.06, type: 'sine', delay: 40 }
+        ])
+        break
+
+      case 'select-option':
+        this.playTone(659.25, 0.05, 'sine', { attack: 0.002, decay: 0.015, sustain: 0.4, release: 0.033 })
+        break
+
+      case 'form-submit':
+        this.playSequence([
+          { freq: 523.25, duration: 0.08, type: 'sine' },
+          { freq: 659.25, duration: 0.08, type: 'sine', delay: 60 },
+          { freq: 783.99, duration: 0.1, type: 'sine', delay: 60 }
+        ])
+        break
+
+      case 'form-error':
+        this.playSequence([
+          { freq: 349.23, duration: 0.1, type: 'square' },
+          { freq: 293.66, duration: 0.12, type: 'square', delay: 90 }
+        ])
+        break
+
+      case 'input-focus':
+        this.playTone(650, 0.04, 'sine', { attack: 0.002, decay: 0.015, sustain: 0.4, release: 0.023 })
+        break
+
+      case 'input-blur':
+        this.playTone(550, 0.03, 'sine', { attack: 0.002, decay: 0.01, sustain: 0.3, release: 0.018 })
+        break
+
+      case 'tooltip-show':
+        this.playTone(700, 0.04, 'sine', { attack: 0.002, decay: 0.015, sustain: 0.5, release: 0.023 })
+        break
+
+      case 'tooltip-hide':
+        this.playTone(600, 0.03, 'sine', { attack: 0.001, decay: 0.01, sustain: 0.4, release: 0.019 })
+        break
+
+      case 'account-edit':
+        this.playSequence([
+          { freq: 587.33, duration: 0.07, type: 'sine' },
+          { freq: 659.25, duration: 0.08, type: 'sine', delay: 55 }
+        ])
+        break
+
+      case 'transaction-edit':
+        this.playSequence([
+          { freq: 523.25, duration: 0.07, type: 'sine' },
+          { freq: 659.25, duration: 0.08, type: 'sine', delay: 55 }
+        ])
+        break
+
+      case 'budget-edit':
+        this.playSequence([
+          { freq: 587.33, duration: 0.07, type: 'triangle' },
+          { freq: 659.25, duration: 0.08, type: 'triangle', delay: 55 }
+        ])
+        break
+
+      case 'goal-edit':
+        this.playSequence([
+          { freq: 659.25, duration: 0.07, type: 'sine' },
+          { freq: 783.99, duration: 0.08, type: 'sine', delay: 55 }
+        ])
+        break
+
+      case 'category-created':
+        this.playSequence([
+          { freq: 587.33, duration: 0.08, type: 'sine' },
+          { freq: 659.25, duration: 0.09, type: 'sine', delay: 65 }
+        ])
+        break
+
+      case 'category-deleted':
+        this.playSequence([
+          { freq: 440, duration: 0.09, type: 'sawtooth' },
+          { freq: 349.23, duration: 0.12, type: 'sawtooth', delay: 80 }
+        ])
+        break
+
+      case 'category-edited':
+        this.playSequence([
+          { freq: 523.25, duration: 0.07, type: 'sine' },
+          { freq: 587.33, duration: 0.08, type: 'sine', delay: 55 }
+        ])
+        break
+
+      case 'import-start':
+        this.playSequence([
+          { freq: 440, duration: 0.08, type: 'sine' },
+          { freq: 523.25, duration: 0.08, type: 'sine', delay: 65 },
+          { freq: 587.33, duration: 0.08, type: 'sine', delay: 65 }
+        ])
+        break
+
+      case 'import-success':
+        this.playSequence([
+          { freq: 523.25, duration: 0.09, type: 'sine' },
+          { freq: 659.25, duration: 0.09, type: 'sine', delay: 70 },
+          { freq: 783.99, duration: 0.09, type: 'sine', delay: 70 },
+          { freq: 1046.50, duration: 0.13, type: 'sine', delay: 70 }
+        ])
+        break
+
+      case 'import-error':
+        this.playSequence([
+          { freq: 349.23, duration: 0.12, type: 'sawtooth' },
+          { freq: 293.66, duration: 0.12, type: 'sawtooth', delay: 100 },
+          { freq: 261.63, duration: 0.15, type: 'sawtooth', delay: 100 }
+        ])
+        break
+
+      case 'backup-created':
+        this.playSequence([
+          { freq: 523.25, duration: 0.08, type: 'sine' },
+          { freq: 659.25, duration: 0.08, type: 'sine', delay: 65 },
+          { freq: 783.99, duration: 0.11, type: 'sine', delay: 65 }
+        ])
+        break
+
+      case 'restore-complete':
+        this.playSequence([
+          { freq: 440, duration: 0.09, type: 'sine' },
+          { freq: 523.25, duration: 0.09, type: 'sine', delay: 70 },
+          { freq: 659.25, duration: 0.09, type: 'sine', delay: 70 },
+          { freq: 783.99, duration: 0.12, type: 'sine', delay: 70 }
+        ])
+        break
+
+      case 'list-scroll':
+        this.playTone(450, 0.02, 'sine', { attack: 0.001, decay: 0.008, sustain: 0.3, release: 0.011 })
+        break
+
+      case 'page-load':
+        this.playSequence([
+          { freq: 523.25, duration: 0.06, type: 'sine' },
+          { freq: 659.25, duration: 0.06, type: 'sine', delay: 50 },
+          { freq: 783.99, duration: 0.08, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'refresh':
+        this.playSequence([
+          { freq: 659.25, duration: 0.05, type: 'sine' },
+          { freq: 783.99, duration: 0.05, type: 'sine', delay: 40 },
+          { freq: 659.25, duration: 0.06, type: 'sine', delay: 40 }
+        ])
+        break
+
+      case 'search-start':
+        this.playSequence([
+          { freq: 587.33, duration: 0.06, type: 'sine' },
+          { freq: 659.25, duration: 0.07, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'search-complete':
+        this.playSequence([
+          { freq: 659.25, duration: 0.07, type: 'sine' },
+          { freq: 783.99, duration: 0.09, type: 'sine', delay: 60 }
+        ])
+        break
+
+      case 'filter-apply':
+        this.playSequence([
+          { freq: 523.25, duration: 0.06, type: 'sine' },
+          { freq: 659.25, duration: 0.07, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'filter-clear':
+        this.playSequence([
+          { freq: 659.25, duration: 0.06, type: 'sine' },
+          { freq: 523.25, duration: 0.07, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'sort-change':
+        this.playSequence([
+          { freq: 587.33, duration: 0.05, type: 'sine' },
+          { freq: 659.25, duration: 0.06, type: 'sine', delay: 45 }
+        ])
+        break
+
+      case 'menu-open':
+        this.playSequence([
+          { freq: 523.25, duration: 0.06, type: 'sine' },
+          { freq: 659.25, duration: 0.07, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'menu-close':
+        this.playSequence([
+          { freq: 659.25, duration: 0.06, type: 'sine' },
+          { freq: 523.25, duration: 0.07, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'submenu-open':
+        this.playSequence([
+          { freq: 587.33, duration: 0.05, type: 'sine' },
+          { freq: 659.25, duration: 0.06, type: 'sine', delay: 45 }
+        ])
+        break
+
+      case 'panel-expand':
+        this.playSequence([
+          { freq: 523.25, duration: 0.06, type: 'sine' },
+          { freq: 587.33, duration: 0.06, type: 'sine', delay: 50 },
+          { freq: 659.25, duration: 0.07, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'panel-collapse':
+        this.playSequence([
+          { freq: 659.25, duration: 0.06, type: 'sine' },
+          { freq: 587.33, duration: 0.06, type: 'sine', delay: 50 },
+          { freq: 523.25, duration: 0.07, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'test-sound':
+        this.playSequence([
+          { freq: 659.25, duration: 0.09, type: 'sine' },
+          { freq: 783.99, duration: 0.09, type: 'sine', delay: 75 },
+          { freq: 1046.50, duration: 0.12, type: 'sine', delay: 75 }
+        ])
+        break
+
+      case 'preset-change':
+        this.playSequence([
+          { freq: 523.25, duration: 0.06, type: 'sine' },
+          { freq: 659.25, duration: 0.07, type: 'sine', delay: 50 }
+        ])
+        break
+
+      case 'settings-reset':
+        this.playSequence([
+          { freq: 440, duration: 0.08, type: 'sine' },
+          { freq: 523.25, duration: 0.08, type: 'sine', delay: 65 },
+          { freq: 440, duration: 0.08, type: 'sine', delay: 65 },
+          { freq: 523.25, duration: 0.1, type: 'sine', delay: 65 }
+        ])
+        break
+
+      case 'validation-error':
+        this.playSequence([
+          { freq: 349.23, duration: 0.1, type: 'square' },
+          { freq: 293.66, duration: 0.11, type: 'square', delay: 85 }
+        ])
+        break
+
+      case 'validation-success':
+        this.playSequence([
+          { freq: 659.25, duration: 0.08, type: 'sine' },
+          { freq: 783.99, duration: 0.1, type: 'sine', delay: 65 }
         ])
         break
 

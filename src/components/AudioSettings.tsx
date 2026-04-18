@@ -58,7 +58,7 @@ export function AudioSettings() {
   }
 
   const handleTestSound = () => {
-    soundSystem.play('notification')
+    soundSystem.play('test-sound')
     toast('Suono di test riprodotto')
   }
 

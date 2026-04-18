@@ -153,7 +153,7 @@ export function ScreenReaderSettings() {
 
   const handleTestAnnouncement = () => {
     screenReader.announce('Questo è un annuncio di test per verificare le impostazioni dello screen reader', 'polite')
-    soundSystem.play('notification')
+    soundSystem.play('test-sound')
     toast('Annuncio di test inviato allo screen reader')
   }
 
@@ -171,7 +171,7 @@ export function ScreenReaderSettings() {
     setLocalAnnounceDelay(100)
     setLocalReducedAnnouncements(false)
     
-    soundSystem.play('success')
+    soundSystem.play('settings-reset')
     toast.success('Impostazioni screen reader ripristinate ai valori predefiniti')
     screenReader.announce('Tutte le impostazioni dello screen reader sono state ripristinate ai valori predefiniti', 'polite')
   }
