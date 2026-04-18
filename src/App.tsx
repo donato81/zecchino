@@ -24,6 +24,7 @@ import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
 import { FocusIndicator } from '@/components/FocusIndicator'
 import { AudioSettings } from '@/components/AudioSettings'
 import { ScreenReaderSettings } from '@/components/ScreenReaderSettings'
+import { DisplaySettings } from '@/components/DisplaySettings'
 import { IncomeExpenseChart } from '@/components/IncomeExpenseChart'
 import { MonthlyComparisonChart } from '@/components/MonthlyComparisonChart'
 import { PeriodSelector } from '@/components/PeriodSelector'
@@ -1603,6 +1604,7 @@ function App() {
                 Impostazioni Accessibilità
               </h3>
               
+              <DisplaySettings />
               <AudioSettings />
               <ScreenReaderSettings />
             </div>
