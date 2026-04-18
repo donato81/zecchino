@@ -28,14 +28,20 @@ export function AudioSettings() {
   const [localVolume, setLocalVolume] = useState<number>((audioVolume ?? 0.3) * 100)
 
   useEffect(() => {
-    soundSystem.setEnabled(localEnabled)
-    setAudioEnabled(() => localEnabled)
+    const updateEnabled = async () => {
+      await soundSystem.setEnabled(localEnabled)
+      setAudioEnabled(() => localEnabled)
+    }
+    updateEnabled()
   }, [localEnabled, setAudioEnabled])
 
   useEffect(() => {
-    const normalizedVolume = localVolume / 100
-    soundSystem.setVolume(normalizedVolume)
-    setAudioVolume(() => normalizedVolume)
+    const updateVolume = async () => {
+      const normalizedVolume = localVolume / 100
+      await soundSystem.setVolume(normalizedVolume)
+      setAudioVolume(() => normalizedVolume)
+    }
+    updateVolume()
   }, [localVolume, setAudioVolume])
 
   const handleToggleAudio = () => {

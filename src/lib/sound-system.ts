@@ -113,8 +113,11 @@ class SoundSystem {
       if (enabledValue !== undefined) {
         this.enabled = enabledValue
       }
-      if (volumeValue !== undefined) {
+      if (volumeValue !== undefined && volumeValue >= 0 && volumeValue <= 1) {
         this.volume = volumeValue
+        if (this.masterGain) {
+          this.masterGain.gain.value = this.volume
+        }
       }
     } catch (error) {
       console.warn('Could not load audio settings:', error)
@@ -849,15 +852,25 @@ class SoundSystem {
     }
   }
 
-  setVolume(volume: number) {
+  async setVolume(volume: number) {
     this.volume = Math.max(0, Math.min(1, volume))
     if (this.masterGain) {
       this.masterGain.gain.value = this.volume
     }
+    try {
+      await window.spark.kv.set('audio-volume', this.volume)
+    } catch (error) {
+      console.warn('Could not save audio volume:', error)
+    }
   }
 
-  setEnabled(enabled: boolean) {
+  async setEnabled(enabled: boolean) {
     this.enabled = enabled
+    try {
+      await window.spark.kv.set('audio-enabled', this.enabled)
+    } catch (error) {
+      console.warn('Could not save audio enabled state:', error)
+    }
   }
 
   getEnabled(): boolean {

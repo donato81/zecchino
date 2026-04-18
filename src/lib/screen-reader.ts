@@ -3,14 +3,21 @@ export type AnnouncementPriority = 'polite' | 'assertive'
 class ScreenReaderAnnouncer {
   private politeRegion: HTMLDivElement | null = null
   private assertiveRegion: HTMLDivElement | null = null
+  private initialized: boolean = false
 
   constructor() {
-    if (typeof window !== 'undefined') {
-      this.initializeLiveRegions()
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => this.initializeLiveRegions())
+      } else {
+        this.initializeLiveRegions()
+      }
     }
   }
 
   private initializeLiveRegions() {
+    if (this.initialized) return
+    
     this.politeRegion = document.createElement('div')
     this.politeRegion.setAttribute('role', 'status')
     this.politeRegion.setAttribute('aria-live', 'polite')
@@ -26,20 +33,28 @@ class ScreenReaderAnnouncer {
     this.assertiveRegion.className = 'sr-only'
     this.assertiveRegion.style.cssText = 'position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;'
     document.body.appendChild(this.assertiveRegion)
+    
+    this.initialized = true
   }
 
   announce(message: string, priority: AnnouncementPriority = 'polite') {
+    if (!this.initialized) {
+      this.initializeLiveRegions()
+    }
+    
     const region = priority === 'assertive' ? this.assertiveRegion : this.politeRegion
     if (!region) return
 
     region.textContent = ''
     
     setTimeout(() => {
-      region.textContent = message
+      if (region) {
+        region.textContent = message
+      }
     }, 100)
 
     setTimeout(() => {
-      if (region.textContent === message) {
+      if (region && region.textContent === message) {
         region.textContent = ''
       }
     }, 5000)
