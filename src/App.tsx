@@ -6,6 +6,7 @@ import { DEFAULT_CATEGORIES, ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from
 import { generateId, calculateAccountBalance, getTotalBalance, formatCurrency, exportToCSV, downloadFile, getActiveBudgets, getBudgetProgress } from '@/lib/helpers'
 import { generateBudgetAlerts, shouldShowBudgetNotification, getBudgetNotificationTitle } from '@/lib/budget-alerts'
 import { soundSystem } from '@/lib/sound-system'
+import { hapticSystem } from '@/lib/haptic-system'
 import { useScreenReader } from '@/hooks/use-screen-reader'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { SkipLink } from '@/components/SkipLink'
@@ -24,6 +25,7 @@ import { SavingsGoalCard } from '@/components/SavingsGoalCard'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
 import { FocusIndicator } from '@/components/FocusIndicator'
 import { AudioSettings } from '@/components/AudioSettings'
+import { HapticSettings } from '@/components/HapticSettings'
 import { ScreenReaderSettings } from '@/components/ScreenReaderSettings'
 import { DisplaySettings } from '@/components/DisplaySettings'
 import { SecuritySettings } from '@/components/SecuritySettings'
@@ -120,6 +122,7 @@ function App() {
       setShowPinDialog(false)
       setIsSetupMode(false)
       soundSystem.play('pin-success')
+      hapticSystem.pinSuccess()
       toast.success('PIN globale creato con successo')
       screenReader.announceSuccess('PIN globale creato. Accesso all\'applicazione consentito.')
     } else {
@@ -128,10 +131,12 @@ function App() {
         setIsAuthenticated(true)
         setShowPinDialog(false)
         soundSystem.play('unlock')
+        hapticSystem.unlock()
         toast.success('Accesso consentito')
         screenReader.announceSuccess('Accesso consentito. Benvenuto in Zecchino.')
       } else {
         soundSystem.play('pin-error')
+        hapticSystem.pinError()
         toast.error('PIN non corretto')
         screenReader.announceError('PIN non corretto. Riprova.')
       }
@@ -145,6 +150,7 @@ function App() {
       setIsPrivateUnlocked(true)
       setShowPrivatePinDialog(false)
       soundSystem.play('private-unlock')
+      hapticSystem.privateUnlock()
       toast.success('PIN privato creato e conto sbloccato')
       screenReader.announceSuccess('PIN privato creato. Conto privato ora sbloccato.')
     } else {
@@ -153,6 +159,7 @@ function App() {
         setIsPrivateUnlocked(true)
         setShowPrivatePinDialog(false)
         soundSystem.play('private-unlock')
+        hapticSystem.privateUnlock()
         const privateAccount = visibleAccounts.find(a => a.isPrivato)
         if (privateAccount) {
           const balance = calculateAccountBalance(privateAccount, visibleTransactions)
@@ -163,6 +170,7 @@ function App() {
         }
       } else {
         soundSystem.play('pin-error')
+        hapticSystem.pinError()
         toast.error('PIN privato non corretto')
         screenReader.announceError('PIN privato non corretto. Riprova.')
       }
@@ -177,11 +185,13 @@ function App() {
         const updated = [...current]
         updated[existingIndex] = account
         soundSystem.play('save')
+        hapticSystem.save()
         toast.success('Conto modificato')
         screenReader.announceSuccess(`Conto ${account.nome} modificato con successo.`)
         return updated
       } else {
         soundSystem.play('account-created')
+        hapticSystem.accountCreated()
         toast.success(`Conto "${account.nome}" creato`)
         screenReader.announceSuccess(`Nuovo conto ${account.nome} di tipo ${account.tipo} creato con saldo iniziale di ${formatCurrency(account.saldoIniziale)}.`)
         return [...current, account]
@@ -200,16 +210,20 @@ function App() {
         const updated = [...current]
         updated[existingIndex] = transaction
         soundSystem.play('save')
+        hapticSystem.save()
         toast.success('Movimento modificato')
         screenReader.announceSuccess('Movimento modificato con successo.')
         updatedTransactions = updated
       } else {
         if (transaction.tipo === 'entrata') {
           soundSystem.play('income')
+          hapticSystem.income()
         } else if (transaction.tipo === 'uscita') {
           soundSystem.play('expense')
+          hapticSystem.expense()
         } else {
           soundSystem.play('transfer')
+          hapticSystem.transfer()
         }
         const account = safeAccounts.find(a => a.id === transaction.contoId)
         const category = safeCategories.find(c => c.id === transaction.categoriaId)
@@ -250,12 +264,15 @@ function App() {
         if (level === 'exceeded') {
           message = `Budget "${budget.nome}" superato! Hai speso ${formatCurrency(spent)} su ${formatCurrency(budget.importoTarget)}.`
           soundSystem.play('budget-exceeded')
+          hapticSystem.budgetExceeded()
         } else if (level === 'critical') {
           message = `Attenzione! Il budget "${budget.nome}" è al ${Math.round(newPercentage)}%. Rimangono ${formatCurrency(remaining)}.`
           soundSystem.play('budget-critical')
+          hapticSystem.budgetCritical()
         } else if (level === 'warning') {
           message = `Il budget "${budget.nome}" ha raggiunto il ${Math.round(newPercentage)}%.`
           soundSystem.play('budget-warning')
+          hapticSystem.budgetWarning()
         }
         
         if (level === 'exceeded') {
@@ -282,11 +299,13 @@ function App() {
         const updated = [...current]
         updated[existingIndex] = budget
         soundSystem.play('save')
+        hapticSystem.save()
         toast.success('Budget modificato')
         screenReader.announceSuccess(`Budget ${budget.nome} modificato.`)
         return updated
       } else {
         soundSystem.play('budget-created')
+        hapticSystem.budgetCreated()
         toast.success(`Budget "${budget.nome}" creato`)
         screenReader.announceSuccess(`Nuovo budget ${budget.nome} creato. Importo target: ${formatCurrency(budget.importoTarget)} per periodo ${budget.periodo}.`)
         return [...current, budget]
@@ -303,11 +322,13 @@ function App() {
         const updated = [...current]
         updated[existingIndex] = goal
         soundSystem.play('save')
+        hapticSystem.save()
         toast.success('Obiettivo di risparmio modificato')
         screenReader.announceSuccess(`Obiettivo ${goal.nome} modificato.`)
         return updated
       } else {
         soundSystem.play('goal-created')
+        hapticSystem.goalCreated()
         toast.success(`Obiettivo "${goal.nome}" creato`)
         screenReader.announceSuccess(`Nuovo obiettivo di risparmio ${goal.nome} creato. Target: ${formatCurrency(goal.importoTarget)}.`)
         return [...current, goal]
@@ -325,11 +346,13 @@ function App() {
     if (!deletingItem) return
 
     soundSystem.play('delete')
+    hapticSystem.delete()
     if (deletingItem.type === 'account') {
       const account = safeAccounts.find(a => a.id === deletingItem.id)
       setAccounts((current) => (current || []).filter(a => a.id !== deletingItem.id))
       setTransactions((current) => (current || []).filter(t => t.contoId !== deletingItem.id && t.contoDestinazioneId !== deletingItem.id))
       soundSystem.play('account-deleted')
+      hapticSystem.accountDeleted()
       toast.success('Conto eliminato')
       if (account) {
         screenReader.announceSuccess(`Conto ${account.nome} eliminato. Tutti i movimenti associati sono stati rimossi.`)
@@ -344,6 +367,7 @@ function App() {
       const budget = safeBudgets.find(b => b.id === deletingItem.id)
       setBudgets((current) => (current || []).filter(b => b.id !== deletingItem.id))
       soundSystem.play('budget-deleted')
+      hapticSystem.budgetDeleted()
       toast.success('Budget eliminato')
       if (budget) {
         screenReader.announceSuccess(`Budget ${budget.nome} eliminato.`)
@@ -369,6 +393,7 @@ function App() {
     const csv = exportToCSV(visibleTransactions, visibleAccounts, safeCategories)
     downloadFile(csv, `zecchino-export-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv')
     soundSystem.play('export')
+    hapticSystem.export()
     toast.success('Dati esportati in CSV')
     screenReader.announceSuccess(`Dati esportati. ${visibleTransactions.length} movimenti salvati in formato CSV.`)
   }
@@ -398,6 +423,7 @@ function App() {
     if (activeTab !== previousTab && isAuthenticated) {
       setPreviousTab(activeTab)
       soundSystem.play('tab-change')
+      hapticSystem.tabChange()
       
       let tabName = ''
       if (activeTab === 'dashboard') tabName = 'Dashboard'
@@ -463,10 +489,12 @@ function App() {
       
       if (currentCategories.includes(categoryId)) {
         soundSystem.play('filter-toggle')
+        hapticSystem.filterToggle()
         screenReader.announceFilter(categoryName, false)
         return currentCategories.filter(id => id !== categoryId)
       } else {
         soundSystem.play('category-toggle')
+        hapticSystem.categoryToggle()
         screenReader.announceFilter(categoryName, true)
         return [...currentCategories, categoryId]
       }
@@ -479,9 +507,11 @@ function App() {
       const allCategoryIds = ACCOUNT_CATEGORIES.map(c => c.id)
       if (currentCategories.length === allCategoryIds.length) {
         soundSystem.play('filter-toggle')
+        hapticSystem.filterToggle()
         return []
       } else {
         soundSystem.play('category-toggle')
+        hapticSystem.categoryToggle()
         return allCategoryIds
       }
     })
@@ -502,12 +532,14 @@ function App() {
     setDismissedAlerts((current) => {
       const currentDismissed = current || []
       soundSystem.play('alert-dismissed')
+      hapticSystem.alertDismissed()
       return [...currentDismissed, budgetId]
     })
   }
 
   const handleViewBudget = (budgetId: string) => {
     soundSystem.play('dialog-open')
+    hapticSystem.dialogOpen()
     setActiveTab('reports')
     const budget = safeBudgets.find(b => b.id === budgetId)
     if (budget) {
@@ -799,6 +831,7 @@ function App() {
                         size="icon"
                         onClick={() => {
                           soundSystem.play('dialog-open')
+                          hapticSystem.dialogOpen()
                           setShowKeyboardHelp(true)
                         }}
                         aria-label="Mostra scorciatoie da tastiera. Apre finestra di dialogo con elenco comandi tastiera disponibili."
@@ -915,6 +948,7 @@ function App() {
                       <Button 
                         onClick={() => { 
                           soundSystem.play('dialog-open')
+                          hapticSystem.dialogOpen()
                           setEditingTransaction(undefined)
                           setShowTransactionDialog(true)
                         }} 
@@ -941,6 +975,7 @@ function App() {
                       <Button 
                         onClick={() => { 
                           soundSystem.play('dialog-open')
+                          hapticSystem.dialogOpen()
                           setEditingAccount(undefined)
                           setShowAccountDialog(true)
                         }} 
@@ -969,6 +1004,7 @@ function App() {
                         <Button 
                           onClick={() => {
                             soundSystem.play('dialog-open')
+                            hapticSystem.dialogOpen()
                             setShowPrivatePinDialog(true)
                           }} 
                           variant="secondary" 
@@ -1680,6 +1716,7 @@ function App() {
               
               <DisplaySettings />
               <AudioSettings />
+              <HapticSettings />
               <ScreenReaderSettings />
             </div>
           </TabsContent>
