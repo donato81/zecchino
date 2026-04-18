@@ -25,6 +25,9 @@ import { FocusIndicator } from '@/components/FocusIndicator'
 import { AudioSettings } from '@/components/AudioSettings'
 import { ScreenReaderSettings } from '@/components/ScreenReaderSettings'
 import { DisplaySettings } from '@/components/DisplaySettings'
+import { SecuritySettings } from '@/components/SecuritySettings'
+import { CategoryManagement } from '@/components/CategoryManagement'
+import { DataManagement } from '@/components/DataManagement'
 import { IncomeExpenseChart } from '@/components/IncomeExpenseChart'
 import { MonthlyComparisonChart } from '@/components/MonthlyComparisonChart'
 import { PeriodSelector } from '@/components/PeriodSelector'
@@ -1601,6 +1604,15 @@ function App() {
 
             <div className="space-y-6">
               <h3 className="text-xl font-semibold flex items-center gap-2">
+                <Gear size={24} weight="duotone" />
+                Impostazioni Applicazione
+              </h3>
+              
+              <SecuritySettings />
+              <CategoryManagement />
+              <DataManagement />
+              
+              <h3 className="text-xl font-semibold flex items-center gap-2 mt-8">
                 <Gear size={24} weight="duotone" />
                 Impostazioni Accessibilità
               </h3>
