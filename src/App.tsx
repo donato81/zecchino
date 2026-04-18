@@ -735,10 +735,11 @@ function App() {
     return (
       <>
         <SkipLink />
-        <div className="min-h-screen flex items-center justify-center relative overflow-hidden" role="main" aria-label="Schermata di autenticazione">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-accent opacity-90"></div>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_50%),radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.08),transparent_50%)]"></div>
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]"></div>
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background" role="main" aria-label="Schermata di autenticazione">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-secondary/80 to-accent/90"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.15),transparent_60%),radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.12),transparent_60%)]"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.3),transparent_50%)] animate-pulse" style={{ animationDuration: '4s' }}></div>
           <PinDialog
             open={showPinDialog}
             title={isSetupMode ? 'Imposta PIN Globale' : 'Inserisci PIN'}
@@ -754,19 +755,20 @@ function App() {
   return (
     <>
       <SkipLink />
-      <div className="min-h-screen relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/15"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(99,102,241,0.08),transparent_50%),radial-gradient(circle_at_80%_70%,rgba(59,130,246,0.08),transparent_50%)]"></div>
+      <div className="min-h-screen relative overflow-hidden bg-background">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-accent/25"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(165,120,255,0.15),transparent_50%),radial-gradient(circle_at_80%_70%,rgba(90,200,250,0.15),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[conic-gradient(from_45deg_at_30%_50%,transparent,rgba(165,120,255,0.08)_25%,transparent_50%)] animate-pulse" style={{ animationDuration: '8s' }}></div>
         <div className="relative">
         <FocusIndicator />
-        <header className="border-b bg-card/80 backdrop-blur-md sticky top-0 z-10 shadow-sm" role="banner">
+        <header className="border-b border-primary/30 bg-card/90 backdrop-blur-lg sticky top-0 z-10 shadow-lg shadow-primary/10" role="banner">
           <div className="container mx-auto px-4 py-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-                  <span className="text-2xl font-bold text-primary-foreground">Z</span>
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center shadow-lg shadow-primary/30 ring-2 ring-primary/40">
+                  <span className="text-2xl font-bold text-primary-foreground drop-shadow-md">Z</span>
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent" id="app-title">Zecchino</h1>
+                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent drop-shadow-sm" id="app-title">Zecchino</h1>
               </div>
               <div className="flex items-center gap-4" role="region" aria-label="Informazioni saldo e azioni rapide">
                 <Tooltip>
@@ -776,7 +778,7 @@ function App() {
                       size="icon"
                       onClick={() => setShowKeyboardHelp(true)}
                       aria-label="Mostra scorciatoie da tastiera"
-                      className="hidden sm:inline-flex hover:bg-accent/20 hover:text-accent transition-all"
+                      className="hidden sm:inline-flex hover:bg-accent/30 hover:text-accent transition-all hover:shadow-md hover:shadow-accent/20"
                     >
                       <Keyboard size={20} weight="duotone" />
                     </Button>
@@ -790,9 +792,9 @@ function App() {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="text-right cursor-help bg-gradient-to-br from-card to-muted/50 px-4 py-2 rounded-xl border border-border/50 shadow-sm" role="status" aria-live="polite" aria-label={`Saldo totale: ${formatCurrency(totalBalance)}`}>
+                    <div className="text-right cursor-help bg-gradient-to-br from-card to-primary/10 px-4 py-2 rounded-xl border border-primary/30 shadow-md shadow-primary/10" role="status" aria-live="polite" aria-label={`Saldo totale: ${formatCurrency(totalBalance)}`}>
                       <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider" id="total-balance-label">Saldo Totale</p>
-                      <p className={`text-2xl font-mono font-bold ${totalBalance < 0 ? 'text-destructive' : 'bg-gradient-to-r from-income to-success bg-clip-text text-transparent'}`} aria-labelledby="total-balance-label">
+                      <p className={`text-2xl font-mono font-bold ${totalBalance < 0 ? 'text-destructive drop-shadow-md' : 'bg-gradient-to-r from-income via-success to-accent bg-clip-text text-transparent drop-shadow-sm'}`} aria-labelledby="total-balance-label">
                         {formatCurrency(totalBalance)}
                       </p>
                     </div>
