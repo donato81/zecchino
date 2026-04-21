@@ -162,11 +162,21 @@ class SoundSystem {
     const gain = this.audioContext.createGain()
     const now = this.audioContext.currentTime
     
+    const safeAttack = Math.max(0.001, attack)
+    const safeDecay = Math.max(0.001, decay)
+    const safeRelease = Math.max(0.001, release)
+    const safeDuration = Math.max(safeAttack + safeDecay + safeRelease + 0.01, duration)
+    
+    const attackTime = now + safeAttack
+    const decayTime = attackTime + safeDecay
+    const sustainTime = Math.max(decayTime + 0.001, now + safeDuration - safeRelease)
+    const releaseTime = sustainTime + safeRelease
+    
     gain.gain.value = 0
-    gain.gain.linearRampToValueAtTime(1, now + attack)
-    gain.gain.linearRampToValueAtTime(sustain, now + attack + decay)
-    gain.gain.linearRampToValueAtTime(sustain, now + duration - release)
-    gain.gain.linearRampToValueAtTime(0, now + duration)
+    gain.gain.linearRampToValueAtTime(1, attackTime)
+    gain.gain.linearRampToValueAtTime(sustain, decayTime)
+    gain.gain.linearRampToValueAtTime(sustain, sustainTime)
+    gain.gain.linearRampToValueAtTime(0, releaseTime)
     
     gain.connect(this.masterGain)
     return gain
