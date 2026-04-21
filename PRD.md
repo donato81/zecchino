@@ -1,6 +1,6 @@
 # Planning Guide
 
-Zecchino is a comprehensive personal finance manager that empowers users to track their money across multiple accounts with military-grade security and complete keyboard accessibility for screen reader users.
+Zecchino è un gestore di finanze personali completo e accessibile che permette agli utenti di tracciare le proprie entrate e uscite su conti multipli, con sicurezza avanzata tramite PIN e completa accessibilità per screen reader e TalkBack.
 
 **Experience Qualities**: 
 1. **Secure** - Every interaction reinforces trust through PIN protection, encryption, and clear security states

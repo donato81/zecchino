@@ -114,26 +114,28 @@ export function useTalkBack() {
   useEffect(() => {
     const { detected, confidence } = detectTalkBack()
     
-    const isEnabled = manualOverride !== null ? manualOverride : detected
+    const isEnabled = manualOverride !== null ? Boolean(manualOverride) : detected
     
     setTalkBackState({
-      isEnabled: isEnabled ?? false,
-      isDetected: detected ?? false,
+      isEnabled: Boolean(isEnabled),
+      isDetected: Boolean(detected),
       confidenceLevel: confidence as 'high' | 'medium' | 'low',
-      adaptationsActive: isEnabled ?? false
+      adaptationsActive: Boolean(isEnabled)
     })
 
     if (isEnabled) {
       document.body.setAttribute('data-talkback', 'true')
-      document.body.setAttribute('data-talkback-confidence', confidence)
+      document.body.setAttribute('data-talkback-confidence', confidence as string)
       
-      if (adaptations?.enhancedTouchTargets) {
+      const currentAdaptations = adaptations || DEFAULT_ADAPTATIONS
+      
+      if (currentAdaptations.enhancedTouchTargets) {
         document.body.classList.add('talkback-enhanced-targets')
       }
-      if (adaptations?.highContrastMode) {
+      if (currentAdaptations.highContrastMode) {
         document.body.classList.add('talkback-high-contrast')
       }
-      if (adaptations?.reducedMotion) {
+      if (currentAdaptations.reducedMotion) {
         document.body.classList.add('talkback-reduced-motion')
       }
       
