@@ -1,0 +1,14 @@
+{
+  "current_phase": "",
+  "current_agent": "",
+  "retry_count": 0,
+  "confidence": 1.0,
+  "execution_mode": "autonomous",
+  "last_updated": "2026-04-21T11:01:18Z",
+  "phase_history": [],
+  "active_task_id": "",
+  "initialized": true,
+  "project_name": "Zecchino",
+  "stack": "React+TypeScript+Vite",
+  "framework_version": "2.3.1"
+}

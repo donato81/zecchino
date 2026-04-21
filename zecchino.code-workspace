@@ -1,0 +1,22 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {},
+  "mcp": {
+    "servers": {
+      "sparkFrameworkEngine": {
+        "type": "stdio",
+        "command": "C:\\Users\\forbi\\OneDrive\\Documenti\\GitHub\\spark-framework-engine\\.venv\\Scripts\\python.exe",
+        "args": [
+          "C:\\Users\\forbi\\OneDrive\\Documenti\\GitHub\\spark-framework-engine\\spark-framework-engine.py"
+        ],
+        "env": {
+          "WORKSPACE_FOLDER": "C:\\Users\\forbi\\OneDrive\\Documenti\\GitHub\\zecchino"
+        }
+      }
+    }
+  }
+}

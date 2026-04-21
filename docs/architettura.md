@@ -1,0 +1,176 @@
+# Architettura — Zecchino
+
+> Documento di riferimento per la struttura tecnica del progetto.
+> Aggiornare dopo ogni modifica strutturale significativa.
+
+---
+
+## Panoramica
+
+Zecchino è una **SPA (Single Page Application) React** completamente client-side.
+Non ha backend, non esegue chiamate di rete: tutti i dati sono locali (localStorage).
+
+```
+Browser
+  └── React SPA (Vite)
+        ├── UI Components (shadcn/ui + Radix UI)
+        ├── State (AppState in localStorage)
+        ├── Security (PIN hash + AES-256)
+        ├── Accessibility (TalkBack / VoiceView / NVDA)
+        └── Audio + Haptic feedback
+```
+
+---
+
+## Stack tecnologico
+
+| Layer | Tecnologia | Versione |
+|---|---|---|
+| Framework UI | React | 19 |
+| Linguaggio | TypeScript | ES2020 |
+| Build tool | Vite + `@vitejs/plugin-react-swc` | 6.x |
+| Styling | TailwindCSS v4 | `@tailwindcss/vite` |
+| Componenti | shadcn/ui (`@radix-ui/*`) | varie |
+| Data fetching | TanStack Query | v5 |
+| Grafici | D3 + Recharts | v7 / v2 |
+| Animazioni | Framer Motion | v12 |
+| Icone | Lucide React + Phosphor Icons | latest |
+| Piattaforma | GitHub Spark | `@github/spark` |
+
+---
+
+## Struttura cartelle
+
+```
+src/
+├── App.tsx                  # Root component, routing logico e stato globale
+├── main.tsx                 # Entry point
+├── index.css / main.css     # Stili globali
+├── components/              # Componenti UI dell'applicazione
+│   ├── AccountCard.tsx
+│   ├── AccountDialog.tsx
+│   ├── BudgetAlertBanner.tsx
+│   ├── BudgetDialog.tsx
+│   ├── BudgetForecastCard.tsx
+│   ├── BudgetHistoryChart.tsx
+│   ├── BudgetProgressCard.tsx
+│   ├── BudgetComparisonCard.tsx
+│   ├── CategoryManagement.tsx
+│   ├── DataManagement.tsx
+│   ├── IncomeExpenseChart.tsx
+│   ├── MonthlyComparisonChart.tsx
+│   ├── PeriodSelector.tsx
+│   ├── PinDialog.tsx
+│   ├── SavingsGoalCard.tsx
+│   ├── SavingsGoalDialog.tsx
+│   ├── TransactionDialog.tsx
+│   ├── [Accessibility components]  # FocusIndicator, LiveRegion, SkipLink
+│   ├── [Settings components]       # AudioSettings, DisplaySettings, HapticSettings,
+│   │                               # ScreenReaderSettings, SecuritySettings, TalkBackSettings
+│   └── ui/                         # Primitivi shadcn/ui
+├── hooks/                   # Custom React hooks
+│   ├── use-display-preferences.ts
+│   ├── use-haptic.ts
+│   ├── use-keyboard-shortcuts.ts
+│   ├── use-list-navigation.ts
+│   ├── use-mobile.ts
+│   ├── use-screen-reader.ts
+│   └── use-talkback.ts
+├── lib/                     # Logica di dominio e utility
+│   ├── types.ts             # Tipi TypeScript centralizzati
+│   ├── constants.ts         # Costanti applicazione
+│   ├── utils.ts             # cn(), utilità generali
+│   ├── helpers.ts           # Calcoli e trasformazioni dati
+│   ├── crypto.ts            # Cifratura AES-256
+│   ├── sound-system.ts      # Sistema audio (40+ suoni)
+│   ├── haptic-system.ts     # Feedback tattile
+│   ├── screen-reader.ts     # Live regions e announce
+│   ├── budget-alerts.ts     # Alert soglia budget
+│   ├── budget-forecasting.ts
+│   ├── budget-history.ts
+│   └── budget-templates.ts
+└── styles/
+    └── theme.css            # Variabili CSS tema
+```
+
+---
+
+## Gestione stato
+
+Nessun state manager esterno. Lo stato applicazione (`AppState`) è:
+
+1. Mantenuto in React (`useState` / `useReducer` in `App.tsx`)
+2. Persistito in **localStorage** ad ogni cambiamento
+3. Caricato all'avvio con idratazione iniziale
+
+```
+AppState
+├── isAuthenticated       (boolean)
+├── isPrivateUnlocked     (boolean)
+├── accounts[]            (Account)
+├── transactions[]        (Transaction)
+├── categories[]          (Category)
+├── budgets[]             (Budget)
+├── savingsGoals[]        (SavingsGoal)
+├── globalPinHash         (string — SHA-256)
+└── privatePinHash        (string — SHA-256)
+```
+
+---
+
+## Sicurezza
+
+| Meccanismo | Implementazione |
+|---|---|
+| Autenticazione | PIN globale hashato SHA-256 |
+| Account privato | PIN separato, visibilità condizionale |
+| Cifratura dati | AES-256 (`src/lib/crypto.ts`) per `Transaction.cifrato: true` |
+| Nessun server | Zero superfici di attacco network-side |
+
+---
+
+## Accessibilità
+
+| Standard | Implementazione |
+|---|---|
+| TalkBack / VoiceView | Hook `useTalkback`, ARIA labels, ruoli semantici |
+| NVDA / screen reader | `LiveRegion.tsx`, `SkipLink.tsx`, `FocusIndicator.tsx` |
+| Tastiera | `useKeyboardShortcuts`, `useListNavigation` |
+| Touch target | Minimo 48×48 px (Android standard) |
+| Live regions | `aria-live="polite"` per aggiornamenti dinamici |
+
+---
+
+## Flusso di navigazione
+
+```
+App start
+  └── PinDialog (autenticazione globale)
+        └── Dashboard principale
+              ├── Lista conti (AccountCard)
+              ├── Transazioni filtrabili
+              ├── Report / Grafici (D3, Recharts)
+              ├── Budget (progresso, previsioni, alert)
+              ├── Obiettivi risparmio (SavingsGoalCard)
+              └── Impostazioni (audio, haptic, display, sicurezza, SR)
+```
+
+---
+
+## Path alias
+
+```ts
+// tsconfig.json / vite.config.ts
+"@/*" → "./src/*"
+```
+
+---
+
+## Build
+
+```bash
+npm run dev       # Sviluppo con HMR
+npm run build     # Build produzione (tsc --noCheck + vite build)
+npm run preview   # Anteprima build produzione
+npm run lint      # ESLint
+```
