@@ -1,14 +1,15 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Account, Transaction, Category, Budget, SavingsGoal } from '@/lib/types'
+import { Account, Transaction, Budget, SavingsGoal } from '@/lib/types'
 import { hashPin, verifyPin } from '@/lib/crypto'
-import { DEFAULT_CATEGORIES, ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from '@/lib/constants'
-import { generateId, calculateAccountBalance, getTotalBalance, formatCurrency, exportToCSV, downloadFile, getActiveBudgets, getBudgetProgress } from '@/lib/helpers'
+import { ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from '@/lib/constants'
+import { calculateAccountBalance, getTotalBalance, formatCurrency, exportToCSV, downloadFile, getActiveBudgets, getBudgetProgress } from '@/lib/helpers'
 import { generateBudgetAlerts, shouldShowBudgetNotification, getBudgetNotificationTitle } from '@/lib/budget-alerts'
 import { soundSystem } from '@/lib/sound-system'
 import { hapticSystem } from '@/lib/haptic-system'
 import { useScreenReader } from '@/hooks/use-screen-reader'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { AppDataProvider, useAppData } from '@/context/AppDataContext'
 import { SkipLink } from '@/components/SkipLink'
 import { PinDialog } from '@/components/PinDialog'
 import { AccountCard } from '@/components/AccountCard'
@@ -48,22 +49,38 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { useListNavigation } from '@/hooks/use-list-navigation'
 
-function App() {
+function AppContent() {
   const screenReader = useScreenReader()
   const isMobile = useIsMobile()
-  
+
+  const {
+    accounts,
+    setAccounts,
+    transactions,
+    setTransactions,
+    categories,
+    setCategories,
+    budgets,
+    setBudgets,
+    savingsGoals,
+    setSavingsGoals,
+    visibleCategories,
+    setVisibleCategories,
+    dismissedAlerts,
+    setDismissedAlerts,
+    budgetPercentages,
+    setBudgetPercentages,
+    safeAccounts,
+    safeTransactions,
+    safeCategories,
+    safeBudgets,
+    safeSavingsGoals,
+  } = useAppData()
   const [globalPinHash, setGlobalPinHash] = useKV<string>('global-pin-hash', '')
   const [privatePinHash, setPrivatePinHash] = useKV<string>('private-pin-hash', '')
-  const [accounts, setAccounts] = useKV<Account[]>('accounts', [])
-  const [transactions, setTransactions] = useKV<Transaction[]>('transactions', [])
-  const [categories, setCategories] = useKV<Category[]>('categories', [])
-  const [budgets, setBudgets] = useKV<Budget[]>('budgets', [])
-  const [savingsGoals, setSavingsGoals] = useKV<SavingsGoal[]>('savings-goals', [])
-
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isPrivateUnlocked, setIsPrivateUnlocked] = useState(false)
   const [isSetupMode, setIsSetupMode] = useState(false)
-
   const [showPinDialog, setShowPinDialog] = useState(false)
   const [showPrivatePinDialog, setShowPrivatePinDialog] = useState(false)
   const [showAccountDialog, setShowAccountDialog] = useState(false)
@@ -80,17 +97,14 @@ function App() {
   const [deletingItem, setDeletingItem] = useState<{ type: 'account' | 'transaction' | 'budget' | 'savingsGoal', id: string } | null>(null)
 
   const [activeTab, setActiveTab] = useState('dashboard')
-  const [visibleCategories, setVisibleCategories] = useKV<string[]>('visible-categories', ACCOUNT_CATEGORIES.map(c => c.id))
   const [chartPeriod, setChartPeriod] = useState<'week' | 'month' | '3months' | '6months' | 'year'>('month')
-  const [dismissedAlerts, setDismissedAlerts] = useKV<string[]>('dismissed-budget-alerts', [])
-  const [budgetPercentages, setBudgetPercentages] = useKV<Record<string, number>>('budget-percentages', {})
   const [previousTab, setPreviousTab] = useState('dashboard')
 
-  const safeAccounts = accounts || []
-  const safeTransactions = transactions || []
-  const safeCategories = categories || []
-  const safeBudgets = budgets || []
-  const safeSavingsGoals = savingsGoals || []
+  useEffect(() => {
+    if (showDeleteDialog) {
+      soundSystem.play('dialog-open')
+    }
+  }, [showDeleteDialog])
 
   useEffect(() => {
     if (!globalPinHash) {
@@ -99,21 +113,7 @@ function App() {
     } else {
       setShowPinDialog(true)
     }
-
-    if (safeCategories.length === 0) {
-      const defaultCats: Category[] = DEFAULT_CATEGORIES.map(cat => ({
-        ...cat,
-        id: generateId()
-      }))
-      setCategories(defaultCats)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (showDeleteDialog) {
-      soundSystem.play('dialog-open')
-    }
-  }, [showDeleteDialog])
+  }, [globalPinHash])
 
   const handleGlobalPinSubmit = async (pin: string) => {
     if (isSetupMode) {
@@ -161,9 +161,9 @@ function App() {
         setShowPrivatePinDialog(false)
         soundSystem.play('private-unlock')
         hapticSystem.privateUnlock()
-        const privateAccount = visibleAccounts.find(a => a.isPrivato)
-        if (privateAccount) {
-          const balance = calculateAccountBalance(privateAccount, visibleTransactions)
+        const unlockedPrivateAccount = visibleAccounts.find(account => account.isPrivato)
+        if (unlockedPrivateAccount) {
+          const balance = calculateAccountBalance(unlockedPrivateAccount, visibleTransactions)
           toast.success(`Conto privato sbloccato. Saldo: ${formatCurrency(balance)}`)
           screenReader.announceBalance('Conto privato', balance)
         } else {
@@ -181,7 +181,7 @@ function App() {
   const handleSaveAccount = (account: Account) => {
     setAccounts((currentAccounts) => {
       const current = currentAccounts || []
-      const existingIndex = current.findIndex(a => a.id === account.id)
+      const existingIndex = current.findIndex(item => item.id === account.id)
       if (existingIndex >= 0) {
         const updated = [...current]
         updated[existingIndex] = account
@@ -190,22 +190,65 @@ function App() {
         toast.success('Conto modificato')
         screenReader.announceSuccess(`Conto ${account.nome} modificato con successo.`)
         return updated
-      } else {
-        soundSystem.play('account-created')
-        hapticSystem.accountCreated()
-        toast.success(`Conto "${account.nome}" creato`)
-        screenReader.announceSuccess(`Nuovo conto ${account.nome} di tipo ${account.tipo} creato con saldo iniziale di ${formatCurrency(account.saldoIniziale)}.`)
-        return [...current, account]
       }
+
+      soundSystem.play('account-created')
+      hapticSystem.accountCreated()
+      toast.success(`Conto "${account.nome}" creato`)
+      screenReader.announceSuccess(`Nuovo conto ${account.nome} di tipo ${account.tipo} creato con saldo iniziale di ${formatCurrency(account.saldoIniziale)}.`)
+      return [...current, account]
     })
-    setEditingAccount(undefined)
+  }
+
+  const checkBudgetNotifications = (updatedTransactions: Transaction[]) => {
+    const activeBudgets = getActiveBudgets(safeBudgets)
+    const currentPercentages = budgetPercentages || {}
+
+    activeBudgets.forEach((budget) => {
+      const { percentage: newPercentage } = getBudgetProgress(budget, updatedTransactions)
+      const previousPercentage = currentPercentages[budget.id] || 0
+      const { shouldShow, level } = shouldShowBudgetNotification(budget, previousPercentage, newPercentage)
+
+      if (shouldShow && level) {
+        const title = getBudgetNotificationTitle(level)
+        const { spent, remaining } = getBudgetProgress(budget, updatedTransactions)
+
+        let message = ''
+        if (level === 'exceeded') {
+          message = `Budget "${budget.nome}" superato! Hai speso ${formatCurrency(spent)} su ${formatCurrency(budget.importoTarget)}.`
+          soundSystem.play('budget-exceeded')
+          hapticSystem.budgetExceeded()
+        } else if (level === 'critical') {
+          message = `Attenzione! Il budget "${budget.nome}" è al ${Math.round(newPercentage)}%. Rimangono ${formatCurrency(remaining)}.`
+          soundSystem.play('budget-critical')
+          hapticSystem.budgetCritical()
+        } else if (level === 'warning') {
+          message = `Il budget "${budget.nome}" ha raggiunto il ${Math.round(newPercentage)}%.`
+          soundSystem.play('budget-warning')
+          hapticSystem.budgetWarning()
+        }
+
+        if (level === 'exceeded') {
+          toast.error(title, { description: message, duration: 6000 })
+        } else if (level === 'critical') {
+          toast.warning(title, { description: message, duration: 5000 })
+        } else {
+          toast(title, { description: message, duration: 4000 })
+        }
+      }
+
+      setBudgetPercentages((current) => ({
+        ...(current || {}),
+        [budget.id]: newPercentage,
+      }))
+    })
   }
 
   const handleSaveTransaction = (transaction: Transaction) => {
     setTransactions((currentTransactions) => {
       const current = currentTransactions || []
-      const existingIndex = current.findIndex(t => t.id === transaction.id)
-      
+      const existingIndex = current.findIndex(item => item.id === transaction.id)
+
       let updatedTransactions: Transaction[]
       if (existingIndex >= 0) {
         const updated = [...current]
@@ -226,76 +269,25 @@ function App() {
           soundSystem.play('transfer')
           hapticSystem.transfer()
         }
-        const account = safeAccounts.find(a => a.id === transaction.contoId)
-        const category = safeCategories.find(c => c.id === transaction.categoriaId)
+        const account = safeAccounts.find(item => item.id === transaction.contoId)
+        const category = safeCategories.find(item => item.id === transaction.categoriaId)
         toast.success(`Movimento aggiunto: ${transaction.tipo} ${formatCurrency(transaction.importo)} - ${account?.nome || ''}`)
-        screenReader.announceTransaction(
-          transaction.tipo,
-          transaction.importo,
-          account?.nome || 'Conto sconosciuto',
-          category?.nome
-        )
+        screenReader.announceTransaction(transaction.tipo, transaction.importo, account?.nome || 'Conto sconosciuto', category?.nome)
         updatedTransactions = [...current, transaction]
       }
-      
+
       if (transaction.tipo === 'uscita') {
         checkBudgetNotifications(updatedTransactions)
       }
-      
-      return updatedTransactions
-    })
-    setEditingTransaction(undefined)
-  }
 
-  const checkBudgetNotifications = (updatedTransactions: Transaction[]) => {
-    const activeBudgets = getActiveBudgets(safeBudgets)
-    const currentPercentages = budgetPercentages || {}
-    
-    activeBudgets.forEach(budget => {
-      const { percentage: newPercentage } = getBudgetProgress(budget, updatedTransactions)
-      const previousPercentage = currentPercentages[budget.id] || 0
-      
-      const { shouldShow, level } = shouldShowBudgetNotification(budget, previousPercentage, newPercentage)
-      
-      if (shouldShow && level) {
-        const title = getBudgetNotificationTitle(level)
-        const { spent, remaining } = getBudgetProgress(budget, updatedTransactions)
-        
-        let message = ''
-        if (level === 'exceeded') {
-          message = `Budget "${budget.nome}" superato! Hai speso ${formatCurrency(spent)} su ${formatCurrency(budget.importoTarget)}.`
-          soundSystem.play('budget-exceeded')
-          hapticSystem.budgetExceeded()
-        } else if (level === 'critical') {
-          message = `Attenzione! Il budget "${budget.nome}" è al ${Math.round(newPercentage)}%. Rimangono ${formatCurrency(remaining)}.`
-          soundSystem.play('budget-critical')
-          hapticSystem.budgetCritical()
-        } else if (level === 'warning') {
-          message = `Il budget "${budget.nome}" ha raggiunto il ${Math.round(newPercentage)}%.`
-          soundSystem.play('budget-warning')
-          hapticSystem.budgetWarning()
-        }
-        
-        if (level === 'exceeded') {
-          toast.error(title, { description: message, duration: 6000 })
-        } else if (level === 'critical') {
-          toast.warning(title, { description: message, duration: 5000 })
-        } else {
-          toast(title, { description: message, duration: 4000 })
-        }
-      }
-      
-      setBudgetPercentages((current) => ({
-        ...(current || {}),
-        [budget.id]: newPercentage
-      }))
+      return updatedTransactions
     })
   }
 
   const handleSaveBudget = (budget: Budget) => {
     setBudgets((currentBudgets) => {
       const current = currentBudgets || []
-      const existingIndex = current.findIndex(b => b.id === budget.id)
+      const existingIndex = current.findIndex(item => item.id === budget.id)
       if (existingIndex >= 0) {
         const updated = [...current]
         updated[existingIndex] = budget
@@ -304,21 +296,20 @@ function App() {
         toast.success('Budget modificato')
         screenReader.announceSuccess(`Budget ${budget.nome} modificato.`)
         return updated
-      } else {
-        soundSystem.play('budget-created')
-        hapticSystem.budgetCreated()
-        toast.success(`Budget "${budget.nome}" creato`)
-        screenReader.announceSuccess(`Nuovo budget ${budget.nome} creato. Importo target: ${formatCurrency(budget.importoTarget)} per periodo ${budget.periodo}.`)
-        return [...current, budget]
       }
+
+      soundSystem.play('budget-created')
+      hapticSystem.budgetCreated()
+      toast.success(`Budget "${budget.nome}" creato`)
+      screenReader.announceSuccess(`Nuovo budget ${budget.nome} creato. Importo target: ${formatCurrency(budget.importoTarget)} per periodo ${budget.periodo}.`)
+      return [...current, budget]
     })
-    setEditingBudget(undefined)
   }
 
   const handleSaveSavingsGoal = (goal: SavingsGoal) => {
     setSavingsGoals((currentGoals) => {
       const current = currentGoals || []
-      const existingIndex = current.findIndex(g => g.id === goal.id)
+      const existingIndex = current.findIndex(item => item.id === goal.id)
       if (existingIndex >= 0) {
         const updated = [...current]
         updated[existingIndex] = goal
@@ -327,31 +318,28 @@ function App() {
         toast.success('Obiettivo di risparmio modificato')
         screenReader.announceSuccess(`Obiettivo ${goal.nome} modificato.`)
         return updated
-      } else {
-        soundSystem.play('goal-created')
-        hapticSystem.goalCreated()
-        toast.success(`Obiettivo "${goal.nome}" creato`)
-        screenReader.announceSuccess(`Nuovo obiettivo di risparmio ${goal.nome} creato. Target: ${formatCurrency(goal.importoTarget)}.`)
-        return [...current, goal]
       }
-    })
-    setEditingSavingsGoal(undefined)
-  }
 
-  const handleAddFundsToGoal = (goal: SavingsGoal) => {
-    setEditingSavingsGoal(goal)
-    setShowSavingsGoalDialog(true)
+      soundSystem.play('goal-created')
+      hapticSystem.goalCreated()
+      toast.success(`Obiettivo "${goal.nome}" creato`)
+      screenReader.announceSuccess(`Nuovo obiettivo di risparmio ${goal.nome} creato. Target: ${formatCurrency(goal.importoTarget)}.`)
+      return [...current, goal]
+    })
   }
 
   const handleDeleteConfirm = () => {
-    if (!deletingItem) return
+    if (!deletingItem) {
+      return
+    }
 
     soundSystem.play('delete')
     hapticSystem.delete()
+
     if (deletingItem.type === 'account') {
-      const account = safeAccounts.find(a => a.id === deletingItem.id)
-      setAccounts((current) => (current || []).filter(a => a.id !== deletingItem.id))
-      setTransactions((current) => (current || []).filter(t => t.contoId !== deletingItem.id && t.contoDestinazioneId !== deletingItem.id))
+      const account = safeAccounts.find(item => item.id === deletingItem.id)
+      setAccounts((current) => (current || []).filter(item => item.id !== deletingItem.id))
+      setTransactions((current) => (current || []).filter(item => item.contoId !== deletingItem.id && item.contoDestinazioneId !== deletingItem.id))
       soundSystem.play('account-deleted')
       hapticSystem.accountDeleted()
       toast.success('Conto eliminato')
@@ -361,12 +349,12 @@ function App() {
         screenReader.announceSuccess('Conto eliminato.')
       }
     } else if (deletingItem.type === 'transaction') {
-      setTransactions((current) => (current || []).filter(t => t.id !== deletingItem.id))
+      setTransactions((current) => (current || []).filter(item => item.id !== deletingItem.id))
       toast.success('Movimento eliminato')
       screenReader.announceSuccess('Movimento eliminato.')
     } else if (deletingItem.type === 'budget') {
-      const budget = safeBudgets.find(b => b.id === deletingItem.id)
-      setBudgets((current) => (current || []).filter(b => b.id !== deletingItem.id))
+      const budget = safeBudgets.find(item => item.id === deletingItem.id)
+      setBudgets((current) => (current || []).filter(item => item.id !== deletingItem.id))
       soundSystem.play('budget-deleted')
       hapticSystem.budgetDeleted()
       toast.success('Budget eliminato')
@@ -376,8 +364,8 @@ function App() {
         screenReader.announceSuccess('Budget eliminato.')
       }
     } else if (deletingItem.type === 'savingsGoal') {
-      const goal = safeSavingsGoals.find(g => g.id === deletingItem.id)
-      setSavingsGoals((current) => (current || []).filter(g => g.id !== deletingItem.id))
+      const goal = safeSavingsGoals.find(item => item.id === deletingItem.id)
+      setSavingsGoals((current) => (current || []).filter(item => item.id !== deletingItem.id))
       toast.success('Obiettivo di risparmio eliminato')
       if (goal) {
         screenReader.announceSuccess(`Obiettivo ${goal.nome} eliminato.`)
@@ -385,9 +373,6 @@ function App() {
         screenReader.announceSuccess('Obiettivo eliminato.')
       }
     }
-
-    setDeletingItem(null)
-    setShowDeleteDialog(false)
   }
 
   const handleExportCSV = () => {
@@ -397,6 +382,69 @@ function App() {
     hapticSystem.export()
     toast.success('Dati esportati in CSV')
     screenReader.announceSuccess(`Dati esportati. ${visibleTransactions.length} movimenti salvati in formato CSV.`)
+  }
+
+  const toggleCategoryVisibility = (categoryId: string) => {
+    setVisibleCategories((current) => {
+      const currentCategories = current || []
+      const category = ACCOUNT_CATEGORIES.find(item => item.id === categoryId)
+      const categoryName = category?.label || 'Categoria'
+
+      if (currentCategories.includes(categoryId)) {
+        soundSystem.play('filter-toggle')
+        hapticSystem.filterToggle()
+        screenReader.announceFilter(categoryName, false)
+        return currentCategories.filter((item) => item !== categoryId)
+      }
+
+      soundSystem.play('category-toggle')
+      hapticSystem.categoryToggle()
+      screenReader.announceFilter(categoryName, true)
+      return [...currentCategories, categoryId]
+    })
+  }
+
+  const toggleAllCategories = () => {
+    setVisibleCategories((current) => {
+      const currentCategories = current || []
+      const allCategoryIds = ACCOUNT_CATEGORIES.map((category) => category.id)
+      if (currentCategories.length === allCategoryIds.length) {
+        soundSystem.play('filter-toggle')
+        hapticSystem.filterToggle()
+        return []
+      }
+
+      soundSystem.play('category-toggle')
+      hapticSystem.categoryToggle()
+      return allCategoryIds
+    })
+  }
+
+  const handleDismissBudgetAlert = (budgetId: string) => {
+    setDismissedAlerts((current) => {
+      const currentDismissed = current || []
+      soundSystem.play('alert-dismissed')
+      hapticSystem.alertDismissed()
+      return [...currentDismissed, budgetId]
+    })
+  }
+
+  const handleViewBudget = (budgetId: string) => {
+    soundSystem.play('dialog-open')
+    hapticSystem.dialogOpen()
+    const budget = safeBudgets.find((item) => item.id === budgetId)
+    if (budget) {
+      setActiveTab('reports')
+      setTimeout(() => {
+        setEditingBudget(budget)
+        setShowBudgetDialog(true)
+      }, 300)
+    }
+  }
+
+  const handleAddFundsToGoal = (goal: SavingsGoal) => {
+    setEditingSavingsGoal(goal)
+    setShowSavingsGoalDialog(true)
   }
 
   const visibleAccounts = useMemo(() => {
@@ -482,42 +530,6 @@ function App() {
     return groupedAccounts.filter(group => safeVisibleCategories.includes(group.id))
   }, [groupedAccounts, visibleCategories])
 
-  const toggleCategoryVisibility = (categoryId: string) => {
-    setVisibleCategories((current) => {
-      const currentCategories = current || []
-      const category = ACCOUNT_CATEGORIES.find(c => c.id === categoryId)
-      const categoryName = category?.label || 'Categoria'
-      
-      if (currentCategories.includes(categoryId)) {
-        soundSystem.play('filter-toggle')
-        hapticSystem.filterToggle()
-        screenReader.announceFilter(categoryName, false)
-        return currentCategories.filter(id => id !== categoryId)
-      } else {
-        soundSystem.play('category-toggle')
-        hapticSystem.categoryToggle()
-        screenReader.announceFilter(categoryName, true)
-        return [...currentCategories, categoryId]
-      }
-    })
-  }
-
-  const toggleAllCategories = () => {
-    setVisibleCategories((current) => {
-      const currentCategories = current || []
-      const allCategoryIds = ACCOUNT_CATEGORIES.map(c => c.id)
-      if (currentCategories.length === allCategoryIds.length) {
-        soundSystem.play('filter-toggle')
-        hapticSystem.filterToggle()
-        return []
-      } else {
-        soundSystem.play('category-toggle')
-        hapticSystem.categoryToggle()
-        return allCategoryIds
-      }
-    })
-  }
-
   const allCategoriesVisible = useMemo(() => {
     const currentCategories = visibleCategories || []
     return currentCategories.length === ACCOUNT_CATEGORIES.map(c => c.id).length
@@ -528,28 +540,6 @@ function App() {
     const dismissedIds = dismissedAlerts || []
     return alerts.filter(alert => !dismissedIds.includes(alert.budgetId))
   }, [safeBudgets, visibleTransactions, dismissedAlerts])
-
-  const handleDismissBudgetAlert = (budgetId: string) => {
-    setDismissedAlerts((current) => {
-      const currentDismissed = current || []
-      soundSystem.play('alert-dismissed')
-      hapticSystem.alertDismissed()
-      return [...currentDismissed, budgetId]
-    })
-  }
-
-  const handleViewBudget = (budgetId: string) => {
-    soundSystem.play('dialog-open')
-    hapticSystem.dialogOpen()
-    setActiveTab('reports')
-    const budget = safeBudgets.find(b => b.id === budgetId)
-    if (budget) {
-      setTimeout(() => {
-        setEditingBudget(budget)
-        setShowBudgetDialog(true)
-      }, 300)
-    }
-  }
 
   const recentTransactionsNav = useListNavigation({
     itemCount: recentTransactions.length,
@@ -1737,7 +1727,7 @@ function App() {
       <AccountDialog
         open={showAccountDialog}
         onClose={() => { setShowAccountDialog(false); setEditingAccount(undefined) }}
-        onSave={handleSaveAccount}
+        onSave={(account) => { handleSaveAccount(account); setEditingAccount(undefined) }}
         account={editingAccount}
         hasPrivateAccount={hasPrivateAccount && !editingAccount?.isPrivato}
       />
@@ -1745,7 +1735,7 @@ function App() {
       <TransactionDialog
         open={showTransactionDialog}
         onClose={() => { setShowTransactionDialog(false); setEditingTransaction(undefined) }}
-        onSave={handleSaveTransaction}
+        onSave={(transaction) => { handleSaveTransaction(transaction); setEditingTransaction(undefined) }}
         transaction={editingTransaction}
         accounts={visibleAccounts}
         categories={safeCategories}
@@ -1754,7 +1744,7 @@ function App() {
       <BudgetDialog
         open={showBudgetDialog}
         onClose={() => { setShowBudgetDialog(false); setEditingBudget(undefined) }}
-        onSave={handleSaveBudget}
+        onSave={(budget) => { handleSaveBudget(budget); setEditingBudget(undefined) }}
         budget={editingBudget}
         categories={safeCategories}
         accounts={visibleAccounts}
@@ -1763,7 +1753,7 @@ function App() {
       <SavingsGoalDialog
         open={showSavingsGoalDialog}
         onClose={() => { setShowSavingsGoalDialog(false); setEditingSavingsGoal(undefined) }}
-        onSave={handleSaveSavingsGoal}
+        onSave={(goal) => { handleSaveSavingsGoal(goal); setEditingSavingsGoal(undefined) }}
         goal={editingSavingsGoal}
         accounts={visibleAccounts}
       />
@@ -1771,6 +1761,7 @@ function App() {
       <AlertDialog open={showDeleteDialog} onOpenChange={(open) => {
         if (!open) {
           soundSystem.play('dialog-close')
+          setDeletingItem(null)
         }
         setShowDeleteDialog(open)
       }}>
@@ -1804,6 +1795,14 @@ function App() {
     </div>
     <Toaster />
     </>
+  )
+}
+
+function App() {
+  return (
+    <AppDataProvider>
+      <AppContent />
+    </AppDataProvider>
   )
 }
 
