@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useKV } from '@github/spark/hooks'
 import { Account, Transaction, Budget, SavingsGoal } from '@/lib/types'
 import { hashPin, verifyPin } from '@/lib/crypto'
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from '@/lib/constants'
@@ -10,6 +9,7 @@ import { hapticSystem } from '@/lib/haptic-system'
 import { useScreenReader } from '@/hooks/use-screen-reader'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { AppDataProvider, useAppData } from '@/context/AppDataContext'
+import { AuthProvider, useAuth } from '@/context/AuthContext'
 import { SkipLink } from '@/components/SkipLink'
 import { PinDialog } from '@/components/PinDialog'
 import { AccountCard } from '@/components/AccountCard'
@@ -76,13 +76,15 @@ function AppContent() {
     safeBudgets,
     safeSavingsGoals,
   } = useAppData()
-  const [globalPinHash, setGlobalPinHash] = useKV<string>('global-pin-hash', '')
-  const [privatePinHash, setPrivatePinHash] = useKV<string>('private-pin-hash', '')
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isPrivateUnlocked, setIsPrivateUnlocked] = useState(false)
-  const [isSetupMode, setIsSetupMode] = useState(false)
-  const [showPinDialog, setShowPinDialog] = useState(false)
-  const [showPrivatePinDialog, setShowPrivatePinDialog] = useState(false)
+  const {
+    globalPinHash, setGlobalPinHash,
+    privatePinHash, setPrivatePinHash,
+    isAuthenticated, setIsAuthenticated,
+    isPrivateUnlocked, setIsPrivateUnlocked,
+    isSetupMode, setIsSetupMode,
+    showPinDialog, setShowPinDialog,
+    showPrivatePinDialog, setShowPrivatePinDialog,
+  } = useAuth()
   const [showAccountDialog, setShowAccountDialog] = useState(false)
   const [showTransactionDialog, setShowTransactionDialog] = useState(false)
   const [showBudgetDialog, setShowBudgetDialog] = useState(false)
@@ -105,15 +107,6 @@ function AppContent() {
       soundSystem.play('dialog-open')
     }
   }, [showDeleteDialog])
-
-  useEffect(() => {
-    if (!globalPinHash) {
-      setIsSetupMode(true)
-      setShowPinDialog(true)
-    } else {
-      setShowPinDialog(true)
-    }
-  }, [globalPinHash])
 
   const handleGlobalPinSubmit = async (pin: string) => {
     if (isSetupMode) {
@@ -1800,9 +1793,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AppDataProvider>
-      <AppContent />
-    </AppDataProvider>
+    <AuthProvider>
+      <AppDataProvider>
+        <AppContent />
+      </AppDataProvider>
+    </AuthProvider>
   )
 }
 
