@@ -2,8 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { Account, Transaction, Budget, SavingsGoal } from '@/lib/types'
 import { hashPin, verifyPin } from '@/lib/crypto'
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from '@/lib/constants'
-import { calculateAccountBalance, getTotalBalance, formatCurrency, exportToCSV, downloadFile, getActiveBudgets, getBudgetProgress } from '@/lib/helpers'
-import { generateBudgetAlerts, shouldShowBudgetNotification, getBudgetNotificationTitle } from '@/lib/budget-alerts'
+import { calculateAccountBalance, getTotalBalance, formatCurrency, getActiveBudgets } from '@/lib/helpers'
+import { generateBudgetAlerts } from '@/lib/budget-alerts'
 import { soundSystem } from '@/lib/sound-system'
 import { hapticSystem } from '@/lib/haptic-system'
 import { useScreenReader } from '@/hooks/use-screen-reader'
@@ -75,6 +75,16 @@ function AppContent() {
     safeCategories,
     safeBudgets,
     safeSavingsGoals,
+    handleSaveAccount,
+    handleSaveTransaction,
+    handleSaveBudget,
+    handleSaveSavingsGoal,
+    handleDeleteConfirm,
+    handleExportCSV,
+    toggleCategoryVisibility,
+    toggleAllCategories,
+    handleDismissBudgetAlert,
+    handleViewBudget,
   } = useAppData()
   const {
     globalPinHash, setGlobalPinHash,
@@ -168,270 +178,6 @@ function AppContent() {
         toast.error('PIN privato non corretto')
         screenReader.announceError('PIN privato non corretto. Riprova.')
       }
-    }
-  }
-
-  const handleSaveAccount = (account: Account) => {
-    setAccounts((currentAccounts) => {
-      const current = currentAccounts || []
-      const existingIndex = current.findIndex(item => item.id === account.id)
-      if (existingIndex >= 0) {
-        const updated = [...current]
-        updated[existingIndex] = account
-        soundSystem.play('save')
-        hapticSystem.save()
-        toast.success('Conto modificato')
-        screenReader.announceSuccess(`Conto ${account.nome} modificato con successo.`)
-        return updated
-      }
-
-      soundSystem.play('account-created')
-      hapticSystem.accountCreated()
-      toast.success(`Conto "${account.nome}" creato`)
-      screenReader.announceSuccess(`Nuovo conto ${account.nome} di tipo ${account.tipo} creato con saldo iniziale di ${formatCurrency(account.saldoIniziale)}.`)
-      return [...current, account]
-    })
-  }
-
-  const checkBudgetNotifications = (updatedTransactions: Transaction[]) => {
-    const activeBudgets = getActiveBudgets(safeBudgets)
-    const currentPercentages = budgetPercentages || {}
-
-    activeBudgets.forEach((budget) => {
-      const { percentage: newPercentage } = getBudgetProgress(budget, updatedTransactions)
-      const previousPercentage = currentPercentages[budget.id] || 0
-      const { shouldShow, level } = shouldShowBudgetNotification(budget, previousPercentage, newPercentage)
-
-      if (shouldShow && level) {
-        const title = getBudgetNotificationTitle(level)
-        const { spent, remaining } = getBudgetProgress(budget, updatedTransactions)
-
-        let message = ''
-        if (level === 'exceeded') {
-          message = `Budget "${budget.nome}" superato! Hai speso ${formatCurrency(spent)} su ${formatCurrency(budget.importoTarget)}.`
-          soundSystem.play('budget-exceeded')
-          hapticSystem.budgetExceeded()
-        } else if (level === 'critical') {
-          message = `Attenzione! Il budget "${budget.nome}" è al ${Math.round(newPercentage)}%. Rimangono ${formatCurrency(remaining)}.`
-          soundSystem.play('budget-critical')
-          hapticSystem.budgetCritical()
-        } else if (level === 'warning') {
-          message = `Il budget "${budget.nome}" ha raggiunto il ${Math.round(newPercentage)}%.`
-          soundSystem.play('budget-warning')
-          hapticSystem.budgetWarning()
-        }
-
-        if (level === 'exceeded') {
-          toast.error(title, { description: message, duration: 6000 })
-        } else if (level === 'critical') {
-          toast.warning(title, { description: message, duration: 5000 })
-        } else {
-          toast(title, { description: message, duration: 4000 })
-        }
-      }
-
-      setBudgetPercentages((current) => ({
-        ...(current || {}),
-        [budget.id]: newPercentage,
-      }))
-    })
-  }
-
-  const handleSaveTransaction = (transaction: Transaction) => {
-    setTransactions((currentTransactions) => {
-      const current = currentTransactions || []
-      const existingIndex = current.findIndex(item => item.id === transaction.id)
-
-      let updatedTransactions: Transaction[]
-      if (existingIndex >= 0) {
-        const updated = [...current]
-        updated[existingIndex] = transaction
-        soundSystem.play('save')
-        hapticSystem.save()
-        toast.success('Movimento modificato')
-        screenReader.announceSuccess('Movimento modificato con successo.')
-        updatedTransactions = updated
-      } else {
-        if (transaction.tipo === 'entrata') {
-          soundSystem.play('income')
-          hapticSystem.income()
-        } else if (transaction.tipo === 'uscita') {
-          soundSystem.play('expense')
-          hapticSystem.expense()
-        } else {
-          soundSystem.play('transfer')
-          hapticSystem.transfer()
-        }
-        const account = safeAccounts.find(item => item.id === transaction.contoId)
-        const category = safeCategories.find(item => item.id === transaction.categoriaId)
-        toast.success(`Movimento aggiunto: ${transaction.tipo} ${formatCurrency(transaction.importo)} - ${account?.nome || ''}`)
-        screenReader.announceTransaction(transaction.tipo, transaction.importo, account?.nome || 'Conto sconosciuto', category?.nome)
-        updatedTransactions = [...current, transaction]
-      }
-
-      if (transaction.tipo === 'uscita') {
-        checkBudgetNotifications(updatedTransactions)
-      }
-
-      return updatedTransactions
-    })
-  }
-
-  const handleSaveBudget = (budget: Budget) => {
-    setBudgets((currentBudgets) => {
-      const current = currentBudgets || []
-      const existingIndex = current.findIndex(item => item.id === budget.id)
-      if (existingIndex >= 0) {
-        const updated = [...current]
-        updated[existingIndex] = budget
-        soundSystem.play('save')
-        hapticSystem.save()
-        toast.success('Budget modificato')
-        screenReader.announceSuccess(`Budget ${budget.nome} modificato.`)
-        return updated
-      }
-
-      soundSystem.play('budget-created')
-      hapticSystem.budgetCreated()
-      toast.success(`Budget "${budget.nome}" creato`)
-      screenReader.announceSuccess(`Nuovo budget ${budget.nome} creato. Importo target: ${formatCurrency(budget.importoTarget)} per periodo ${budget.periodo}.`)
-      return [...current, budget]
-    })
-  }
-
-  const handleSaveSavingsGoal = (goal: SavingsGoal) => {
-    setSavingsGoals((currentGoals) => {
-      const current = currentGoals || []
-      const existingIndex = current.findIndex(item => item.id === goal.id)
-      if (existingIndex >= 0) {
-        const updated = [...current]
-        updated[existingIndex] = goal
-        soundSystem.play('save')
-        hapticSystem.save()
-        toast.success('Obiettivo di risparmio modificato')
-        screenReader.announceSuccess(`Obiettivo ${goal.nome} modificato.`)
-        return updated
-      }
-
-      soundSystem.play('goal-created')
-      hapticSystem.goalCreated()
-      toast.success(`Obiettivo "${goal.nome}" creato`)
-      screenReader.announceSuccess(`Nuovo obiettivo di risparmio ${goal.nome} creato. Target: ${formatCurrency(goal.importoTarget)}.`)
-      return [...current, goal]
-    })
-  }
-
-  const handleDeleteConfirm = () => {
-    if (!deletingItem) {
-      return
-    }
-
-    soundSystem.play('delete')
-    hapticSystem.delete()
-
-    if (deletingItem.type === 'account') {
-      const account = safeAccounts.find(item => item.id === deletingItem.id)
-      setAccounts((current) => (current || []).filter(item => item.id !== deletingItem.id))
-      setTransactions((current) => (current || []).filter(item => item.contoId !== deletingItem.id && item.contoDestinazioneId !== deletingItem.id))
-      soundSystem.play('account-deleted')
-      hapticSystem.accountDeleted()
-      toast.success('Conto eliminato')
-      if (account) {
-        screenReader.announceSuccess(`Conto ${account.nome} eliminato. Tutti i movimenti associati sono stati rimossi.`)
-      } else {
-        screenReader.announceSuccess('Conto eliminato.')
-      }
-    } else if (deletingItem.type === 'transaction') {
-      setTransactions((current) => (current || []).filter(item => item.id !== deletingItem.id))
-      toast.success('Movimento eliminato')
-      screenReader.announceSuccess('Movimento eliminato.')
-    } else if (deletingItem.type === 'budget') {
-      const budget = safeBudgets.find(item => item.id === deletingItem.id)
-      setBudgets((current) => (current || []).filter(item => item.id !== deletingItem.id))
-      soundSystem.play('budget-deleted')
-      hapticSystem.budgetDeleted()
-      toast.success('Budget eliminato')
-      if (budget) {
-        screenReader.announceSuccess(`Budget ${budget.nome} eliminato.`)
-      } else {
-        screenReader.announceSuccess('Budget eliminato.')
-      }
-    } else if (deletingItem.type === 'savingsGoal') {
-      const goal = safeSavingsGoals.find(item => item.id === deletingItem.id)
-      setSavingsGoals((current) => (current || []).filter(item => item.id !== deletingItem.id))
-      toast.success('Obiettivo di risparmio eliminato')
-      if (goal) {
-        screenReader.announceSuccess(`Obiettivo ${goal.nome} eliminato.`)
-      } else {
-        screenReader.announceSuccess('Obiettivo eliminato.')
-      }
-    }
-  }
-
-  const handleExportCSV = () => {
-    const csv = exportToCSV(visibleTransactions, visibleAccounts, safeCategories)
-    downloadFile(csv, `zecchino-export-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv')
-    soundSystem.play('export')
-    hapticSystem.export()
-    toast.success('Dati esportati in CSV')
-    screenReader.announceSuccess(`Dati esportati. ${visibleTransactions.length} movimenti salvati in formato CSV.`)
-  }
-
-  const toggleCategoryVisibility = (categoryId: string) => {
-    setVisibleCategories((current) => {
-      const currentCategories = current || []
-      const category = ACCOUNT_CATEGORIES.find(item => item.id === categoryId)
-      const categoryName = category?.label || 'Categoria'
-
-      if (currentCategories.includes(categoryId)) {
-        soundSystem.play('filter-toggle')
-        hapticSystem.filterToggle()
-        screenReader.announceFilter(categoryName, false)
-        return currentCategories.filter((item) => item !== categoryId)
-      }
-
-      soundSystem.play('category-toggle')
-      hapticSystem.categoryToggle()
-      screenReader.announceFilter(categoryName, true)
-      return [...currentCategories, categoryId]
-    })
-  }
-
-  const toggleAllCategories = () => {
-    setVisibleCategories((current) => {
-      const currentCategories = current || []
-      const allCategoryIds = ACCOUNT_CATEGORIES.map((category) => category.id)
-      if (currentCategories.length === allCategoryIds.length) {
-        soundSystem.play('filter-toggle')
-        hapticSystem.filterToggle()
-        return []
-      }
-
-      soundSystem.play('category-toggle')
-      hapticSystem.categoryToggle()
-      return allCategoryIds
-    })
-  }
-
-  const handleDismissBudgetAlert = (budgetId: string) => {
-    setDismissedAlerts((current) => {
-      const currentDismissed = current || []
-      soundSystem.play('alert-dismissed')
-      hapticSystem.alertDismissed()
-      return [...currentDismissed, budgetId]
-    })
-  }
-
-  const handleViewBudget = (budgetId: string) => {
-    soundSystem.play('dialog-open')
-    hapticSystem.dialogOpen()
-    const budget = safeBudgets.find((item) => item.id === budgetId)
-    if (budget) {
-      setActiveTab('reports')
-      setTimeout(() => {
-        setEditingBudget(budget)
-        setShowBudgetDialog(true)
-      }, 300)
     }
   }
 
@@ -724,7 +470,7 @@ function AppContent() {
       ctrl: true,
       callback: () => {
         if (isAuthenticated && activeTab === 'transactions') {
-          handleExportCSV()
+          handleExportCSV(visibleTransactions, visibleAccounts)
         }
       },
       description: 'Export CSV'
@@ -873,7 +619,13 @@ function AppContent() {
               <BudgetAlertBanner
                 alerts={budgetAlerts}
                 onDismiss={handleDismissBudgetAlert}
-                onViewBudget={handleViewBudget}
+                onViewBudget={(id) => handleViewBudget(id, (budget) => {
+                  setActiveTab('reports')
+                  setTimeout(() => {
+                    setEditingBudget(budget)
+                    setShowBudgetDialog(true)
+                  }, 300)
+                })}
               />
             </div>
           )}
@@ -1229,7 +981,7 @@ function AppContent() {
               <h2 className="text-2xl font-semibold">Tutti i Movimenti</h2>
               <div className="flex gap-2" role="group" aria-label="Azioni movimenti">
                 <Button 
-                  onClick={handleExportCSV} 
+                  onClick={() => handleExportCSV(visibleTransactions, visibleAccounts)} 
                   variant="outline" 
                   className="gap-2"
                   data-focus-info="Esporta movimenti in formato CSV (Ctrl+E)"
@@ -1773,7 +1525,7 @@ function AppContent() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => soundSystem.play('dialog-close')}>Annulla</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction onClick={() => { if (deletingItem) handleDeleteConfirm(deletingItem) }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Elimina
             </AlertDialogAction>
           </AlertDialogFooter>
