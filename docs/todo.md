@@ -13,12 +13,12 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| _(nessun TODO attivo)_ | — | — | — |
 
 ## TODO completati
 
 | Feature / Sprint | File specifico | Completato il |
 |---|---|---|
+| Refactoring P05 — use-visible-data | `docs/3 - todo lists/P05-todo.md` | 2026-04-22 |
 | Refactoring P01 — Context Split | `docs/3 - todo lists/P01-todo.md` | 2026-04-22 |
 
 ---

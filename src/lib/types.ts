@@ -66,6 +66,12 @@ export interface SavingsGoal {
   dataCompletamento?: string
 }
 
+export type AccountGroup = {
+  id: string
+  label: string
+  accounts: Account[]
+}
+
 export interface AppState {
   isAuthenticated: boolean
   isPrivateUnlocked: boolean
