@@ -19,7 +19,7 @@
 
 | Feature / Sprint | File specifico | Completato il |
 |---|---|---|
-| _(nessuno ancora)_ | — | — |
+| Refactoring P01 — Context Split | `docs/3 - todo lists/P01-todo.md` | 2026-04-22 |
 
 ---
 

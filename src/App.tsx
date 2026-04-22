@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Account, Transaction, Budget, SavingsGoal } from '@/lib/types'
-import { hashPin, verifyPin } from '@/lib/crypto'
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from '@/lib/constants'
 import { calculateAccountBalance, getTotalBalance, formatCurrency, getActiveBudgets } from '@/lib/helpers'
 import { generateBudgetAlerts } from '@/lib/budget-alerts'
@@ -94,6 +93,8 @@ function AppContent() {
     isSetupMode, setIsSetupMode,
     showPinDialog, setShowPinDialog,
     showPrivatePinDialog, setShowPrivatePinDialog,
+    handleGlobalPinSubmit,
+    handlePrivatePinSubmit,
   } = useAuth()
   const [showAccountDialog, setShowAccountDialog] = useState(false)
   const [showTransactionDialog, setShowTransactionDialog] = useState(false)
@@ -117,69 +118,6 @@ function AppContent() {
       soundSystem.play('dialog-open')
     }
   }, [showDeleteDialog])
-
-  const handleGlobalPinSubmit = async (pin: string) => {
-    if (isSetupMode) {
-      const hash = await hashPin(pin)
-      setGlobalPinHash(hash)
-      setIsAuthenticated(true)
-      setShowPinDialog(false)
-      setIsSetupMode(false)
-      soundSystem.play('pin-success')
-      hapticSystem.pinSuccess()
-      toast.success('PIN globale creato con successo')
-      screenReader.announceSuccess('PIN globale creato. Accesso all\'applicazione consentito.')
-    } else {
-      const isValid = await verifyPin(pin, globalPinHash || '')
-      if (isValid) {
-        setIsAuthenticated(true)
-        setShowPinDialog(false)
-        soundSystem.play('unlock')
-        hapticSystem.unlock()
-        toast.success('Accesso consentito')
-        screenReader.announceSuccess('Accesso consentito. Benvenuto in Zecchino.')
-      } else {
-        soundSystem.play('pin-error')
-        hapticSystem.pinError()
-        toast.error('PIN non corretto')
-        screenReader.announceError('PIN non corretto. Riprova.')
-      }
-    }
-  }
-
-  const handlePrivatePinSubmit = async (pin: string) => {
-    if (!privatePinHash) {
-      const hash = await hashPin(pin)
-      setPrivatePinHash(hash)
-      setIsPrivateUnlocked(true)
-      setShowPrivatePinDialog(false)
-      soundSystem.play('private-unlock')
-      hapticSystem.privateUnlock()
-      toast.success('PIN privato creato e conto sbloccato')
-      screenReader.announceSuccess('PIN privato creato. Conto privato ora sbloccato.')
-    } else {
-      const isValid = await verifyPin(pin, privatePinHash)
-      if (isValid) {
-        setIsPrivateUnlocked(true)
-        setShowPrivatePinDialog(false)
-        soundSystem.play('private-unlock')
-        hapticSystem.privateUnlock()
-        const unlockedPrivateAccount = visibleAccounts.find(account => account.isPrivato)
-        if (unlockedPrivateAccount) {
-          const balance = calculateAccountBalance(unlockedPrivateAccount, visibleTransactions)
-          toast.success(`Conto privato sbloccato. Saldo: ${formatCurrency(balance)}`)
-          screenReader.announceBalance('Conto privato', balance)
-        } else {
-          screenReader.announceSuccess('Conto privato sbloccato.')
-        }
-      } else {
-        soundSystem.play('pin-error')
-        hapticSystem.pinError()
-        toast.error('PIN privato non corretto')
-        screenReader.announceError('PIN privato non corretto. Riprova.')
-      }
-    }
-  }
 
   const handleAddFundsToGoal = (goal: SavingsGoal) => {
     setEditingSavingsGoal(goal)
@@ -1464,7 +1402,16 @@ function AppContent() {
         open={showPrivatePinDialog}
         title={privatePinHash ? 'Sblocca Conto Privato' : 'Crea PIN Conto Privato'}
         description={privatePinHash ? 'Inserisci il PIN del conto privato' : 'Crea un PIN per il conto privato'}
-        onSubmit={handlePrivatePinSubmit}
+        onSubmit={(pin) => handlePrivatePinSubmit(pin, () => {
+          const privateAccount = visibleAccounts.find(a => a.isPrivato)
+          if (privateAccount) {
+            const balance = calculateAccountBalance(privateAccount, visibleTransactions)
+            toast.success(`Conto privato sbloccato. Saldo: ${formatCurrency(balance)}`)
+            screenReader.announceBalance('Conto privato', balance)
+          } else {
+            screenReader.announceSuccess('Conto privato sbloccato.')
+          }
+        })}
         onCancel={() => setShowPrivatePinDialog(false)}
         confirmMode={!privatePinHash}
       />
