@@ -1,14 +1,17 @@
 {
-  "current_phase": "",
-  "current_agent": "",
+  "current_phase": "code",
+  "current_agent": "Agent-Orchestrator",
   "retry_count": 0,
-  "confidence": 1.0,
-  "execution_mode": "autonomous",
-  "last_updated": "2026-04-21T11:01:18Z",
-  "phase_history": [],
-  "active_task_id": "",
+  "confidence": 0.9,
+  "execution_mode": "semi-autonomous",
+  "last_updated": "2026-04-22T05:35:18Z",
+  "phase_history": [
+    "P01-step1-code-pass"
+  ],
+  "active_task_id": "P01-context-split",
   "initialized": true,
   "project_name": "Zecchino",
   "stack": "React+TypeScript+Vite",
-  "framework_version": "2.3.1"
+  "framework_version": "2.3.1",
+  "last_step_output": "Passo 1 completato: AppDataContext creato e App.tsx collegato al provider; build e problems panel puliti, commit automatico bloccato da Agent-Git."
 }
