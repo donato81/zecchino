@@ -78,9 +78,10 @@
 
 ### Passo 9 — Estrazione `ReportsTab`
 
-- [ ] Creare `src/components/ReportsTab.tsx`
-- [ ] Spostare JSX `TabsContent value="reports"` (~righe 1386–1723 di App.tsx)
-- [ ] Verifica: card statistiche, grafici, budget, obiettivi risparmio, impostazioni
+- [~] Implementazione completata; validazione manuale UI/accessibilità in attesa
+- [x] Creare `src/components/ReportsTab.tsx`
+- [x] Spostare JSX `TabsContent value="reports"` da `App.tsx`
+- [~] Verifica: gate automatici completati; restano da eseguire i controlli manuali su card statistiche, grafici, budget, obiettivi risparmio e impostazioni
 
 ---
 

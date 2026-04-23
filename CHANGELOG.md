@@ -1,5 +1,14 @@
 # Changelog
 
+## [P09] — 2026-04-23
+
+### Refactoring
+- Estratto `src/components/ReportsTab.tsx` dal blocco JSX `TabsContent value="reports"` di `App.tsx` (~341 righe rimosse)
+- Migrati in `AppDataContext` gli stati dialog budget e savings goal (`showBudgetDialog`, `editingBudget`, `showSavingsGoalDialog`, `editingSavingsGoal`) e l'handler `handleAddFundsToGoal`
+- Sostituiti 3 `useMemo` locali in `ReportsTab`: `activeBudgets` (rimpiazza 4 chiamate a `getActiveBudgets`), `topIncomeCategories` e `topExpenseCategories` (rimpiazzano le IIFE nei tooltip)
+- Rimosso `chartPeriod` da `App.tsx`; è ora `useState` locale in `ReportsTab`
+- `App.tsx` ridotto di circa 346 righe complessive
+
 ## [P08] — 2026-04-23
 
 ### Refactoring

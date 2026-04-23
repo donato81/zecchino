@@ -56,6 +56,18 @@ type AppDataContextValue = {
   setEditingAccount: (a: Account | undefined) => void
   showAccountDialog: boolean
   setShowAccountDialog: (v: boolean) => void
+  // Dialog budget
+  showBudgetDialog: boolean
+  setShowBudgetDialog: (v: boolean) => void
+  editingBudget: Budget | undefined
+  setEditingBudget: (b: Budget | undefined) => void
+  // Dialog savings goal
+  showSavingsGoalDialog: boolean
+  setShowSavingsGoalDialog: (v: boolean) => void
+  editingSavingsGoal: SavingsGoal | undefined
+  setEditingSavingsGoal: (g: SavingsGoal | undefined) => void
+  // Handler derivato
+  handleAddFundsToGoal: (goal: SavingsGoal) => void
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null)
@@ -82,6 +94,15 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined)
   const [showAccountDialog, setShowAccountDialog] = useState(false)
+  const [showBudgetDialog, setShowBudgetDialog] = useState(false)
+  const [editingBudget, setEditingBudget] = useState<Budget | undefined>(undefined)
+  const [showSavingsGoalDialog, setShowSavingsGoalDialog] = useState(false)
+  const [editingSavingsGoal, setEditingSavingsGoal] = useState<SavingsGoal | undefined>(undefined)
+
+  const handleAddFundsToGoal = (goal: SavingsGoal) => {
+    setEditingSavingsGoal(goal)
+    setShowSavingsGoalDialog(true)
+  }
 
   const safeAccounts = useMemo(() => accounts || [], [accounts])
   const safeTransactions = useMemo(() => transactions || [], [transactions])
@@ -409,6 +430,15 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         setEditingAccount,
         showAccountDialog,
         setShowAccountDialog,
+        showBudgetDialog,
+        setShowBudgetDialog,
+        editingBudget,
+        setEditingBudget,
+        showSavingsGoalDialog,
+        setShowSavingsGoalDialog,
+        editingSavingsGoal,
+        setEditingSavingsGoal,
+        handleAddFundsToGoal,
       }}
     >
       {children}
