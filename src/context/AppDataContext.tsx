@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Account, Transaction, Category, Budget, SavingsGoal } from '@/lib/types'
 import { DEFAULT_CATEGORIES, ACCOUNT_CATEGORIES } from '@/lib/constants'
@@ -35,12 +35,22 @@ type AppDataContextValue = {
   handleSaveTransaction: (transaction: Transaction) => void
   handleSaveBudget: (budget: Budget) => void
   handleSaveSavingsGoal: (goal: SavingsGoal) => void
-  handleDeleteConfirm: (item: { type: 'account' | 'transaction' | 'budget' | 'savingsGoal', id: string }) => void
+  handleDeleteConfirm: () => void
   handleExportCSV: (visibleTransactions: Transaction[], visibleAccounts: Account[]) => void
   toggleCategoryVisibility: (categoryId: string) => void
   toggleAllCategories: () => void
   handleDismissBudgetAlert: (budgetId: string) => void
   handleViewBudget: (budgetId: string, onNavigate: (budget: Budget) => void) => void
+  // Dialog transaction
+  editingTransaction: Transaction | undefined
+  setEditingTransaction: (t: Transaction | undefined) => void
+  showTransactionDialog: boolean
+  setShowTransactionDialog: (v: boolean) => void
+  // Dialog delete (shared)
+  deletingItem: { type: 'account' | 'transaction' | 'budget' | 'savingsGoal'; id: string } | null
+  setDeletingItem: (item: { type: 'account' | 'transaction' | 'budget' | 'savingsGoal'; id: string } | null) => void
+  showDeleteDialog: boolean
+  setShowDeleteDialog: (v: boolean) => void
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null)
@@ -57,6 +67,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   )
   const [dismissedAlerts, setDismissedAlerts] = useKV<string[]>('dismissed-budget-alerts', [])
   const [budgetPercentages, setBudgetPercentages] = useKV<Record<string, number>>('budget-percentages', {})
+
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined)
+  const [showTransactionDialog, setShowTransactionDialog] = useState(false)
+  const [deletingItem, setDeletingItem] = useState<{
+    type: 'account' | 'transaction' | 'budget' | 'savingsGoal';
+    id: string
+  } | null>(null)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   const safeAccounts = useMemo(() => accounts || [], [accounts])
   const safeTransactions = useMemo(() => transactions || [], [transactions])
@@ -222,13 +240,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  const handleDeleteConfirm = (item: { type: 'account' | 'transaction' | 'budget' | 'savingsGoal', id: string }) => {
+  const handleDeleteConfirm = () => {
+    if (!deletingItem) return
     soundSystem.play('delete')
     hapticSystem.delete()
-    if (item.type === 'account') {
-      const account = safeAccounts.find(a => a.id === item.id)
-      setAccounts((current) => (current || []).filter(a => a.id !== item.id))
-      setTransactions((current) => (current || []).filter(t => t.contoId !== item.id && t.contoDestinazioneId !== item.id))
+    if (deletingItem.type === 'account') {
+      const account = safeAccounts.find(a => a.id === deletingItem.id)
+      setAccounts((current) => (current || []).filter(a => a.id !== deletingItem.id))
+      setTransactions((current) => (current || []).filter(t => t.contoId !== deletingItem.id && t.contoDestinazioneId !== deletingItem.id))
       soundSystem.play('account-deleted')
       hapticSystem.accountDeleted()
       toast.success('Conto eliminato')
@@ -237,13 +256,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       } else {
         screenReader.announceSuccess('Conto eliminato.')
       }
-    } else if (item.type === 'transaction') {
-      setTransactions((current) => (current || []).filter(t => t.id !== item.id))
+    } else if (deletingItem.type === 'transaction') {
+      setTransactions((current) => (current || []).filter(t => t.id !== deletingItem.id))
       toast.success('Movimento eliminato')
       screenReader.announceSuccess('Movimento eliminato.')
-    } else if (item.type === 'budget') {
-      const budget = safeBudgets.find(b => b.id === item.id)
-      setBudgets((current) => (current || []).filter(b => b.id !== item.id))
+    } else if (deletingItem.type === 'budget') {
+      const budget = safeBudgets.find(b => b.id === deletingItem.id)
+      setBudgets((current) => (current || []).filter(b => b.id !== deletingItem.id))
       soundSystem.play('budget-deleted')
       hapticSystem.budgetDeleted()
       toast.success('Budget eliminato')
@@ -252,9 +271,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       } else {
         screenReader.announceSuccess('Budget eliminato.')
       }
-    } else if (item.type === 'savingsGoal') {
-      const goal = safeSavingsGoals.find(g => g.id === item.id)
-      setSavingsGoals((current) => (current || []).filter(g => g.id !== item.id))
+    } else if (deletingItem.type === 'savingsGoal') {
+      const goal = safeSavingsGoals.find(g => g.id === deletingItem.id)
+      setSavingsGoals((current) => (current || []).filter(g => g.id !== deletingItem.id))
       toast.success('Obiettivo di risparmio eliminato')
       if (goal) {
         screenReader.announceSuccess(`Obiettivo ${goal.nome} eliminato.`)
@@ -340,21 +359,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   return (
     <AppDataContext.Provider
       value={{
-        accounts,
+        accounts: safeAccounts,
         setAccounts,
-        transactions,
+        transactions: safeTransactions,
         setTransactions,
-        categories,
+        categories: safeCategories,
         setCategories,
-        budgets,
+        budgets: safeBudgets,
         setBudgets,
-        savingsGoals,
+        savingsGoals: safeSavingsGoals,
         setSavingsGoals,
-        visibleCategories,
+        visibleCategories: visibleCategories || [],
         setVisibleCategories,
-        dismissedAlerts,
+        dismissedAlerts: dismissedAlerts || [],
         setDismissedAlerts,
-        budgetPercentages,
+        budgetPercentages: budgetPercentages || {},
         setBudgetPercentages,
         safeAccounts,
         safeTransactions,
@@ -371,6 +390,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         toggleAllCategories,
         handleDismissBudgetAlert,
         handleViewBudget,
+        editingTransaction,
+        setEditingTransaction,
+        showTransactionDialog,
+        setShowTransactionDialog,
+        deletingItem,
+        setDeletingItem,
+        showDeleteDialog,
+        setShowDeleteDialog,
       }}
     >
       {children}
