@@ -13,6 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| Refactoring P09 — ReportsTab | `docs/3 - todo lists/P09-todo.md` | 🔴 Da fare | Alta |
 
 ## TODO completati
 
