@@ -1,16 +1,17 @@
 {
   "schema_version": "2.0",
-  "updated_at": "2026-04-16T00:00:00Z",
+  "updated_at": "2026-04-22T00:00:00Z",
   "packages": [
     {
       "id": "spark-base",
       "display_name": "SPARK Base Layer",
       "description": "Layer fondazionale SCF con agenti base, skill condivise, instruction comuni e prompt framework general-purpose.",
-      "latest_version": "1.2.0",
+      "latest_version": "1.4.0",
       "version_source": "package-manifest",
       "status": "stable",
       "repo_url": "https://github.com/Nemex81/spark-base",
-      "min_engine_version": "2.1.0",
+      "min_engine_version": "2.4.0",
+      "engine_managed_resources": true,
       "tags": [
         "base",
         "foundation",
@@ -24,11 +25,12 @@
       "id": "scf-master-codecrafter",
       "display_name": "SCF Master CodeCrafter",
       "description": "Plugin CORE-CRAFT sopra spark-base per design, code routing, code UI e contesto MCP.",
-      "latest_version": "2.1.0",
+      "latest_version": "2.2.0",
       "version_source": "package-manifest",
       "status": "stable",
       "repo_url": "https://github.com/Nemex81/scf-master-codecrafter",
-      "min_engine_version": "2.1.0",
+      "min_engine_version": "2.4.0",
+      "engine_managed_resources": true,
       "tags": [
         "master",
         "core-craft",

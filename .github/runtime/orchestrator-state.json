@@ -1,17 +1,31 @@
 {
-  "current_phase": "code",
+  "current_phase": "P07",
   "current_agent": "Agent-Orchestrator",
   "retry_count": 0,
-  "confidence": 0.9,
-  "execution_mode": "semi-autonomous",
-  "last_updated": "2026-04-22T05:35:18Z",
+  "confidence": 0.95,
+  "execution_mode": "supervised",
+  "last_updated": "2026-04-23T06:34:57Z",
   "phase_history": [
-    "P01-step1-code-pass"
+    "P01-step1-code-pass",
+    "P06-code-pass",
+    "P06-validate-pass",
+    "P06-docs-pass",
+    "P06-git-pass",
+    "P06-release-checkpoint-pass"
   ],
-  "active_task_id": "P01-context-split",
+  "active_task_id": "P07-next-package",
   "initialized": true,
   "project_name": "Zecchino",
   "stack": "React+TypeScript+Vite",
   "framework_version": "2.3.1",
-  "last_step_output": "Passo 1 completato: AppDataContext creato e App.tsx collegato al provider; build e problems panel puliti, commit automatico bloccato da Agent-Git."
+  "last_step_output": "P06 completato e pushato su refactoring-architettura. Prossima fase raccomandata: P07.",
+  "update_check_done": true,
+  "last_update_check": "2026-04-23",
+  "available_package_updates": 2,
+  "completed_packages": [
+    "P01",
+    "P05",
+    "P06"
+  ],
+  "current_package": "P07"
 }
