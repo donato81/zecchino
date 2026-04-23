@@ -87,9 +87,10 @@
 
 ### Passo 10 — Estrazione `AppHeader`
 
-- [ ] Creare `src/components/AppHeader.tsx`
-- [ ] Spostare JSX header sticky (~righe 797–865 di App.tsx)
-- [ ] Verifica: saldo aggiornato, tooltip, bottone keyboard help
+- [~] Implementazione completata; validazione manuale UI/accessibilità in attesa
+- [x] Creare `src/components/AppHeader.tsx`
+- [x] Spostare JSX header sticky da `App.tsx`
+- [~] Verifica: build produzione e controlli statici completati; restano da eseguire i controlli manuali su saldo, tooltip e keyboard help
 
 ---
 

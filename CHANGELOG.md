@@ -1,5 +1,13 @@
 # Changelog
 
+## [P10] — 2026-04-23
+
+### Refactoring
+- Estratto `src/components/AppHeader.tsx` dal blocco JSX `<header>` di `App.tsx` (~78 righe rimosse)
+- Migrato `showKeyboardHelp` / `setShowKeyboardHelp` da `useState` locale in `App.tsx` ad `AppDataContext`
+- `App.tsx` ridotto a circa 447 righe (da 522 post-P09)
+- Rimosso import `Keyboard` da `App.tsx` (ora usato solo in `AppHeader`)
+
 ## [P09] — 2026-04-23
 
 ### Refactoring

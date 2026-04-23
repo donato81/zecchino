@@ -68,6 +68,9 @@ type AppDataContextValue = {
   setEditingSavingsGoal: (g: SavingsGoal | undefined) => void
   // Handler derivato
   handleAddFundsToGoal: (goal: SavingsGoal) => void
+  // Dialog keyboard shortcuts
+  showKeyboardHelp: boolean
+  setShowKeyboardHelp: (v: boolean) => void
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null)
@@ -98,6 +101,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [editingBudget, setEditingBudget] = useState<Budget | undefined>(undefined)
   const [showSavingsGoalDialog, setShowSavingsGoalDialog] = useState(false)
   const [editingSavingsGoal, setEditingSavingsGoal] = useState<SavingsGoal | undefined>(undefined)
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
 
   const handleAddFundsToGoal = (goal: SavingsGoal) => {
     setEditingSavingsGoal(goal)
@@ -439,6 +443,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         editingSavingsGoal,
         setEditingSavingsGoal,
         handleAddFundsToGoal,
+        showKeyboardHelp,
+        setShowKeyboardHelp,
       }}
     >
       {children}
