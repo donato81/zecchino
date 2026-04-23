@@ -13,6 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| Refactoring P07 — TransactionsTab | `docs/3 - todo lists/P07-todo.md` | 🔴 Da fare | Alta |
 
 ## TODO completati
 
