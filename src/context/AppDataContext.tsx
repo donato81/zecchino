@@ -51,6 +51,11 @@ type AppDataContextValue = {
   setDeletingItem: (item: { type: 'account' | 'transaction' | 'budget' | 'savingsGoal'; id: string } | null) => void
   showDeleteDialog: boolean
   setShowDeleteDialog: (v: boolean) => void
+  // Dialog account
+  editingAccount: Account | undefined
+  setEditingAccount: (a: Account | undefined) => void
+  showAccountDialog: boolean
+  setShowAccountDialog: (v: boolean) => void
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null)
@@ -75,6 +80,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     id: string
   } | null>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined)
+  const [showAccountDialog, setShowAccountDialog] = useState(false)
 
   const safeAccounts = useMemo(() => accounts || [], [accounts])
   const safeTransactions = useMemo(() => transactions || [], [transactions])
@@ -398,6 +405,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         setDeletingItem,
         showDeleteDialog,
         setShowDeleteDialog,
+        editingAccount,
+        setEditingAccount,
+        showAccountDialog,
+        setShowAccountDialog,
       }}
     >
       {children}

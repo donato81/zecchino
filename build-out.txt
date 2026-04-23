@@ -1,0 +1,13 @@
+
+> spark-template@0.0.0 build
+> tsc -b --noCheck && vite build
+
+[icon-proxy] Checking for exports in directory: C:\Users\forbi\OneDrive\Documenti\GitHub\zecchino\node_modules\@phosphor-icons\react
+[icon-proxy] Found package file: C:\Users\forbi\OneDrive\Documenti\GitHub\zecchino\node_modules\@phosphor-icons\react\dist\index.d.ts
+[icon-proxy] Loaded 1514 exports from C:\Users\forbi\OneDrive\Documenti\GitHub\zecchino\node_modules\@phosphor-icons\react\dist\index.d.ts
+[icon-proxy] Checking for exports in directory: C:\Users\forbi\OneDrive\Documenti\GitHub\zecchino\node_modules\@phosphor-icons\react
+[icon-proxy] Found package file: C:\Users\forbi\OneDrive\Documenti\GitHub\zecchino\node_modules\@phosphor-icons\react\dist\index.d.ts
+[icon-proxy] Loaded 1514 exports from C:\Users\forbi\OneDrive\Documenti\GitHub\zecchino\node_modules\@phosphor-icons\react\dist\index.d.ts
+[36mvite v7.2.6 [32mbuilding client environment for production...[36m[39m
+transforming...
+Terminare il processo batch (S/N)? 

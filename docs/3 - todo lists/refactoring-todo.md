@@ -72,10 +72,7 @@
 
 ### Passo 8 — Estrazione `DashboardTab`
 
-- [ ] Creare `src/components/DashboardTab.tsx`
-- [ ] Spostare JSX `TabsContent value="dashboard"` (~righe 940–1240 di App.tsx)
-- [ ] ⚠️ Verificare se `AccountGroup` necessita dei campi estesi (`color`, `badgeVariant`) — vedi AI1 in P05
-- [ ] Verifica: filtri categoria, grid conti, movimenti recenti
+- [x] P08 — Estrazione `DashboardTab` — completato 2026-04-23
 
 ---
 

@@ -63,6 +63,7 @@ src/
 │   ├── PinDialog.tsx
 │   ├── SavingsGoalCard.tsx
 │   ├── SavingsGoalDialog.tsx
+│   ├── DashboardTab.tsx
 │   ├── TransactionDialog.tsx
 │   ├── TransactionsTab.tsx
 │   ├── [Accessibility components]  # FocusIndicator, LiveRegion, SkipLink
@@ -102,11 +103,13 @@ src/
 
 Nessun state manager esterno. Lo stato applicazione (`AppState`) è:
 
-A partire da P01–P07, parte dello stato è migrata in Context dedicati:
+A partire da P01–P08, parte dello stato è migrata in Context dedicati:
 - `AppDataContext` — dati applicazione (conti, movimenti, budget, obiettivi,
   stato dialog transazioni ed eliminazioni)
 - `AuthContext` — autenticazione (PIN globale e privato)
 - `useVisibleData` — valori derivati calcolati dai due context
+- `DashboardTab` — tab Dashboard estratto come componente autonomo; gestisce filtri categoria,
+  griglia conti e movimenti recenti; istanzia localmente `recentTransactionsNav`
 
 1. Mantenuto in React (`useState` / `useReducer` in `App.tsx`)
 2. Persistito in **localStorage** ad ogni cambiamento

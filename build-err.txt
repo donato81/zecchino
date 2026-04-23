@@ -1,0 +1,29 @@
+Found 3 warnings while optimizing generated CSS:
+
+Issue #1:
+[2m│   .container {[22m
+[2m│     width: 100%;[22m
+[2m│[22m     @media (width >= (display-mode: standalone)) {
+[2m┆[22m                     [33m[2m^--[22m Unexpected token ParenthesisBlock[39m
+[2m┆[22m
+[2m│       max-width: (display-mode: standalone);[22m
+[2m│     }[22m
+
+Issue #2:
+[2m│       max-width: (display-mode: standalone);[22m
+[2m│     }[22m
+[2m│[22m     @media (width >= (pointer: coarse)) {
+[2m┆[22m                     [33m[2m^--[22m Unexpected token ParenthesisBlock[39m
+[2m┆[22m
+[2m│       max-width: (pointer: coarse);[22m
+[2m│     }[22m
+
+Issue #3:
+[2m│       max-width: (pointer: coarse);[22m
+[2m│     }[22m
+[2m│[22m     @media (width >= (pointer: fine)) {
+[2m┆[22m                     [33m[2m^--[22m Unexpected token ParenthesisBlock[39m
+[2m┆[22m
+[2m│       max-width: (pointer: fine);[22m
+[2m│     }[22m
+
