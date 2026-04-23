@@ -1,5 +1,12 @@
 # Changelog
 
+## [P11] — 2026-04-23
+
+### Refactoring
+- Estratto `src/components/AuthScreen.tsx` dal blocco JSX `!isAuthenticated` di `App.tsx` (~20 righe JSX rimosse)
+- Nessuna modifica ad `AppDataContext` né `AuthContext`: `AuthScreen` dipende solo da `useAuth()`
+- `App.tsx`: il guard `if (!isAuthenticated)` rimane; `SkipLink` e `PinDialog` rimangono necessari nel ramo autenticato
+
 ## [P10] — 2026-04-23
 
 ### Refactoring

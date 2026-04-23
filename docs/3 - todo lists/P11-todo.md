@@ -9,15 +9,15 @@
 
 ## Prima di iniziare
 
-- [ ] Leggere `docs/2 - coding plans/P11-coding-plan.md` per intero
-- [ ] Prendere nota dell'ambiguità **AI1** (blocco da estrarre: JSX alle righe ~242–261 di `App.tsx`; il guard `if (!isAuthenticated)` a ~riga 240 rimane in `App.tsx`)
-- [ ] Prendere nota dell'ambiguità **AI2** (`useAuth()` espone `showPinDialog`, `isSetupMode`, `handleGlobalPinSubmit` senza alias — nessuna modifica ad `AuthContext.tsx`)
-- [ ] Prendere nota dell'ambiguità **AI3** (`SkipLink` a ~riga 267 e `PinDialog` a ~riga 345 sono ancora usati nel ramo autenticato → entrambi gli import rimangono necessari in `App.tsx`)
-- [ ] Prendere nota di **R1** (radice JSX è Fragment `<>` — obbligatorio; `<SkipLink />` deve stare **fuori** dal `<div>` con `relative overflow-hidden`)
-- [ ] Prendere nota di **R2** (`style={{ animationDuration: '4s' }}` nel quarto layer — non è una classe Tailwind, TypeScript non segnala se manca — verifica visiva obbligatoria)
-- [ ] Prendere nota di **R3** (il guard `if (!isAuthenticated)` rimane in `App.tsx`; `isAuthenticated` non va destructurato in `AuthScreen`)
-- [ ] Verificare di essere sul branch `refactoring-architettura`
-- [ ] Eseguire `npm run build` e confermare che compila senza errori **prima** di iniziare
+- [x] Leggere `docs/2 - coding plans/P11-coding-plan.md` per intero
+- [x] Prendere nota dell'ambiguità **AI1** (blocco da estrarre: JSX alle righe ~242–261 di `App.tsx`; il guard `if (!isAuthenticated)` a ~riga 240 rimane in `App.tsx`)
+- [x] Prendere nota dell'ambiguità **AI2** (`useAuth()` espone `showPinDialog`, `isSetupMode`, `handleGlobalPinSubmit` senza alias — nessuna modifica ad `AuthContext.tsx`)
+- [x] Prendere nota dell'ambiguità **AI3** (`SkipLink` a ~riga 267 e `PinDialog` a ~riga 345 sono ancora usati nel ramo autenticato → entrambi gli import rimangono necessari in `App.tsx`)
+- [x] Prendere nota di **R1** (radice JSX è Fragment `<>` — obbligatorio; `<SkipLink />` deve stare **fuori** dal `<div>` con `relative overflow-hidden`)
+- [x] Prendere nota di **R2** (`style={{ animationDuration: '4s' }}` nel quarto layer — non è una classe Tailwind, TypeScript non segnala se manca — verifica visiva obbligatoria)
+- [x] Prendere nota di **R3** (il guard `if (!isAuthenticated)` rimane in `App.tsx`; `isAuthenticated` non va destructurato in `AuthScreen`)
+- [x] Verificare di essere sul branch `refactoring-architettura`
+- [x] Eseguire `npm run build` e confermare che compila senza errori **prima** di iniziare
 
 ---
 
@@ -27,59 +27,59 @@
 
 ### A.1 Creazione del file e import
 
-- [ ] Creare il file `src/components/AuthScreen.tsx` vuoto
-- [ ] Aggiungere import da `@/context/AuthContext`: `useAuth`
-- [ ] Aggiungere import da `@/components/SkipLink`: `SkipLink`
-- [ ] Aggiungere import da `@/components/PinDialog`: `PinDialog`
-- [ ] ⚠️ **Non importare** `useAppData`, `useVisibleData`, `useIsMobile` — `AuthScreen` non dipende dai dati applicazione
-- [ ] ⚠️ **Non importare** `soundSystem`, `hapticSystem` — il feedback è gestito dentro `handleGlobalPinSubmit` in `AuthContext`
-- [ ] ⚠️ **Non importare** componenti UI (`Button`, `Tooltip`, ecc.) né icone Phosphor — non presenti nel blocco
+- [x] Creare il file `src/components/AuthScreen.tsx` vuoto
+- [x] Aggiungere import da `@/context/AuthContext`: `useAuth`
+- [x] Aggiungere import da `@/components/SkipLink`: `SkipLink`
+- [x] Aggiungere import da `@/components/PinDialog`: `PinDialog`
+- [x] ⚠️ **Non importare** `useAppData`, `useVisibleData`, `useIsMobile` — `AuthScreen` non dipende dai dati applicazione
+- [x] ⚠️ **Non importare** `soundSystem`, `hapticSystem` — il feedback è gestito dentro `handleGlobalPinSubmit` in `AuthContext`
+- [x] ⚠️ **Non importare** componenti UI (`Button`, `Tooltip`, ecc.) né icone Phosphor — non presenti nel blocco
 
 ### A.2 Firma del componente
 
-- [ ] Aprire con:
+- [x] Aprire con:
   ```tsx
   export function AuthScreen() {
   ```
-- [ ] ⚠️ Nessuna props nella firma
-- [ ] ⚠️ Nessuno `useState` locale nel corpo del componente
+- [x] ⚠️ Nessuna props nella firma
+- [x] ⚠️ Nessuno `useState` locale nel corpo del componente
 
 ### A.3 Sorgenti dati
 
-- [ ] Aggiungere destructuring da `useAuth()`:
+- [x] Aggiungere destructuring da `useAuth()`:
   ```tsx
   const { showPinDialog, isSetupMode, handleGlobalPinSubmit } = useAuth()
   ```
-- [ ] ⚠️ **Non destructurare `isAuthenticated`** — il componente non controlla la propria visibilità (R3)
-- [ ] Verificare che i tre nomi corrispondano esattamente a quelli esposti da `AuthContextValue` (AI2)
+- [x] ⚠️ **Non destructurare `isAuthenticated`** — il componente non controlla la propria visibilità (R3)
+- [x] Verificare che i tre nomi corrispondano esattamente a quelli esposti da `AuthContextValue` (AI2)
 
 ### A.4 JSX del componente
 
-- [ ] Copiare il contenuto JSX di `src/App.tsx` righe **~242–261** come `return (…)`
-- [ ] ⚠️ **R1**: verificare che la radice del `return` sia un Fragment `<>...</>` — **non** un singolo `<div>`
-- [ ] ⚠️ **R1**: verificare che `<SkipLink />` sia il **primo figlio** del Fragment, **fuori** dal `<div>` con `relative overflow-hidden`
-- [ ] Verificare che il `<div>` esterno abbia `role="main"` e `aria-label="Schermata di autenticazione Zecchino"`
-- [ ] Verificare che i **quattro layer decorativi** siano tutti presenti e tutti abbiano `aria-hidden="true"`:
-  - [ ] Layer 1: `bg-gradient-to-br from-primary/90 via-secondary/80 to-accent/90` + `aria-hidden="true"`
-  - [ ] Layer 2: `bg-[radial-gradient(circle_at_30%_50%,...)]` + `aria-hidden="true"`
-  - [ ] Layer 3: `bg-[linear-gradient(...)] bg-[size:50px_50px]` con `mask-image` + `aria-hidden="true"`
-  - [ ] Layer 4: `animate-pulse` + `aria-hidden="true"`
-- [ ] ⚠️ **R2**: verificare che il layer 4 abbia `style={{ animationDuration: '4s' }}` — questo è un **inline style React**, non una classe Tailwind; TypeScript non segnala se manca
-- [ ] Verificare che `<PinDialog />` abbia esattamente cinque props:
-  - [ ] `open={showPinDialog}`
-  - [ ] `title={isSetupMode ? 'Imposta PIN Globale' : 'Inserisci PIN'}`
-  - [ ] `description={isSetupMode ? 'Crea un PIN per proteggere l\'applicazione' : 'Inserisci il tuo PIN per accedere'}`
-  - [ ] `onSubmit={handleGlobalPinSubmit}`
-  - [ ] `confirmMode={isSetupMode}`
-- [ ] ⚠️ **Non aggiungere** props non presenti nell'originale a `<PinDialog />`
+- [x] Copiare il contenuto JSX di `src/App.tsx` righe **~242–261** come `return (…)`
+- [x] ⚠️ **R1**: verificare che la radice del `return` sia un Fragment `<>...</>` — **non** un singolo `<div>`
+- [x] ⚠️ **R1**: verificare che `<SkipLink />` sia il **primo figlio** del Fragment, **fuori** dal `<div>` con `relative overflow-hidden`
+- [x] Verificare che il `<div>` esterno abbia `role="main"` e `aria-label="Schermata di autenticazione Zecchino"`
+- [x] Verificare che i **quattro layer decorativi** siano tutti presenti e tutti abbiano `aria-hidden="true"`:
+  - [x] Layer 1: `bg-gradient-to-br from-primary/90 via-secondary/80 to-accent/90` + `aria-hidden="true"`
+  - [x] Layer 2: `bg-[radial-gradient(circle_at_30%_50%,...)]` + `aria-hidden="true"`
+  - [x] Layer 3: `bg-[linear-gradient(...)] bg-[size:50px_50px]` con `mask-image` + `aria-hidden="true"`
+  - [x] Layer 4: `animate-pulse` + `aria-hidden="true"`
+- [x] ⚠️ **R2**: verificare che il layer 4 abbia `style={{ animationDuration: '4s' }}` — questo è un **inline style React**, non una classe Tailwind; TypeScript non segnala se manca
+- [x] Verificare che `<PinDialog />` abbia esattamente cinque props:
+  - [x] `open={showPinDialog}`
+  - [x] `title={isSetupMode ? 'Imposta PIN Globale' : 'Inserisci PIN'}`
+  - [x] `description={isSetupMode ? 'Crea un PIN per proteggere l\'applicazione' : 'Inserisci il tuo PIN per accedere'}`
+  - [x] `onSubmit={handleGlobalPinSubmit}`
+  - [x] `confirmMode={isSetupMode}`
+- [x] ⚠️ **Non aggiungere** props non presenti nell'originale a `<PinDialog />`
 
 ### A.5 Verifica del Passo A
 
-- [ ] Salvare il file
-- [ ] Eseguire `npx tsc --noEmit` → zero errori TypeScript
-- [ ] Verificare con grep: `grep "isAuthenticated" src/components/AuthScreen.tsx` → **zero risultati**
-- [ ] Verificare che `App.tsx` non sia stato modificato → il comportamento dell'app è invariato
-- [ ] ⚠️ Non procedere al Passo B fino a zero errori TypeScript
+- [x] Salvare il file
+- [x] Eseguire `npx tsc --noEmit` → zero errori TypeScript
+- [x] Verificare con grep: `grep "isAuthenticated" src/components/AuthScreen.tsx` → **zero risultati**
+- [x] Verificare che `App.tsx` non sia stato modificato → il comportamento dell'app è invariato
+- [x] ⚠️ Non procedere al Passo B fino a zero errori TypeScript
 
 ---
 
@@ -89,26 +89,26 @@
 
 ### B.1 Aggiunta import di `AuthScreen`
 
-- [ ] Aprire `src/App.tsx`
-- [ ] Aggiungere tra gli import dei componenti estratti (dopo l'import di `AppHeader`, ~riga 40):
+- [x] Aprire `src/App.tsx`
+- [x] Aggiungere tra gli import dei componenti estratti (dopo l'import di `AppHeader`, ~riga 40):
   ```tsx
   import { AuthScreen } from '@/components/AuthScreen'
   ```
 
 ### B.2 Rimozione del JSX interno al ramo `!isAuthenticated`
 
-- [ ] Individuare il Fragment `<>` (~riga 242) dentro `return (…)` del guard `if (!isAuthenticated)`
-- [ ] Rimuovere l'intero Fragment `<>...</>` dalle righe ~242 a ~261 (~20 righe di JSX)
-- [ ] ⚠️ Il guard `if (!isAuthenticated) {` (~riga 240) **rimane in `App.tsx`** — non va rimosso
-- [ ] ⚠️ Il `return (` e la `)` del ramo auth **rimangono in `App.tsx`** — non vanno rimossi
+- [x] Individuare il Fragment `<>` (~riga 242) dentro `return (…)` del guard `if (!isAuthenticated)`
+- [x] Rimuovere l'intero Fragment `<>...</>` dalle righe ~242 a ~261 (~20 righe di JSX)
+- [x] ⚠️ Il guard `if (!isAuthenticated) {` (~riga 240) **rimane in `App.tsx`** — non va rimosso
+- [x] ⚠️ Il `return (` e la `)` del ramo auth **rimangono in `App.tsx`** — non vanno rimossi
 
 ### B.3 Sostituzione con `<AuthScreen />`
 
-- [ ] Nella posizione esatta dove si trovava il Fragment rimosso, inserire:
+- [x] Nella posizione esatta dove si trovava il Fragment rimosso, inserire:
   ```tsx
   <AuthScreen />
   ```
-- [ ] Verificare che la struttura risultante sia:
+- [x] Verificare che la struttura risultante sia:
   ```tsx
   if (!isAuthenticated) {
     return (
@@ -116,22 +116,22 @@
     )
   }
   ```
-- [ ] ⚠️ Il guard `if (!isAuthenticated)` **rimane in `App.tsx`** — non spostarlo in `AuthScreen`
+- [x] ⚠️ Il guard `if (!isAuthenticated)` **rimane in `App.tsx`** — non spostarlo in `AuthScreen`
 
 ### B.4 Verifica import — non rimuovere `SkipLink` né `PinDialog`
 
-- [ ] ⚠️ **Non rimuovere** `import { SkipLink }` da `App.tsx` — usato a ~riga 267 nel ramo autenticato
-- [ ] ⚠️ **Non rimuovere** `import { PinDialog }` da `App.tsx` — usato a ~riga 345 per il dialogo PIN privato
-- [ ] Verificare che entrambi gli import siano ancora presenti dopo la modifica
+- [x] ⚠️ **Non rimuovere** `import { SkipLink }` da `App.tsx` — usato a ~riga 267 nel ramo autenticato
+- [x] ⚠️ **Non rimuovere** `import { PinDialog }` da `App.tsx` — usato a ~riga 345 per il dialogo PIN privato
+- [x] Verificare che entrambi gli import siano ancora presenti dopo la modifica
 
 ### B.5 Verifica del Passo B
 
-- [ ] Salvare il file
-- [ ] Eseguire `npx tsc --noEmit` → zero errori TypeScript
-- [ ] Eseguire `npm run build` → compilazione riuscita
-- [ ] Verificare con grep: `App.tsx` contiene `<AuthScreen />`
-- [ ] Verificare con grep: `App.tsx` non contiene più `<div ... role="main" aria-label="Schermata di autenticazione Zecchino">`
-- [ ] Verificare con grep: `App.tsx` contiene `import { SkipLink }` e `import { PinDialog }`
+- [x] Salvare il file
+- [x] Eseguire `npx tsc --noEmit` → zero errori TypeScript
+- [x] Eseguire `npm run build` → compilazione riuscita
+- [x] Verificare con grep: `App.tsx` contiene `<AuthScreen />`
+- [x] Verificare con grep: `App.tsx` non contiene più `<div ... role="main" aria-label="Schermata di autenticazione Zecchino">`
+- [x] Verificare con grep: `App.tsx` contiene `import { SkipLink }` e `import { PinDialog }`
 
 ---
 
@@ -139,15 +139,15 @@
 
 ### Test di compilazione
 
-- [ ] `npx tsc --noEmit` → zero errori
-- [ ] `npm run build` → zero errori, bundle generato
+- [x] `npx tsc --noEmit` → zero errori
+- [x] `npm run build` → zero errori, bundle generato
 
 ### Verifica grep post-implementazione
 
-- [ ] `grep "isAuthenticated" src/components/AuthScreen.tsx` → **zero risultati**
-- [ ] `grep "AuthScreen" src/App.tsx` → almeno 2 risultati (import + JSX `<AuthScreen />`)
-- [ ] `grep "SkipLink" src/App.tsx` → almeno 1 risultato (import + uso nel ramo autenticato)
-- [ ] `grep "PinDialog" src/App.tsx` → almeno 1 risultato (import + `showPrivatePinDialog`)
+- [x] `grep "isAuthenticated" src/components/AuthScreen.tsx` → **zero risultati**
+- [x] `grep "AuthScreen" src/App.tsx` → almeno 2 risultati (import + JSX `<AuthScreen />`)
+- [x] `grep "SkipLink" src/App.tsx` → almeno 1 risultato (import + uso nel ramo autenticato)
+- [x] `grep "PinDialog" src/App.tsx` → almeno 1 risultato (import + `showPrivatePinDialog`)
 
 ### Test manuale — Struttura visiva (da design §7)
 
@@ -193,4 +193,4 @@
 
 ---
 
-**Nota stato verifica**: `npx tsc --noEmit` globale resta bloccato da 4 errori baseline fuori scope in `src/context/AuthContext.tsx` (pre-esistenti, non introdotti da P11). I test manuali UI/accessibilità vanno eseguiti in ambiente di sviluppo locale.
+**Nota stato verifica**: `npx tsc --noEmit`, `npm run build` e i controlli grep/strutturali sono stati eseguiti con esito positivo il 2026-04-23. I test manuali UI/accessibilità e i flussi PIN end-to-end restano da eseguire in ambiente interattivo locale, perché il repository non include un framework di test browser/e2e già configurato.

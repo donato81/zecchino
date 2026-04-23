@@ -96,9 +96,10 @@
 
 ### Passo 11 — Estrazione `AuthScreen`
 
-- [ ] Creare `src/components/AuthScreen.tsx`
-- [ ] Spostare JSX schermata login (~righe 770–795 di App.tsx)
-- [ ] Verifica: login PIN, setup primo PIN
+- [~] Implementazione completata; validazione manuale UI/accessibilità in attesa
+- [x] Creare `src/components/AuthScreen.tsx`
+- [x] Spostare JSX schermata login dal ramo `!isAuthenticated` di `App.tsx`
+- [~] Verifica: build produzione e controlli statici completati; restano da eseguire i flussi PIN e i controlli manuali accessibilità in ambiente interattivo
 
 ---
 

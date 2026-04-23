@@ -66,6 +66,7 @@ src/
 │   ├── DashboardTab.tsx
 │   ├── ReportsTab.tsx
 │   ├── AppHeader.tsx
+│   ├── AuthScreen.tsx
 │   ├── TransactionDialog.tsx
 │   ├── TransactionsTab.tsx
 │   ├── [Accessibility components]  # FocusIndicator, LiveRegion, SkipLink
@@ -105,7 +106,7 @@ src/
 
 Nessun state manager esterno. Lo stato applicazione (`AppState`) è:
 
-A partire da P01–P10, parte dello stato è migrata in Context dedicati:
+A partire da P01–P11, parte dello stato è migrata in Context dedicati:
 - `AppDataContext` — dati applicazione (conti, movimenti, budget, obiettivi,
   stato dialog transazioni ed eliminazioni)
 - `AuthContext` — autenticazione (PIN globale e privato)
@@ -113,6 +114,9 @@ A partire da P01–P10, parte dello stato è migrata in Context dedicati:
 - `AppHeader` — header applicazione estratto come componente autonomo;
       `showKeyboardHelp` migrato da `useState` locale in `App.tsx` a `AppDataContext`;
       nessuna prop, nessun `useState` locale
+- `AuthScreen` — schermata di autenticazione estratta come componente autonomo;
+      nessuna prop, nessun `useState` locale; dipende solo da `useAuth()`;
+      il guard `if (!isAuthenticated)` rimane in `App.tsx`
 - `DashboardTab` — tab Dashboard estratto come componente autonomo; gestisce filtri categoria,
   griglia conti e movimenti recenti; istanzia localmente `recentTransactionsNav`
 - `ReportsTab` — tab Report estratto come componente autonomo; gestisce budget,
