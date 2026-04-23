@@ -13,6 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| Refactoring P08 — DashboardTab | `docs/3 - todo lists/P08-todo.md` | 🔴 Da fare | Alta |
 
 ## TODO completati
 
