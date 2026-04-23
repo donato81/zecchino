@@ -64,6 +64,7 @@ src/
 │   ├── SavingsGoalCard.tsx
 │   ├── SavingsGoalDialog.tsx
 │   ├── TransactionDialog.tsx
+│   ├── TransactionsTab.tsx
 │   ├── [Accessibility components]  # FocusIndicator, LiveRegion, SkipLink
 │   ├── [Settings components]       # AudioSettings, DisplaySettings, HapticSettings,
 │   │                               # ScreenReaderSettings, SecuritySettings, TalkBackSettings
@@ -72,6 +73,7 @@ src/
 │   ├── use-display-preferences.ts
 │   ├── use-haptic.ts
 │   ├── use-app-shortcuts.ts      # Configura le 14 shortcut da tastiera globali. Legge da AppDataContext, AuthContext e useVisibleData. Delegato da App.tsx.
+│   ├── use-visible-data.ts       # Fornisce valori derivati da AppDataContext e AuthContext
 │   ├── use-keyboard-shortcuts.ts
 │   ├── use-list-navigation.ts
 │   ├── use-mobile.ts
@@ -99,6 +101,12 @@ src/
 ## Gestione stato
 
 Nessun state manager esterno. Lo stato applicazione (`AppState`) è:
+
+A partire da P01–P07, parte dello stato è migrata in Context dedicati:
+- `AppDataContext` — dati applicazione (conti, movimenti, budget, obiettivi,
+  stato dialog transazioni ed eliminazioni)
+- `AuthContext` — autenticazione (PIN globale e privato)
+- `useVisibleData` — valori derivati calcolati dai due context
 
 1. Mantenuto in React (`useState` / `useReducer` in `App.tsx`)
 2. Persistito in **localStorage** ad ogni cambiamento

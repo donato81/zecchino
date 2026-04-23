@@ -9,13 +9,13 @@
 
 ## Prima di iniziare
 
-- [ ] Leggere `docs/2 - coding plans/P07-coding-plan.md` per intero
-- [ ] Prendere nota dell'ambiguità **AI1** (`visibleTransactions` NON è ordinato — usare `sortedTransactions` nel componente)
-- [ ] Prendere nota dell'ambiguità **AI2** (`handleDeleteConfirm` cambia firma: rimuovere il parametro `item`)
-- [ ] Prendere nota dell'ambiguità **AI3** (`useEffect(showDeleteDialog)` rimane in `App.tsx` ma legge dal context)
-- [ ] Prendere nota dell'ambiguità **AI4** (`TransactionsTab` usa solo i setter, non i booleani)
-- [ ] Verificare di essere sul branch `refactoring-architettura`
-- [ ] Eseguire `npm run build` e confermare che compila senza errori **prima** di iniziare
+- [x] Leggere `docs/2 - coding plans/P07-coding-plan.md` per intero
+- [x] Prendere nota dell'ambiguità **AI1** (`visibleTransactions` NON è ordinato — usare `sortedTransactions` nel componente)
+- [x] Prendere nota dell'ambiguità **AI2** (`handleDeleteConfirm` cambia firma: rimuovere il parametro `item`)
+- [x] Prendere nota dell'ambiguità **AI3** (`useEffect(showDeleteDialog)` rimane in `App.tsx` ma legge dal context)
+- [x] Prendere nota dell'ambiguità **AI4** (`TransactionsTab` usa solo i setter, non i booleani)
+- [x] Verificare di essere sul branch `refactoring-architettura`
+- [x] Eseguire `npm run build` e confermare che compila senza errori **prima** di iniziare
 
 ---
 
@@ -25,52 +25,56 @@
 
 ### A.1 Aggiornamento import React
 
-- [ ] Aprire `src/context/AppDataContext.tsx`
-- [ ] Individuare riga 1: `import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react'`
-- [ ] ⚠️ **R3**: aggiungere `useState` all'import → `import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'`
+- [x] Aprire `src/context/AppDataContext.tsx`
+- [x] Individuare riga 1: `import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react'`
+- [x] ⚠️ **R3**: aggiungere `useState` all'import → `import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'`
 
 ### A.2 Aggiornamento del tipo `AppDataContextValue` (righe ~12–44)
 
-- [ ] Individuare la chiusura `}` del tipo `AppDataContextValue` (dopo `handleViewBudget`)
-- [ ] Aggiungere prima della chiusura le 8 nuove proprietà (vedi coding plan §A.2)
-- [ ] ⚠️ **AI2**: aggiornare `handleDeleteConfirm` in interfaccia da `(item: {...}) => void` a `() => void`
+- [x] Individuare la chiusura `}` del tipo `AppDataContextValue` (dopo `handleViewBudget`)
+- [x] Aggiungere prima della chiusura le 8 nuove proprietà (vedi coding plan §A.2)
+- [x] ⚠️ **AI2**: aggiornare `handleDeleteConfirm` in interfaccia da `(item: {...}) => void` a `() => void`
 
 ### A.3 Dichiarazione dei 4 `useState` in `AppDataProvider`
 
-- [ ] Individuare il blocco degli `useState` existenti (~riga 67), dopo `const [budgetPercentages, setBudgetPercentages] = useKV<...>`
-- [ ] Aggiungere subito dopo (prima di `const safeAccounts = useMemo...`):
-  - [ ] `const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined)`
-  - [ ] `const [showTransactionDialog, setShowTransactionDialog] = useState(false)`
-  - [ ] `const [deletingItem, setDeletingItem] = useState<{...} | null>(null)` (tipo con union e `;` come separatori)
-  - [ ] `const [showDeleteDialog, setShowDeleteDialog] = useState(false)`
+- [x] Individuare il blocco degli `useState` existenti (~riga 67), dopo `const [budgetPercentages, setBudgetPercentages] = useKV<...>`
+- [x] Aggiungere subito dopo (prima di `const safeAccounts = useMemo...`):
+  - [x] `const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined)`
+  - [x] `const [showTransactionDialog, setShowTransactionDialog] = useState(false)`
+  - [x] `const [deletingItem, setDeletingItem] = useState<{...} | null>(null)` (tipo con union e `;` come separatori)
+  - [x] `const [showDeleteDialog, setShowDeleteDialog] = useState(false)`
 
 ### A.4 Aggiornamento di `handleDeleteConfirm` (~riga 225)
 
-- [ ] Individuare `const handleDeleteConfirm = (item: { type: ..., id: string }) => {`
-- [ ] ⚠️ **AI2**: cambiare la firma a `const handleDeleteConfirm = () => {`
-- [ ] Aggiungere guard all'inizio del corpo: `if (!deletingItem) return`
-- [ ] Sostituire tutti i riferimenti a `item.type` e `item.id` con `deletingItem.type` e `deletingItem.id`
-- [ ] Verificare che nessun riferimento a `item` rimanga nel corpo della funzione
+- [x] Individuare `const handleDeleteConfirm = (item: { type: ..., id: string }) => {`
+- [x] ⚠️ **AI2**: cambiare la firma a `const handleDeleteConfirm = () => {`
+- [x] Aggiungere guard all'inizio del corpo: `if (!deletingItem) return`
+- [x] Sostituire tutti i riferimenti a `item.type` e `item.id` con `deletingItem.type` e `deletingItem.id`
+- [x] Verificare che nessun riferimento a `item` rimanga nel corpo della funzione
 
 ### A.5 Aggiornamento del valore del Provider (~righe 340–390)
 
-- [ ] Individuare `<AppDataContext.Provider value={{ ... }}>` 
-- [ ] Aggiungere all'oggetto value i nuovi 8 valori:
-  - [ ] `editingTransaction,`
-  - [ ] `setEditingTransaction,`
-  - [ ] `showTransactionDialog,`
-  - [ ] `setShowTransactionDialog,`
-  - [ ] `deletingItem,`
-  - [ ] `setDeletingItem,`
-  - [ ] `showDeleteDialog,`
-  - [ ] `setShowDeleteDialog,`
+- [x] Individuare `<AppDataContext.Provider value={{ ... }}>` 
+- [x] Aggiungere all'oggetto value i nuovi 8 valori:
+  - [x] `editingTransaction,`
+  - [x] `setEditingTransaction,`
+  - [x] `showTransactionDialog,`
+  - [x] `setShowTransactionDialog,`
+  - [x] `deletingItem,`
+  - [x] `setDeletingItem,`
+  - [x] `showDeleteDialog,`
+  - [x] `setShowDeleteDialog,`
 
 ### A.6 Verifica del Passo A
 
-- [ ] Salvare il file
-- [ ] Eseguire `npx tsc --noEmit` → zero errori TypeScript
-- [ ] Verificare che `handleDeleteConfirm` nel tipo abbia firma `() => void`
-- [ ] ⚠️ **R2**: non procedere al Passo B fino a zero errori TypeScript
+- [x] Salvare il file
+- [x] Eseguire `npx tsc --noEmit` → zero errori TypeScript
+- [x] Verificare che `handleDeleteConfirm` nel tipo abbia firma `() => void`
+- [x] ⚠️ **R2**: non procedere al Passo B fino a zero errori TypeScript
+
+***
+
+**Completato il 2026-04-23.**
 
 ---
 
