@@ -13,12 +13,13 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| Refactoring P09 — ReportsTab | `docs/3 - todo lists/P09-todo.md` | 🔴 Da fare | Alta |
+| Refactoring P10 — AppHeader | `docs/3 - todo lists/P10-todo.md` | 🔴 Da fare | Alta |
 
 ## TODO completati
 
 | Feature / Sprint | File specifico | Completato il |
 |---|---|---|
+| Refactoring P09 — ReportsTab | `docs/3 - todo lists/P09-todo.md` | 2026-04-23 |
 | Refactoring P08 — DashboardTab | `docs/3 - todo lists/P08-todo.md` | 2026-04-23 |
 | Refactoring P07 — TransactionsTab | `docs/3 - todo lists/P07-todo.md` | 2026-04-23 |
 | Refactoring P06 — use-app-shortcuts | docs/3 - todo lists/P06-todo.md | 2026-04-23 |
