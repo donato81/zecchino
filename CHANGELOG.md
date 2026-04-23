@@ -1,5 +1,23 @@
 # Changelog
 
+## [P13] — 2026-04-23
+
+### Refactoring — Passo conclusivo
+- `App.tsx` ridotto da 322 righe a 133 righe: rimossi tutti gli import,
+  destructuring e calcoli delegati ai passi P01–P12
+- Aggiunto `useVisibleData()` come unica fonte per `budgetAlerts`,
+  `totalBalance`, `visibleAccounts`, `visibleTransactions`
+- Rimossi 10 `useMemo` locali, ~34 import inutilizzati e i destructuring
+  non piu necessari da `useAppData()` e `useAuth()`
+- Rimosso `useEffect(showDeleteDialog)`: il feedback sonoro e ora gestito
+  in `DialogsOverlay`
+- Conservato il `useEffect` del cambio tab con feedback sonoro e screen
+  reader
+- `App.tsx` e ora pura composizione: nessun handler, nessun calcolo
+  derivato, nessun dato persistito localmente
+- Gate automatici P13: `npx tsc --noEmit` PASS, `npm run build` PASS
+- Validazione funzionale interattiva ancora da completare manualmente
+
 ## [P12] — 2026-04-23
 
 ### Refactoring

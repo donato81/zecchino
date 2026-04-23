@@ -13,9 +13,9 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| Refactoring P13 — App.tsx finale | `docs/3 - todo lists/P13-todo.md` | 🔴 Da fare | Alta |
+| Refactoring P13 — App.tsx finale | `docs/3 - todo lists/P13-todo.md` | 🟡 Validazione manuale | Alta |
 
-> ⚠️ **P13 è il passo conclusivo** della serie di refactoring architetturale. Al termine di P13, l'obiettivo dichiarato nel piano sarà completato: `App.tsx` come puro file di composizione senza handler di business logic, calcoli derivati o dati persistiti gestiti localmente.
+> ⚠️ **P13 è il passo conclusivo** della serie di refactoring architetturale. Implementazione e gate automatici sono completati (`tsc` e build PASS); resta da chiudere la validazione funzionale manuale in browser.
 
 ## TODO completati
 

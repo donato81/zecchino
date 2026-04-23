@@ -43,7 +43,7 @@ Browser
 
 ```
 src/
-├── App.tsx                  # Root component, routing logico e stato globale
+├── App.tsx                  # File di pura composizione: provider, guard auth, layout e tab navigation
 ├── main.tsx                 # Entry point
 ├── index.css / main.css     # Stili globali
 ├── components/              # Componenti UI dell'applicazione
@@ -107,7 +107,7 @@ src/
 
 Nessun state manager esterno. Lo stato applicazione (`AppState`) è:
 
-A partire da P01–P12, parte dello stato è migrata in Context dedicati:
+A partire da P01–P13, parte dello stato è migrata in Context dedicati:
 - `AppDataContext` — dati applicazione (conti, movimenti, budget, obiettivi,
   stato dialog transazioni ed eliminazioni)
 - `AuthContext` — autenticazione (PIN globale e privato)
@@ -127,6 +127,10 @@ A partire da P01–P12, parte dello stato è migrata in Context dedicati:
   useAppData(), useAuth(), useVisibleData(); debito tecnico dichiarato:
   undici stati UI dialog in AppDataContext, candidati a UIContext separato
   in fase futura
+- `App.tsx` — file di pura composizione (~140 righe); provider, guard
+      autenticazione, layout strutturale, navigazione tab; nessun useMemo,
+      nessun handler, nessun calcolo derivato; tutti i dati arrivano da
+      AppDataContext, AuthContext e useVisibleData()
 
 1. Mantenuto in React (`useState` / `useReducer` in `App.tsx`)
 2. Persistito in **localStorage** ad ogni cambiamento
