@@ -1,5 +1,18 @@
 # Changelog
 
+## [P12] — 2026-04-23
+
+### Refactoring
+- Estratto `src/components/DialogsOverlay.tsx` con i sette dialog modali
+  di `App.tsx` (~85 righe JSX rimosse)
+- Nessuna modifica ad `AppDataContext`, `AuthContext` o hook: tutti gli
+  stati erano già esposti
+- Deviazione intenzionale: uso di `privateAccount` da `useVisibleData()`
+  al posto di `visibleAccounts.find()` nella callback `onUnlocked` del
+  PIN privato (motivazione: correttezza al momento del re-render)
+- Import inutilizzati in `App.tsx` lasciati invariati: pulizia rimandata
+  a P13
+
 ## [P11] — 2026-04-23
 
 ### Refactoring

@@ -67,6 +67,7 @@ src/
 │   ├── ReportsTab.tsx
 │   ├── AppHeader.tsx
 │   ├── AuthScreen.tsx
+│   ├── DialogsOverlay.tsx
 │   ├── TransactionDialog.tsx
 │   ├── TransactionsTab.tsx
 │   ├── [Accessibility components]  # FocusIndicator, LiveRegion, SkipLink
@@ -106,7 +107,7 @@ src/
 
 Nessun state manager esterno. Lo stato applicazione (`AppState`) è:
 
-A partire da P01–P11, parte dello stato è migrata in Context dedicati:
+A partire da P01–P12, parte dello stato è migrata in Context dedicati:
 - `AppDataContext` — dati applicazione (conti, movimenti, budget, obiettivi,
   stato dialog transazioni ed eliminazioni)
 - `AuthContext` — autenticazione (PIN globale e privato)
@@ -121,6 +122,11 @@ A partire da P01–P11, parte dello stato è migrata in Context dedicati:
   griglia conti e movimenti recenti; istanzia localmente `recentTransactionsNav`
 - `ReportsTab` — tab Report estratto come componente autonomo; gestisce budget,
   obiettivi di risparmio, grafici e impostazioni; `chartPeriod` rimane `useState` locale
+- `DialogsOverlay` — tutti e sette i dialog modali estratti in un unico
+  componente autonomo; nessuna prop, nessun useState locale; dipende da
+  useAppData(), useAuth(), useVisibleData(); debito tecnico dichiarato:
+  undici stati UI dialog in AppDataContext, candidati a UIContext separato
+  in fase futura
 
 1. Mantenuto in React (`useState` / `useReducer` in `App.tsx`)
 2. Persistito in **localStorage** ad ogni cambiamento

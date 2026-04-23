@@ -23,7 +23,7 @@
 | 9 | `src/components/ReportsTab.tsx` — tab report | [ ] |
 | 10 | `src/components/AppHeader.tsx` — header sticky | [ ] |
 | 11 | `src/components/AuthScreen.tsx` — schermata login | [ ] |
-| 12 | `src/components/DialogsOverlay.tsx` — dialog modali | [ ] |
+| 12 | `src/components/DialogsOverlay.tsx` — dialog modali | [x] |
 | 13 | `src/App.tsx` — refactor finale (~70 righe) | [ ] |
 
 ---
@@ -105,9 +105,7 @@
 
 ### Passo 12 — Estrazione `DialogsOverlay`
 
-- [ ] Creare `src/components/DialogsOverlay.tsx`
-- [ ] Raccogliere tutti i dialog modali (~righe 1724–1805 di App.tsx)
-- [ ] Verifica: ogni dialog si apre/chiude, conferma eliminazione funziona
+- [x] P12 — Estrazione `DialogsOverlay` — completato 2026-04-23
 
 ---
 
