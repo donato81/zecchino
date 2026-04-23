@@ -71,6 +71,7 @@ src/
 ├── hooks/                   # Custom React hooks
 │   ├── use-display-preferences.ts
 │   ├── use-haptic.ts
+│   ├── use-app-shortcuts.ts      # Configura le 14 shortcut da tastiera globali. Legge da AppDataContext, AuthContext e useVisibleData. Delegato da App.tsx.
 │   ├── use-keyboard-shortcuts.ts
 │   ├── use-list-navigation.ts
 │   ├── use-mobile.ts

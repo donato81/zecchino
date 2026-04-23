@@ -18,6 +18,7 @@
 
 | Feature / Sprint | File specifico | Completato il |
 |---|---|---|
+| Refactoring P06 — use-app-shortcuts | docs/3 - todo lists/P06-todo.md | 2026-04-23 |
 | Refactoring P05 — use-visible-data | `docs/3 - todo lists/P05-todo.md` | 2026-04-22 |
 | Refactoring P01 — Context Split | `docs/3 - todo lists/P01-todo.md` | 2026-04-22 |
 
