@@ -37,6 +37,7 @@ import { DashboardTab } from '@/components/DashboardTab'
 import { ReportsTab } from '@/components/ReportsTab'
 import { AppHeader } from '@/components/AppHeader'
 import { AuthScreen } from '@/components/AuthScreen'
+import { DialogsOverlay } from '@/components/DialogsOverlay'
 import { IncomeExpenseChart } from '@/components/IncomeExpenseChart'
 import { MonthlyComparisonChart } from '@/components/MonthlyComparisonChart'
 import { PeriodSelector } from '@/components/PeriodSelector'
@@ -324,91 +325,7 @@ function AppContent() {
         </Tabs>
       </main>
 
-      <PinDialog
-        open={showPrivatePinDialog}
-        title={privatePinHash ? 'Sblocca Conto Privato' : 'Crea PIN Conto Privato'}
-        description={privatePinHash ? 'Inserisci il PIN del conto privato' : 'Crea un PIN per il conto privato'}
-        onSubmit={(pin) => handlePrivatePinSubmit(pin, () => {
-          const privateAccount = visibleAccounts.find(a => a.isPrivato)
-          if (privateAccount) {
-            const balance = calculateAccountBalance(privateAccount, visibleTransactions)
-            toast.success(`Conto privato sbloccato. Saldo: ${formatCurrency(balance)}`)
-            screenReader.announceBalance('Conto privato', balance)
-          } else {
-            screenReader.announceSuccess('Conto privato sbloccato.')
-          }
-        })}
-        onCancel={() => setShowPrivatePinDialog(false)}
-        confirmMode={!privatePinHash}
-      />
-
-      <AccountDialog
-        open={showAccountDialog}
-        onClose={() => { setShowAccountDialog(false); setEditingAccount(undefined) }}
-        onSave={(account) => { handleSaveAccount(account); setEditingAccount(undefined) }}
-        account={editingAccount}
-        hasPrivateAccount={hasPrivateAccount && !editingAccount?.isPrivato}
-      />
-
-      <TransactionDialog
-        open={showTransactionDialog}
-        onClose={() => { setShowTransactionDialog(false); setEditingTransaction(undefined) }}
-        onSave={(transaction) => { handleSaveTransaction(transaction); setEditingTransaction(undefined) }}
-        transaction={editingTransaction}
-        accounts={visibleAccounts}
-        categories={safeCategories}
-      />
-
-      <BudgetDialog
-        open={showBudgetDialog}
-        onClose={() => { setShowBudgetDialog(false); setEditingBudget(undefined) }}
-        onSave={(budget) => { handleSaveBudget(budget); setEditingBudget(undefined) }}
-        budget={editingBudget}
-        categories={safeCategories}
-        accounts={visibleAccounts}
-      />
-
-      <SavingsGoalDialog
-        open={showSavingsGoalDialog}
-        onClose={() => { setShowSavingsGoalDialog(false); setEditingSavingsGoal(undefined) }}
-        onSave={(goal) => { handleSaveSavingsGoal(goal); setEditingSavingsGoal(undefined) }}
-        goal={editingSavingsGoal}
-        accounts={visibleAccounts}
-      />
-
-      <AlertDialog open={showDeleteDialog} onOpenChange={(open) => {
-        if (!open) {
-          soundSystem.play('dialog-close')
-          setDeletingItem(null)
-        }
-        setShowDeleteDialog(open)
-      }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Conferma Eliminazione</AlertDialogTitle>
-            <AlertDialogDescription>
-              {deletingItem?.type === 'account'
-                ? 'Eliminando questo conto verranno rimossi anche tutti i movimenti associati. Questa azione non può essere annullata.'
-                : deletingItem?.type === 'budget'
-                ? 'Questa azione eliminerà definitivamente il budget. Non può essere annullata.'
-                : deletingItem?.type === 'savingsGoal'
-                ? 'Questa azione eliminerà definitivamente l\'obiettivo di risparmio. Non può essere annullata.'
-                : 'Questa azione eliminerà definitivamente il movimento. Non può essere annullata.'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => soundSystem.play('dialog-close')}>Annulla</AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleDeleteConfirm()} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Elimina
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <KeyboardShortcutsHelp
-        open={showKeyboardHelp}
-        onClose={() => setShowKeyboardHelp(false)}
-      />
+      <DialogsOverlay />
       </div>
     </div>
     <Toaster />
