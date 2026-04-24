@@ -1,10 +1,10 @@
 {
-  "current_phase": "validate",
-  "current_agent": "Agent-Orchestrator",
-  "retry_count": 1,
-  "confidence": 0.78,
+  "current_phase": "release",
+  "current_agent": "Agent-Docs",
+  "retry_count": 0,
+  "confidence": 0.96,
   "execution_mode": "supervised",
-  "last_updated": "2026-04-23T18:55:49Z",
+  "last_updated": "2026-04-24T07:41:53Z",
   "phase_history": [
     "P01-step1-code-pass",
     "P06-code-pass",
@@ -25,14 +25,14 @@
   "project_name": "Zecchino",
   "stack": "React+TypeScript+Vite",
   "framework_version": "2.3.1",
-  "last_step_output": "P12 coding completato: creato DialogsOverlay, App.tsx aggiornato, tsc resta ai 4 errori baseline in AuthContext.tsx e build PASS. Validazione E2E browser bloccata: tooling Playwright/terminal non ha fornito un canale affidabile per osservare gli scenari interattivi senza introdurre side effect nel workspace.",
+  "last_step_output": "P14 docs PASS dopo correzione locale: sezione 'Struttura documentazione' posizionata correttamente in docs/architettura.md; checklist e changelog confermati.",
   "update_check_done": true,
-  "last_update_check": "2026-04-23",
+  "last_update_check": "2026-04-24",
   "available_package_updates": 2,
   "completed_packages": [
     "P01",
     "P05",
     "P06"
   ],
-  "current_package": "P12"
+  "current_package": "P14"
 }

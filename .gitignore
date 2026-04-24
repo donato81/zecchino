@@ -32,3 +32,8 @@ pids
 .devcontainer/
 
 .spark-workbench-id
+
+# Log temporanei di build e type-checking
+build*.txt
+build*.log
+tsc_output.txt

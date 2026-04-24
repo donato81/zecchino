@@ -101,6 +101,32 @@ src/
     └── theme.css            # Variabili CSS tema
 ```
 
+## Struttura documentazione
+
+La documentazione del progetto e organizzata nella cartella `docs/` con la struttura principale aggiornata per P14:
+
+```
+docs/
+├── 1 - projects/
+├── 2 - coding plans/
+├── 3 - todo lists/
+├── 4 - reports/
+├── accessibility/
+│   ├── android/
+│   ├── history/
+│   ├── ACCESSIBILITY.md
+│   ├── GUIDA_SCREEN_READER.md
+│   ├── SCREEN_READER_AUDIT.md
+│   └── talkback.md
+├── feedback/
+│   ├── HAPTIC_FEEDBACK.md
+│   └── SOUND_COVERAGE_REPORT.md
+├── PRD.md
+├── api.md
+├── architettura.md
+└── todo.md
+```
+
 ---
 
 ## Gestione stato

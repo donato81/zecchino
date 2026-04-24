@@ -1,5 +1,16 @@
 # Changelog
 
+## [P14] — 2026-04-24
+
+### Manutenzione — Pulizia root e riorganizzazione documentazione
+- 9 file Markdown spostati dalla root a `docs/`
+- 4 file TALKBACK consolidati in `docs/accessibility/talkback.md`
+- 4 log storici rimossi dalla root
+- 6 file di log tecnici rimossi (build*.txt, build*.log, tsc_output.txt)
+- `.gitignore` aggiornato con i pattern `build*.txt`, `build*.log`, `tsc_output.txt`
+- `README.md` aggiornato con sezione Documentazione e link a `docs/`
+- Nessuna modifica apportata a file sotto `src/`
+
 ## [P13] — 2026-04-23
 
 ### Refactoring — Passo conclusivo

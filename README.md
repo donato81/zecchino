@@ -28,46 +28,16 @@ L'applicazione è **completamente ottimizzata per dispositivi Android** con:
 - ✅ Performance ottimizzate
 - ✅ PWA ready (installabile come app)
 
-## 📚 Documentazione
+## Documentazione
 
-### Per Utenti
-- **[GUIDA_SCREEN_READER.md](./GUIDA_SCREEN_READER.md)** - Guida completa per utenti non vedenti (19KB)
-  - Primo accesso e setup
-  - Navigazione con TalkBack/VoiceView
-  - Uso di tutte le funzionalità
-  - Scorciatoie e best practices
-  - Risoluzione problemi
-
-### Per Sviluppatori
-- **[ANDROID_ACCESSIBILITY.md](./ANDROID_ACCESSIBILITY.md)** - Dettagli implementazione accessibilità (11.5KB)
-  - Touch optimization
-  - ARIA attributes completi
-  - Screen reader integration
-  - Pattern accessibili
-  - Test checklist
-
-- **[FUNZIONALITA_COMPLETE.md](./FUNZIONALITA_COMPLETE.md)** - Elenco completo features (16.5KB)
-  - 30+ funzionalità principali
-  - 100+ sotto-funzionalità
-  - Tecnologie utilizzate
-  - Metriche qualità
-
-- **[ANDROID_IMPLEMENTATION_SUMMARY.md](./ANDROID_IMPLEMENTATION_SUMMARY.md)** - Riepilogo tecnico (13KB)
-  - Modifiche implementate
-  - Design patterns
-  - Conformità standard WCAG 2.1 AAA
-  - Estensioni future
-
-### Documentazione Accessibilità Desktop
-- **[ACCESSIBILITY.md](./ACCESSIBILITY.md)** - Panoramica generale accessibilità
-- **[SCREEN_READER_AUDIT.md](./SCREEN_READER_AUDIT.md)** - Audit completo screen reader
-- **[ACCESSIBILITY_IMPROVEMENTS.md](./ACCESSIBILITY_IMPROVEMENTS.md)** - Miglioramenti implementati
-
-### Documentazione Tecnica
-- **[PRD.md](./PRD.md)** - Product Requirements Document
-- **[SECURITY.md](./SECURITY.md)** - Sicurezza e cifratura
-- **[DIAGNOSIS_REPORT.md](./DIAGNOSIS_REPORT.md)** - Report diagnostica
-- **[SOUND_COVERAGE_REPORT.md](./SOUND_COVERAGE_REPORT.md)** - Copertura sistema audio
+- **[docs/PRD.md](./docs/PRD.md)** — Requisiti di prodotto
+- **[docs/architettura.md](./docs/architettura.md)** — Architettura tecnica
+- **[docs/api.md](./docs/api.md)** — API e interfacce
+- **[docs/accessibility/ACCESSIBILITY.md](./docs/accessibility/ACCESSIBILITY.md)** — Strategia di accessibilità
+- **[docs/accessibility/talkback.md](./docs/accessibility/talkback.md)** — Supporto TalkBack (Android)
+- **[docs/feedback/HAPTIC_FEEDBACK.md](./docs/feedback/HAPTIC_FEEDBACK.md)** — Sistema di feedback aptico
+- **[docs/feedback/SOUND_COVERAGE_REPORT.md](./docs/feedback/SOUND_COVERAGE_REPORT.md)** — Copertura audio
+- **[docs/1 - projects/README.md](./docs/1%20-%20projects/README.md)** — Indice dei documenti di design
 
 ## 🚀 Avvio Rapido
 
@@ -102,7 +72,7 @@ npm run dev
 4. **Ascolta annunci** vocali automatici
 5. **Usa scorciatoie** per efficienza
 
-Leggi la **[Guida Screen Reader](./GUIDA_SCREEN_READER.md)** per istruzioni dettagliate.
+Leggi la **[Guida Screen Reader](./docs/accessibility/GUIDA_SCREEN_READER.md)** per istruzioni dettagliate.
 
 ## 🎯 Funzionalità Principali
 
@@ -256,7 +226,7 @@ The Spark Template files and resources from GitHub are licensed under the terms 
 ## 🙏 Supporto
 
 Per assistenza:
-- **Utenti**: Leggi [GUIDA_SCREEN_READER.md](./GUIDA_SCREEN_READER.md)
+- **Utenti**: Leggi [GUIDA_SCREEN_READER.md](./docs/accessibility/GUIDA_SCREEN_READER.md)
 - **Sviluppatori**: Consulta documentazione tecnica
 - **Bug**: Segnala con dettagli accessibilità se rilevanti
 - **Feature**: Suggerisci miglioramenti

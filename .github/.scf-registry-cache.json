@@ -46,7 +46,7 @@
       "latest_version": "2.0.1",
       "version_source": "package-manifest",
       "description": "Pacchetto SCF per progetti Python — agenti, skill e instruction per Copilot Agent mode",
-      "min_engine_version": "2.1.0",
+      "min_engine_version": "2.4.0",
       "status": "stable",
       "tags": [
         "python",

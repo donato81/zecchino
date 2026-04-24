@@ -119,3 +119,7 @@
 **Gate automatici P13:** `tsc --noEmit` PASS, `npm run build` PASS, nessun `useMemo` e nessun `useListNavigation` residuo in `src/App.tsx`.
 
 **Stato attuale:** implementazione completata il 2026-04-23; validazione funzionale interattiva ancora da eseguire manualmente in browser.
+
+## Completati recenti
+
+- [x] P14 — Pulizia root directory — completato 2026-04-24
