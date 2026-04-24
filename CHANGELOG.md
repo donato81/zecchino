@@ -1,5 +1,21 @@
 # Changelog
 
+## [P19] — 2026-04-24
+
+### Testing
+- Introdotto `vitest.config.ts` con ambiente `jsdom`, alias `@` e bootstrap globale `src/test/setup.ts`
+- Aggiunti gli script `test` e `test:run` e le dipendenze di test in `package.json`; aggiornato `package-lock.json`
+- Aggiornato `tsconfig.json` con i tipi `@testing-library/jest-dom`
+- Creato setup test stateful con mock di `@github/spark/hooks.useKV`, `window.spark.kv`, `AudioContext`, `webkitAudioContext`, `navigator.vibrate` e `matchMedia`
+- Creato `src/test/smoke/test-utils.ts` per render condiviso, seed del KV mock e helper di autenticazione PIN
+- Aggiunti 5 smoke test end-to-end di superficie:
+  - render iniziale schermata auth
+  - autenticazione con PIN globale
+  - struttura principale Dashboard
+  - navigazione tab Movimenti
+  - sblocco del conto privato con PIN dedicato
+- Gate automatici P19: `npm run test:run` PASS (5/5), esecuzione inversa PASS, isolamento singolo file PASS, `npm run build` PASS, `npm run lint` PASS con 59 warning
+
 ## [P18] — 2026-04-24
 
 ### Architettura

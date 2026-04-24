@@ -122,6 +122,8 @@
 
 ## Completati recenti
  
+- [x] P19 — Introduzione Vitest e 5 smoke test
+	— completato 2026-04-24
 - [x] P18 — VisibleDataProvider: fonte unica dei dati elaborati
 	— completato 2026-04-24
 - [x] P17 — Fix navigazione frecce e accessibilità liste
