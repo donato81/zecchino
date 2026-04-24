@@ -266,3 +266,37 @@ Le cartelle `docs/accessibility/`, `docs/accessibility/android/`, `docs/accessib
 - **Non riorganizzare le cartelle esistenti di `docs/`** (`1 - projects/`, `2 - coding plans/`, `3 - todo lists/`, `4 - reports/`): sono invariate.
 - **Non creare nuovi file di documentazione tecnica** oltre al consolidamento TalkBack: questo passo riorganizza documenti esistenti, non ne produce di nuovi.
 - **Non aggiornare le todo list o i coding plan** per riflettere questo passo: `docs/3 - todo lists/` e `docs/2 - coding plans/` sono invariati.
+
+---
+
+## 8. Struttura finale di `docs/`
+
+Schema della cartella `docs/` al termine del Passo 14. Le cartelle numerate sono invariate; le cartelle `accessibility/` e `feedback/` sono nuove.
+
+```
+docs/
+├── 1 - projects/                          ← documenti di design P01–P14 (invariata)
+├── 2 - coding plans/                      ← coding plan P01–P14 (invariata)
+├── 3 - todo lists/                        ← todo list P01–P14 (invariata)
+├── 4 - reports/                           ← report diagnostici (invariata)
+│
+├── accessibility/                         ← nuova — documentazione accessibilità
+│   ├── android/                           ← nuova — specifiche piattaforma Android
+│   │   ├── ANDROID_ACCESSIBILITY.md       ← spostato da root
+│   │   └── ANDROID_IMPLEMENTATION_SUMMARY.md  ← spostato da root
+│   ├── history/                           ← nuova — archivio storico iterazioni a11y
+│   │   └── ACCESSIBILITY_IMPROVEMENTS.md  ← spostato da root
+│   ├── ACCESSIBILITY.md                   ← spostato da root — strategia generale a11y
+│   ├── GUIDA_SCREEN_READER.md             ← spostato da root — guida utente SR
+│   ├── SCREEN_READER_AUDIT.md             ← spostato da root — audit tecnico SR
+│   └── talkback.md                        ← nuovo — consolidamento 4 file TalkBack
+│
+├── feedback/                              ← nuova — documentazione feedback sensoriale
+│   ├── HAPTIC_FEEDBACK.md                 ← spostato da root
+│   └── SOUND_COVERAGE_REPORT.md          ← spostato da root
+│
+├── PRD.md                                 ← spostato da root — requisiti di prodotto
+├── api.md                                 ← invariato
+├── architettura.md                        ← invariato
+└── todo.md                                ← invariato
+```
