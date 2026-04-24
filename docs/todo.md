@@ -13,6 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| P18 — VisibleDataProvider fonte unica dati elaborati | `docs/3 - todo lists/P18-todo.md` | In corso | Alta |
 
 
 ## TODO completati
