@@ -13,6 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| P19 — Introduzione Vitest e 5 smoke test | `docs/3 - todo lists/P19-todo.md` | In corso | Alta |
 
 
 ## TODO completati
