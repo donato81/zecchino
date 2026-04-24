@@ -1,6 +1,6 @@
 import { useAppData } from '@/context/AppDataContext'
 import { useAuth } from '@/context/AuthContext'
-import { useVisibleData } from '@/hooks/use-visible-data'
+import { useVisibleData } from '@/context/VisibleDataContext'
 import { useScreenReader } from '@/hooks/use-screen-reader'
 import { calculateAccountBalance, formatCurrency } from '@/lib/helpers'
 import { soundSystem } from '@/lib/sound-system'

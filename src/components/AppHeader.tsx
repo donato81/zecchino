@@ -1,6 +1,6 @@
 import { Keyboard } from '@phosphor-icons/react'
 import { useAppData } from '@/context/AppDataContext'
-import { useVisibleData } from '@/hooks/use-visible-data'
+import { useVisibleData } from '@/context/VisibleDataContext'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { hapticSystem } from '@/lib/haptic-system'
 import { formatCurrency } from '@/lib/helpers'

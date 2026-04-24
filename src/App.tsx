@@ -6,6 +6,7 @@ import { useScreenReader } from '@/hooks/use-screen-reader'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { AppDataProvider, useAppData } from '@/context/AppDataContext'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
+import { VisibleDataProvider, useVisibleData } from '@/context/VisibleDataContext'
 import { SkipLink } from '@/components/SkipLink'
 import { BudgetAlertBanner } from '@/components/BudgetAlertBanner'
 import { FocusIndicator } from '@/components/FocusIndicator'
@@ -20,7 +21,6 @@ import { Badge } from '@/components/ui/badge'
 import { ChartLine, List, ArrowsLeftRight } from '@phosphor-icons/react'
 import { Toaster } from '@/components/ui/sonner'
 import { useAppShortcuts } from '@/hooks/use-app-shortcuts'
-import { useVisibleData } from '@/hooks/use-visible-data'
 
 function AppContent() {
   const screenReader = useScreenReader()
@@ -127,7 +127,7 @@ function AppContent() {
 }
 
 function App() {
-  return <AuthProvider><AppDataProvider><AppContent /></AppDataProvider></AuthProvider>
+  return <AuthProvider><AppDataProvider><VisibleDataProvider><AppContent /></VisibleDataProvider></AppDataProvider></AuthProvider>
 }
 
 export default App

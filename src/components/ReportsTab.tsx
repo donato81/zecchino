@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useAppData } from '@/context/AppDataContext'
-import { useVisibleData } from '@/hooks/use-visible-data'
+import { useVisibleData } from '@/context/VisibleDataContext'
 import { calculateAccountBalance, formatCurrency, getActiveBudgets } from '@/lib/helpers'
 import { BudgetProgressCard } from '@/components/BudgetProgressCard'
 import { BudgetForecastCard } from '@/components/BudgetForecastCard'

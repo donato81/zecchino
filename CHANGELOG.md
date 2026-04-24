@@ -1,5 +1,20 @@
 # Changelog
 
+## [P18] — 2026-04-24
+
+### Architettura
+- Creato `src/context/VisibleDataContext.tsx`: nuovo context dedicato
+  che espone i dati elaborati tramite `VisibleDataProvider`
+- Albero provider aggiornato: `AuthProvider → AppDataProvider →
+  VisibleDataProvider → AppContent`
+- Migrati 7 consumer da `@/hooks/use-visible-data` a
+  `@/context/VisibleDataContext`: `App.tsx`, `AppHeader.tsx`,
+  `TransactionsTab.tsx`, `use-app-shortcuts.ts`, `DialogsOverlay.tsx`,
+  `ReportsTab.tsx`, `DashboardTab.tsx`
+- `use-visible-data.ts` diventa implementazione interna del provider —
+  logica invariata, nessun consumer accede più al hook direttamente
+- Comportamento app invariato — zero modifiche visibili all'utente
+
 ## [P17] — 2026-04-24
 
 ### Accessibilità / Correzioni

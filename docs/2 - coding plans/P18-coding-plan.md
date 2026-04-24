@@ -695,12 +695,12 @@ Baseline al termine di P17: 55 warning (o il valore effettivo misurato al gate A
 
 | Sotto-operazione | Build | Warning lint | Note |
 |---|---|---|---|
-| 1 — Creazione VisibleDataContext.tsx | | | |
-| 2 — Integrazione App.tsx | | | |
-| 3a — AppHeader.tsx | | | |
-| 3b — TransactionsTab.tsx | | | |
-| 3c — use-app-shortcuts.ts | | | |
-| 3d — DialogsOverlay.tsx | | | |
-| 3e — ReportsTab.tsx | | | |
-| 3f — DashboardTab.tsx | | | |
-| 4 — Verifica finale | | | |
+| 1 — Creazione VisibleDataContext.tsx | PASS | 60 | Build verde; warning atteso `react-refresh/only-export-components` presente nel nuovo file |
+| 2 — Integrazione App.tsx | PASS | n/d | Ordine provider verificato a vista: Auth → AppData → VisibleData → AppContent |
+| 3a — AppHeader.tsx | PASS | n/d | Solo sostituzione import; destrutturazione invariata |
+| 3b — TransactionsTab.tsx | PASS | n/d | Solo sostituzione import; import React P17 invariati |
+| 3c — use-app-shortcuts.ts | PASS | n/d | Hook migrato correttamente sotto `VisibleDataProvider` |
+| 3d — DialogsOverlay.tsx | PASS | n/d | Solo sostituzione import; flusso conto privato invariato a livello statico |
+| 3e — ReportsTab.tsx | PASS | n/d | Un controllo intermedio ha restituito un falso negativo su npm; build rieseguita con exit code 0 |
+| 3f — DashboardTab.tsx | PASS | n/d | Solo sostituzione import; import React P17 invariati |
+| 4 — Verifica finale | PASS | 56 | Grep verde: unico import residuo da `@/hooks/use-visible-data` in `VisibleDataContext.tsx`; perimetro codice P18 confermato; verifica UI interattiva completa non automatizzabile qui |
