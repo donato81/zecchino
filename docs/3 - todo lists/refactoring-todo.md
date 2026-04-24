@@ -122,4 +122,6 @@
 
 ## Completati recenti
 
+- [x] P15 — Ripristino ESLint e configurazione accessibilità automatica
+	— completato 2026-04-24
 - [x] P14 — Pulizia root directory — completato 2026-04-24

@@ -233,3 +233,10 @@ npm run build     # Build produzione (tsc --noCheck + vite build)
 npm run preview   # Anteprima build produzione
 npm run lint      # ESLint
 ```
+
+## Strumenti di sviluppo
+
+- `eslint.config.js` e attivo in root come flat config ESLint 9 in formato ESModule.
+- Il gate lint P15 opera in **Fase A**: tutte le regole sono configurate in modalita `warn`, senza errori bloccanti sul codice esistente.
+- La configurazione e organizzata in 5 layer: `@eslint/js`, `typescript-eslint`, `react-hooks`, `react-refresh`, `jsx-a11y`.
+- La baseline warning reale del progetto e documentata in `docs/2 - coding plans/P15-coding-plan.md` e costituisce il punto di partenza per la futura Fase B.

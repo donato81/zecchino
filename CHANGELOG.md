@@ -1,5 +1,18 @@
 # Changelog
 
+## [P15] — 2026-04-24
+
+### Tooling
+- Creato `eslint.config.js` (flat config ESLint 9, formato ESModule)
+  con 5 layer: `@eslint/js`, `typescript-eslint`, `react-hooks`,
+  `react-refresh`, `jsx-a11y`
+- Installato `eslint-plugin-jsx-a11y@6.10.2` in `devDependencies`
+- `npm run lint` operativo — gate di qualità ripristinato
+- Strategia Fase A: tutte le regole in `warn`; nessun errore bloccante
+  sul codice esistente
+- Baseline avvisi documentata in `docs/2 - coding plans/P15-coding-plan.md`
+- Nessun file sotto `src/` modificato — comportamento app invariato
+
 ## [P14] — 2026-04-24
 
 ### Manutenzione — Pulizia root e riorganizzazione documentazione

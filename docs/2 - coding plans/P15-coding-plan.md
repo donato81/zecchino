@@ -425,25 +425,29 @@ Nessun file sotto `src/` deve apparire come modificato (R3).
 
 **Verifica finale**: `npm run lint` exit code 0; `npm run build` verde; `git status` mostra solo i 3 file attesi.
 
----
-
 ## Baseline avvisi ESLint
 
-> **Sezione da compilare durante l'esecuzione della Sotto-operazione 4.**  
-> Documentare il conteggio degli avvisi prodotti dalla prima esecuzione di `npm run lint`.  
-> Anche un conteggio approssimativo per regola è sufficiente — non lasciare questa sezione vuota nel commit.
+> **Sezione compilata durante l'esecuzione della Sotto-operazione 4 — 24 aprile 2026.**  
+> Conteggio basato su `npm run lint -- --format json`. Esecuzione con exit code 0, 0 errori, 59 warning.
 
-| Regola | File interessati (stima) | Conteggio avvisi | Note |
+| Regola | File interessati | Conteggio avvisi | Note |
 |---|---|---|---|
-| `jsx-a11y/click-events-have-key-events` | `DashboardTab.tsx`, `TransactionsTab.tsx` | _da compilare_ | Bug noto — §2 report diagnostico |
-| `jsx-a11y/no-noninteractive-element-interactions` | `DashboardTab.tsx`, `TransactionsTab.tsx` | _da compilare_ | Bug noto — §2 report diagnostico |
-| `react-hooks/exhaustive-deps` | `App.tsx` + altri | _da compilare_ | Oggetti instabili in useEffect |
-| `@typescript-eslint/no-explicit-any` | TBD | _da compilare_ | |
-| `@typescript-eslint/no-unused-vars` | TBD | _da compilare_ | Variabili destrutturate non usate (§3.6 report) |
-| Altre regole | — | _da compilare_ | |
-| **TOTALE** | — | _da compilare_ | |
+| `jsx-a11y/click-events-have-key-events` | `DashboardTab.tsx`, `TransactionsTab.tsx` | 2 | Bug noto — §2 report diagnostico. `<div onClick>` senza gestore tastiera |
+| `jsx-a11y/no-static-element-interactions` | `DashboardTab.tsx`, `TransactionsTab.tsx` | 2 | Bug noto — §2 report diagnostico. (Il design citava `no-noninteractive-element-interactions`; la regola effettivamente attivata è `no-static-element-interactions`) |
+| `react-hooks/exhaustive-deps` | `TransactionDialog.tsx`, `AuthContext.tsx`, `use-app-shortcuts.ts` | 3 | Dipendenze mancanti in useEffect/useMemo; oggetti instabili |
+| `@typescript-eslint/no-explicit-any` | `DashboardTab.tsx`, `DataManagement.tsx`, `IncomeExpenseChart.tsx`, `MonthlyComparisonChart.tsx`, `SavingsGoalCard.tsx`, `TalkBackSettings.tsx`, `sound-system.ts` | 7 | Abbassato a `warn` in Layer 2 (Fase A) |
+| `@typescript-eslint/no-unused-vars` | 14 file (~`AccountDialog`, `BudgetDialog`, `DisplaySettings` ×9, `IncomeExpenseChart`, `MonthlyComparisonChart`, `PeriodSelector`, `TransactionsTab`, `CategoryManagement`, `DataManagement`, `SecuritySettings`, `budget-forecasting`, `budget-history`, `helpers`, `screen-reader`) | 28 | Variabili/import non usati; abbassato a `warn` in Layer 2 (Fase A) |
+| `react-refresh/only-export-components` | `ui/badge.tsx`, `ui/button.tsx`, `ui/form.tsx`, `ui/navigation-menu.tsx`, `ui/sidebar.tsx`, `ui/toggle.tsx`, `AppDataContext.tsx`, `AuthContext.tsx` | 8 | File che esportano costanti accanto ai componenti React |
+| `jsx-a11y/no-autofocus` | `AccountDialog.tsx`, `CategoryManagement.tsx`, `PinDialog.tsx`, `SecuritySettings.tsx`, `TransactionDialog.tsx` | 5 | Prop `autoFocus` in dialog — corretto per focus management ma segnalato |
+| `jsx-a11y/no-noninteractive-tabindex` | `AppHeader.tsx` | 1 | `tabIndex` su elemento non interattivo |
+| `jsx-a11y/anchor-has-content` | `src/components/ui/pagination.tsx` | 1 | Anchor senza contenuto accessibile |
+| `jsx-a11y/control-has-associated-label` | `DataManagement.tsx` | 1 | Controllo form senza label associata |
+| `prefer-const` | `IncomeExpenseChart.tsx` | 1 | Abbassato a `warn` in Layer 2 (Fase A) — `let` che non viene riassegnato |
+| **TOTALE** | — | **59** | **0 errori, 59 warning.** Nessuna regola supera la soglia 50. Nessuna regola abbassata a `off`. |
 
-> ⚠️ Se una regola produce più di 50 avvisi: documentare qui il motivo e l'azione intrapresa (abbassata a `off` con TODO, o mantenuta e accettata come baseline).
+> Nota deviazione dal piano: la regola `jsx-a11y/no-noninteractive-element-interactions` citata nel design non è stata attivata dal plugin — la regola effettivamente scattata sui `<div onClick>` è `jsx-a11y/no-static-element-interactions`. Semantica equivalente, regola diversa (entrambe nel preset recommended di jsx-a11y).
+
+> Nota configurazione: `vite.config.ts` è stato aggiunto al Layer 0 ignores per evitare parsing error TypeScript fuori da `src/`. Le regole `@typescript-eslint/no-unused-vars`, `@typescript-eslint/no-explicit-any` e `prefer-const` sono state abbassate esplicitamente a `warn` nel Layer 2 per rispettare la strategia Fase A (exit code 0 obbligatorio).
 
 ---
 
