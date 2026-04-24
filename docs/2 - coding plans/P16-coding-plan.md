@@ -377,7 +377,7 @@ npm audit        // verificare riduzione vulnerabilità
 - Advisory: [https://github.com/advisories/GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)
 - Titolo: "Missing buffer bounds check in v3/v5/v6 when buf is provided"
 - Motivazione dell'accettazione: fix richiede major version jump v11→v14, fuori perimetro P16
-- Rischio concreto: basso — la vulnerabilità è attivabile solo se l'API viene chiamata con il parametro `buf` esplicito. Verificare in `src/` che uuid sia usato solo con `uuidv4()` o equivalenti senza `buf`.
+- Rischio concreto: basso — la vulnerabilità è attivabile solo se l'API viene chiamata con il parametro `buf` esplicito. Verifica finale eseguita: nessun import diretto di `uuid` in `src/`; gli ID applicativi sono generati tramite `generateId()` in `src/lib/helpers.ts` e consumati da `src/context/AppDataContext.tsx`.
 - Proposta: passo dedicato per l'aggiornamento a `uuid@14.x` con analisi del changelog e verifica degli usi in `src/`.
 
 ---
@@ -435,27 +435,31 @@ Compilata dall'Agent-Plan tramite `npm audit` sul branch `refactoring-architettu
 
 ### Tabella risultato finale
 
-_Da compilare dall'Agent-Code durante l'esecuzione della Sotto-operazione 3._
-
 | Libreria | Versione prima | Versione dopo | Esito | Note |
 |---|---|---|---|---|
-| `vite` | constraint `^7.2.6` | _da compilare_ | _da compilare_ | Aggiornamento constraint minor |
-| `flatted` | `3.4.2` (safe) | _da compilare_ | _da compilare_ | Lockfile refresh / override |
-| `lodash` | `4.18.1` (safe) | _da compilare_ | _da compilare_ | Lockfile refresh / override |
-| `minimatch` | `3.1.5` / `9.0.9` (safe) | _da compilare_ | _da compilare_ | Lockfile refresh / override |
-| `path-to-regexp` | `8.4.2` (safe) | _da compilare_ | _da compilare_ | Lockfile refresh / override |
-| `picomatch` | `4.0.4` (safe) | _da compilare_ | _da compilare_ | Lockfile refresh / override |
-| `ajv` | `6.15.0` (safe) | _da compilare_ | _da compilare_ | Lockfile refresh / override |
-| `brace-expansion` | `1.1.14` / `2.1.0` (safe) | _da compilare_ | _da compilare_ | Lockfile refresh / override |
-| `uuid` | `11.1.0` (vulnerabile) | `11.1.0` (non aggiornato) | ⚠️ Accettata | Major jump v11→v14, fuori perimetro P16. Advisory: GHSA-w5hq-g745-h8pq |
+| `vite` | constraint `^7.2.6` | constraint `^7.3.2` | ✅ Risolta | `npm audit` non segnala piu `vite`; lockfile aggiornato a `vite@7.3.2` |
+| `flatted` | `3.4.2` (safe) | `3.4.2` (override) | ⚠️ Accettata | Override aggiunto, ma `npm audit` continua a segnalarla nonostante la versione installata sia gia sicura |
+| `lodash` | `4.18.1` (safe) | `4.18.1` (override) | ⚠️ Accettata | Override aggiunto, ma `npm audit` continua a segnalarla nonostante la versione installata sia gia sicura |
+| `minimatch` | `3.1.5` / `9.0.9` (safe) | `3.1.5` / `9.0.9` (override anche nested) | ⚠️ Accettata | Override generale piu override nested per `@typescript-eslint/typescript-estree`; advisory ancora presenti in `npm audit` |
+| `path-to-regexp` | `8.4.2` (safe) | `8.4.2` (override) | ⚠️ Accettata | Override aggiunto, ma `npm audit` continua a segnalarla |
+| `picomatch` | `4.0.4` (safe) | `4.0.4` (override) | ⚠️ Accettata | Override aggiunto, ma `npm audit` continua a segnalarla |
+| `ajv` | `6.15.0` (safe) | `6.15.0` (override) | ⚠️ Accettata | Override aggiunto, ma `npm audit` continua a segnalarla |
+| `brace-expansion` | `1.1.14` / `2.1.0` (safe) | `1.1.14` (override) | ⚠️ Accettata | Lockfile riallineato su versione sicura, ma advisory ancora presenti in `npm audit` |
+| `uuid` | `11.1.0` (vulnerabile) | `11.1.0` (non aggiornato) | ⚠️ Accettata | Major jump v11→v14 fuori perimetro P16; nessun uso diretto di `uuid` in `src/`; advisory: GHSA-w5hq-g745-h8pq |
+
+### Note di chiusura
+
+- `npm run build` finale: PASS (exit code 0)
+- `npm run lint` finale: PASS (exit code 0, 59 warning, 0 error, comportamento invariato rispetto a P15)
+- `npm audit` finale: 8 vulnerabilita residue (5 high, 3 moderate)
+- Vulnerabilita residue documentate: `ajv`, `brace-expansion`, `flatted`, `lodash`, `minimatch`, `path-to-regexp`, `picomatch`, `uuid`
+- Motivazione delle residue transitive: `npm audit` continua a segnalarle nonostante versioni installate/forzate gia fuori dal range vulnerabile; accettazione documentata in P16, con riferimento agli advisory elencati in AI1
 
 ### Conteggio finale `npm audit`
 
-_Da compilare dall'Agent-Code._
-
 | Livello | Baseline | Dopo P16 | Delta |
 |---|---|---|---|
-| `critical` | 0 | _da compilare_ | _da compilare_ |
-| `high` | 6 | _da compilare_ | _da compilare_ |
-| `moderate` | 3 | _da compilare_ | _da compilare_ |
-| **Totale** | **9** | _da compilare_ | _da compilare_ |
+| `critical` | 0 | 0 | 0 |
+| `high` | 6 | 5 | -1 |
+| `moderate` | 3 | 3 | 0 |
+| **Totale** | **9** | **8** | **-1** |

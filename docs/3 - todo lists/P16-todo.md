@@ -9,26 +9,26 @@
 
 ## Prima di iniziare
 
-- [ ] Leggere `docs/2 - coding plans/P16-coding-plan.md` per intero
-- [ ] ⚠️ **Questo passo modifica SOLO `package.json` e `package-lock.json`** — nessun file sotto `src/`; `eslint.config.js` non toccato
-- [ ] ⚠️ **`.github/` è protetto** — non aprire, non modificare nulla sotto `.github/`
-- [ ] ⚠️ **Aggiornamenti major NON autorizzati** in questo passo — se una vulnerabilità richiede un salto major, documentare come fuori perimetro e aprire proposta passo separato
-- [ ] Verificare di essere sul branch `refactoring-architettura`:
+- [x] Leggere `docs/2 - coding plans/P16-coding-plan.md` per intero
+- [x] ⚠️ **Questo passo modifica SOLO `package.json` e `package-lock.json`** — nessun file sotto `src/`; `eslint.config.js` non toccato
+- [x] ⚠️ **`.github/` è protetto** — non aprire, non modificare nulla sotto `.github/`
+- [x] ⚠️ **Aggiornamenti major NON autorizzati** in questo passo — se una vulnerabilità richiede un salto major, documentare come fuori perimetro e aprire proposta passo separato
+- [x] Verificare di essere sul branch `refactoring-architettura`:
   ```
   git branch --show-current
   ```
   Atteso: `refactoring-architettura`
-- [ ] Eseguire `git status` per confermare lo stato iniziale del repository (solo file documento P16 attesi come nuovi)
-- [ ] Prendere nota delle ambiguità già verificate nel coding plan:
-  - [ ] **AI1**: 9 vulnerabilità totali (3 moderate + 6 high) — diverso dalla stima del design (5)
-  - [ ] **AI2**: solo `uuid@11.1.0` è genuinamente a versione non sicura; le altre 8 hanno versioni installate già fuori dal range vulnerabile
-  - [ ] **AI3**: `npm audit fix --dry-run` → "up to date" — zero modifiche automatiche. `npm audit fix` **non è applicabile**
-  - [ ] **AI4**: `uuid` richiede salto major v11→v14 — non autorizzato
-  - [ ] **AI5**: `uuid` accettata temporaneamente; le 7 transitive da investigare con npm install + overrides se necessario
-  - [ ] **AI6**: snapshot baseline = 9 vuln (3 mod + 6 high)
-- [ ] Prendere nota dei rischi critici:
-  - [ ] **R5 🔴**: `git status` finale non deve mostrare nessun file sotto `src/` come modificato
-  - [ ] **R4 🟡**: se si usano gli overrides e `npm run build` si rompe → rollback override immediato, non correggere `src/`
+- [x] Eseguire `git status` per confermare lo stato iniziale del repository (solo file documento P16 attesi come nuovi)
+- [x] Prendere nota delle ambiguità già verificate nel coding plan:
+  - [x] **AI1**: 9 vulnerabilità totali (3 moderate + 6 high) — diverso dalla stima del design (5)
+  - [x] **AI2**: solo `uuid@11.1.0` è genuinamente a versione non sicura; le altre 8 hanno versioni installate già fuori dal range vulnerabile
+  - [x] **AI3**: `npm audit fix --dry-run` → "up to date" — zero modifiche automatiche. `npm audit fix` **non è applicabile**
+  - [x] **AI4**: `uuid` richiede salto major v11→v14 — non autorizzato
+  - [x] **AI5**: `uuid` accettata temporaneamente; le 7 transitive da investigare con npm install + overrides se necessario
+  - [x] **AI6**: snapshot baseline = 9 vuln (3 mod + 6 high)
+- [x] Prendere nota dei rischi critici:
+  - [x] **R5 🔴**: `git status` finale non deve mostrare nessun file sotto `src/` come modificato
+  - [x] **R4 🟡**: se si usano gli overrides e `npm run build` si rompe → rollback override immediato, non correggere `src/`
 
 ---
 
@@ -36,24 +36,24 @@
 
 > ⚠️ **Questa sotto-operazione è già stata eseguita dall'Agent-Plan** per produrre il coding plan. I dati reali di `npm audit` sono documentati nelle sezioni AI del coding plan. Eseguire i comandi di conferma per verificare che nulla sia cambiato tra la produzione del piano e l'esecuzione.
 
-- [ ] Confermare lo snapshot baseline:
+- [x] Confermare lo snapshot baseline:
   ```
   npm audit
   ```
   Atteso: 9 vulnerabilità (3 moderate, 6 high) — se il conteggio è diverso, rileggere il coding plan per capire i delta e adeguare la strategia
-- [ ] ⚠️ **Dry-run obbligatorio** — eseguire prima di qualsiasi modifica:
+- [x] ⚠️ **Dry-run obbligatorio** — eseguire prima di qualsiasi modifica:
   ```
   npm audit fix --dry-run
   ```
   Atteso: "up to date" — zero pacchetti modificati. Se il dry-run mostra modifiche, interrompere e rileggere la strategia nel coding plan (AI3)
-- [ ] ⚠️ **Compilare la tabella di strategia** prima di passare alla Sotto-operazione 2 — non procedere senza aver classificato ogni vulnerabilità con la strategia adottata. La tabella è pre-compilata nel coding plan; verificare che corrisponda all'output reale di `npm audit`
+- [x] ⚠️ **Compilare la tabella di strategia** prima di passare alla Sotto-operazione 2 — non procedere senza aver classificato ogni vulnerabilità con la strategia adottata. La tabella è pre-compilata nel coding plan; verificare che corrisponda all'output reale di `npm audit`
 
 ### Verifica intermedia 1
 
-- [ ] Snapshot baseline confermato: 9 vuln (o aggiornato se diverso)
-- [ ] Dry-run confermato: zero modifiche automatiche
-- [ ] Tabella di strategia verificata o aggiornata
-- [ ] `uuid` classificato come "non aggiornabile in P16" (major jump v11→v14) — confermato
+- [x] Snapshot baseline confermato: 9 vuln (o aggiornato se diverso)
+- [x] Dry-run confermato: zero modifiche automatiche
+- [x] Tabella di strategia verificata o aggiornata
+- [x] `uuid` classificato come "non aggiornabile in P16" (major jump v11→v14) — confermato
 
 ---
 
@@ -66,24 +66,24 @@
 
 ### 2.1 — Gruppo A: `vite` — aggiornamento constraint (autorizzato)
 
-- [ ] In `package.json`, sezione `devDependencies`, aggiornare il constraint di `vite`:
+- [x] In `package.json`, sezione `devDependencies`, aggiornare il constraint di `vite`:
   - Da: `"vite": "^7.2.6"`
   - A: `"vite": "^7.3.2"`
-- [ ] Eseguire:
+- [x] Eseguire:
   ```
   npm install
   ```
-- [ ] ⚠️ Verificare build:
+- [x] ⚠️ Verificare build:
   ```
   npm run build
   ```
   Atteso: exit code 0. **Se si rompe → rollback (`"vite": "^7.2.6"` + npm install) e documentare come fuori perimetro.**
-- [ ] ⚠️ Verificare lint:
+- [x] ⚠️ Verificare lint:
   ```
   npm run lint
   ```
   Atteso: exit code 0, comportamento invariato rispetto a P15 (59 warning)
-- [ ] Verificare audit:
+- [x] Verificare audit:
   ```
   npm audit
   ```
@@ -91,21 +91,21 @@
 
 ### Verifica intermedia 2.1
 
-- [ ] `npm run build` → exit 0
-- [ ] `npm run lint` → exit 0 (59 warning, invariato)
-- [ ] `npm audit` rieseguito — annotare nuovo conteggio
+- [x] `npm run build` → exit 0
+- [x] `npm run lint` → exit 0 (59 warning, invariato)
+- [x] `npm audit` rieseguito — annotare nuovo conteggio
 
 ### 2.2 — Gruppo B: vulnerabilità transitive — refresh lockfile
 
-- [ ] Il `npm install` del Gruppo A ha già rigenerato il lockfile. Eseguire nuovamente `npm audit` per vedere se le 7 vulnerabilità transitive sono ancora presenti
-- [ ] ⚠️ Annotare quali vulnerabilità sono sparite e quali persistono:
-  - `flatted`: ancora segnalata? ☐ Sì / ☐ No
-  - `lodash`: ancora segnalata? ☐ Sì / ☐ No
-  - `minimatch`: ancora segnalata? ☐ Sì / ☐ No
-  - `path-to-regexp`: ancora segnalata? ☐ Sì / ☐ No
-  - `picomatch`: ancora segnalata? ☐ Sì / ☐ No
-  - `ajv`: ancora segnalata? ☐ Sì / ☐ No
-  - `brace-expansion`: ancora segnalata? ☐ Sì / ☐ No
+- [x] Il `npm install` del Gruppo A ha gia rigenerato il lockfile. Eseguire nuovamente `npm audit` per vedere se le 7 vulnerabilità transitive sono ancora presenti
+- [x] ⚠️ Annotare quali vulnerabilità sono sparite e quali persistono:
+  - `flatted`: ancora segnalata? ☑ Sì / ☐ No
+  - `lodash`: ancora segnalata? ☑ Sì / ☐ No
+  - `minimatch`: ancora segnalata? ☑ Sì / ☐ No
+  - `path-to-regexp`: ancora segnalata? ☑ Sì / ☐ No
+  - `picomatch`: ancora segnalata? ☑ Sì / ☐ No
+  - `ajv`: ancora segnalata? ☑ Sì / ☐ No
+  - `brace-expansion`: ancora segnalata? ☑ Sì / ☐ No
 
 ### 2.3 — Gruppo B: overrides per vulnerabilità transitive persistenti (se necessario)
 
@@ -130,29 +130,29 @@ Per ogni libreria ancora segnalata, aggiungere (o integrare) una voce in `"overr
 
 Per ogni override aggiunto:
 
-- [ ] Modificare `package.json` aggiungendo/integrando la sezione `overrides`
-- [ ] Eseguire `npm install`
-- [ ] ⚠️ Verificare build: `npm run build` → exit 0. **Se si rompe → rimuovere l'override e documentare la libreria come non correggibile con override in P16**
-- [ ] ⚠️ Verificare lint: `npm run lint` → exit 0
-- [ ] Verificare audit: `npm audit` → la vulnerabilità oggetto dell'override è sparita?
+- [x] Modificare `package.json` aggiungendo/integrando la sezione `overrides`
+- [x] Eseguire `npm install`
+- [x] ⚠️ Verificare build: `npm run build` → exit 0. **Se si rompe → rimuovere l'override e documentare la libreria come non correggibile con override in P16**
+- [x] ⚠️ Verificare lint: `npm run lint` → exit 0
+- [x] Verificare audit: `npm audit` → la vulnerabilità oggetto dell'override è sparita?
 
 > ⚠️ Se una vulnerabilità persiste nonostante l'override: documentare con advisory URL e motivazione nella Tabella risultato finale del coding plan. Accettazione documentata è la risposta corretta.
 
 ### Verifica intermedia 2.3
 
-- [ ] Per ogni override aggiunto: `npm run build` → exit 0
-- [ ] Per ogni override aggiunto: `npm run lint` → exit 0
-- [ ] `npm audit` dopo tutti gli overrides: conteggio ridotto rispetto al baseline
+- [x] Per ogni override aggiunto: `npm run build` → exit 0
+- [x] Per ogni override aggiunto: `npm run lint` → exit 0
+- [x] `npm audit` dopo tutti gli overrides: conteggio ridotto rispetto al baseline
 
 ### 2.4 — Gruppo C: `uuid` — accettazione documentata
 
-- [ ] Non modificare la versione di `uuid` in `package.json` (rimane `^11.1.0`)
-- [ ] ⚠️ **Documentare nella Tabella risultato finale** del coding plan:
-  - Advisory: [https://github.com/advisories/GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)
-  - Motivazione: fix richiede `uuid@14.0.0`, salto major v11→v14, non autorizzato in P16
-  - Valutazione rischio: verificare in `src/` che uuid sia usato senza parametro `buf` (uso standard `uuidv4()` / `uuid()` — non vulnerabile)
-  - Proposta: passo separato per aggiornamento a `uuid@14.x` con analisi changelog
-- [ ] ⚠️ Non lasciare l'accettazione implicita — deve essere esplicitamente documentata con advisory URL nel coding plan
+- [x] Non modificare la versione di `uuid` in `package.json` (rimane `^11.1.0`)
+- [x] ⚠️ **Documentare nella Tabella risultato finale** del coding plan:
+  - [x] Advisory: [https://github.com/advisories/GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)
+  - [x] Motivazione: fix richiede `uuid@14.0.0`, salto major v11→v14, non autorizzato in P16
+  - [x] Valutazione rischio: nessun import diretto di `uuid` in `src`; gli ID sono generati tramite `generateId()`
+  - [x] Proposta: passo separato per aggiornamento a `uuid@14.x` con analisi changelog
+- [x] ⚠️ Non lasciare l'accettazione implicita — deve essere esplicitamente documentata con advisory URL nel coding plan
 
 ---
 
@@ -160,31 +160,36 @@ Per ogni override aggiunto:
 
 ### Sicurezza
 
-- [ ] `npm audit` non segnala le vulnerabilità risolte in questo passo
-- [ ] Le vulnerabilità accettate sono documentate nel coding plan con:
-  - [ ] Advisory URL
-  - [ ] Motivazione dell'accettazione
-  - [ ] Valutazione del rischio concreto
-  - [ ] Proposta di risoluzione futura
-- [ ] `uuid`: accettazione esplicitamente documentata con GHSA-w5hq-g745-h8pq
+- [x] `npm audit` non segnala le vulnerabilità risolte in questo passo
+- [x] Le vulnerabilità accettate sono documentate nel coding plan con:
+  - [x] Advisory URL
+  - [x] Motivazione dell'accettazione
+  - [x] Valutazione del rischio concreto
+  - [x] Proposta di risoluzione futura
+- [x] `uuid`: accettazione esplicitamente documentata con GHSA-w5hq-g745-h8pq
 
 ### Build e lint
 
-- [ ] `npm run build` passa (exit code 0)
-- [ ] `npm run lint` passa (exit code 0, comportamento invariato rispetto a P15 — stessi 59 warning o meno)
+- [x] `npm run build` passa (exit code 0)
+- [x] `npm run lint` passa (exit code 0, comportamento invariato rispetto a P15 — stessi 59 warning o meno)
 
 ### Integrità repository
 
-- [ ] Nessun file sotto `src/` è stato modificato
-- [ ] `eslint.config.js` non è stato modificato
-- [ ] `git status` mostra solo `package.json` e `package-lock.json` come modificati (oltre ai file di documentazione di questo passo)
-- [ ] ⚠️ R5 verificato: zero file sotto `src/` in `git status`
+- [x] Nessun file sotto `src/` è stato modificato
+- [x] `eslint.config.js` non è stato modificato
+- [x] `git status` mostra solo `package.json` e `package-lock.json` come modificati (oltre ai file di documentazione di questo passo)
+- [x] ⚠️ R5 verificato: zero file sotto `src/` in `git status`
 
 ### Tabelle del coding plan
 
-- [ ] **Tabella risultato finale** compilata con versioni prima/dopo per ogni libreria
-- [ ] **Conteggio finale `npm audit`** compilato (baseline vs. dopo P16, delta)
+- [x] **Tabella risultato finale** compilata con versioni prima/dopo per ogni libreria
+- [x] **Conteggio finale `npm audit`** compilato (baseline vs. dopo P16, delta)
 
 ---
 
 > **Nota finale**: il passo è completato correttamente anche se `uuid` rimane segnalato in `npm audit`, purché l'accettazione sia documentata con advisory URL e motivazione nel coding plan. Un `npm audit` con sole vulnerabilità documentate e accettate è un risultato valido per P16.
+
+***
+
+**Completato il 2026-04-24.**
+**Gate di sicurezza dipendenze: vulnerabilita risolte/documentate.**

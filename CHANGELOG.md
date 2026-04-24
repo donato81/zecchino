@@ -1,5 +1,18 @@
 # Changelog
 
+## [P16] — 2026-04-24
+
+### Sicurezza
+- Aggiornato constraint `vite` da `^7.2.6` a `^7.3.2`
+  (risolve GHSA-4w7w-66w2-5vf9, GHSA-v2wj-q39q-566r, GHSA-p9ff-h696-f583)
+- Aggiunti `overrides` mirati per `flatted`, `lodash`, `minimatch`,
+  `path-to-regexp`, `picomatch`, `ajv` e `brace-expansion`; le vulnerabilita
+  transitive residue sono state documentate nel coding plan P16
+- `uuid@11.1.0` accettata temporaneamente (GHSA-w5hq-g745-h8pq):
+  fix richiede major jump v11→v14, rinviato a passo dedicato
+- Nessun file sotto `src/` modificato — comportamento app invariato
+- Baseline post-P16: 8 vulnerabilita residue documentate (5 high, 3 moderate)
+
 ## [P15] — 2026-04-24
 
 ### Tooling
