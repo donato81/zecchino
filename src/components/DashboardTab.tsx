@@ -1,3 +1,4 @@
+import { useRef, useCallback } from 'react'
 import { useAppData } from '@/context/AppDataContext'
 import { useAuth } from '@/context/AuthContext'
 import { useVisibleData } from '@/hooks/use-visible-data'
@@ -51,34 +52,43 @@ export function DashboardTab() {
 
   const isMobile = useIsMobile()
 
+  const recentListContainerRef = useRef<HTMLDivElement>(null)
+
   type FullAccountGroup = AccountCategoryInfo & { accounts: Account[] }
   const typedGroupedAccounts = groupedAccounts as unknown as FullAccountGroup[]
   const typedFilteredGroupedAccounts = filteredGroupedAccounts as unknown as FullAccountGroup[]
 
+  const onEnterRecent = useCallback((index: number) => {
+    const transaction = recentTransactions[index]
+    if (transaction) {
+      setEditingTransaction(transaction)
+      setShowTransactionDialog(true)
+    }
+  }, [recentTransactions, setEditingTransaction, setShowTransactionDialog])
+
+  const onDeleteRecent = useCallback((index: number) => {
+    const transaction = recentTransactions[index]
+    if (transaction) {
+      setDeletingItem({ type: 'transaction', id: transaction.id })
+      setShowDeleteDialog(true)
+    }
+  }, [recentTransactions, setDeletingItem, setShowDeleteDialog])
+
+  const onEditRecent = useCallback((index: number) => {
+    const transaction = recentTransactions[index]
+    if (transaction) {
+      setEditingTransaction(transaction)
+      setShowTransactionDialog(true)
+    }
+  }, [recentTransactions, setEditingTransaction, setShowTransactionDialog])
+
   const recentTransactionsNav = useListNavigation({
     itemCount: recentTransactions.length,
     enabled: isAuthenticated,
-    onEnter: (index) => {
-      const transaction = recentTransactions[index]
-      if (transaction) {
-        setEditingTransaction(transaction)
-        setShowTransactionDialog(true)
-      }
-    },
-    onDelete: (index) => {
-      const transaction = recentTransactions[index]
-      if (transaction) {
-        setDeletingItem({ type: 'transaction', id: transaction.id })
-        setShowDeleteDialog(true)
-      }
-    },
-    onEdit: (index) => {
-      const transaction = recentTransactions[index]
-      if (transaction) {
-        setEditingTransaction(transaction)
-        setShowTransactionDialog(true)
-      }
-    }
+    onEnter: onEnterRecent,
+    onDelete: onDeleteRecent,
+    onEdit: onEditRecent,
+    containerRef: recentListContainerRef,
   })
 
   return (
@@ -315,7 +325,7 @@ export function DashboardTab() {
         ) : (
           <Card>
             <CardContent className="p-0">
-              <div className="divide-y">
+              <div className="divide-y" ref={recentListContainerRef}>
                 {recentTransactions.map((transaction, index) => {
                   const account = visibleAccounts.find(a => a.id === transaction.contoId)
                   const category = safeCategories.find(c => c.id === transaction.categoriaId)
@@ -326,13 +336,24 @@ export function DashboardTab() {
                   return (
                     <div
                       key={transaction.id}
-                      className={`p-4 flex items-center justify-between transition-all ${
+                      className={`p-4 flex items-center justify-between transition-all focus:outline-none ${
                         isFocused
                           ? 'bg-accent/10 border-l-4 border-l-accent ring-2 ring-accent/20'
                           : 'hover:bg-muted/50'
                       }`}
                       onClick={() => recentTransactionsNav.setFocusedIndex(index)}
+                       onKeyDown={(event) => {
+                         if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+                           event.preventDefault()
+                           recentTransactionsNav.setFocusedIndex(index)
+                         }
+                       }}
                       data-focus-info={`Movimento: ${transaction.descrizione || category?.nome} - ${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'} ${formatCurrency(transaction.importo)} - Premi Enter per modificare`}
+                      tabIndex={isFocused ? 0 : -1}
+                      role="button"
+                      data-list-item
+                      data-index={index}
+                      aria-label={`${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'}: ${transaction.descrizione || category?.nome || 'Movimento'}, ${formatCurrency(transaction.importo)}, ${new Date(transaction.data).toLocaleDateString('it-IT')}, ${account?.nome || ''}`}
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">

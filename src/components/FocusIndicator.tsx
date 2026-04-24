@@ -23,6 +23,7 @@ export function FocusIndicator() {
       const target = e.target as HTMLElement
       
       if (
+        target.hasAttribute('data-list-item') ||
         target.tagName === 'INPUT' ||
         target.tagName === 'BUTTON' ||
         target.tagName === 'A' ||

@@ -660,18 +660,18 @@ Seguire la procedura del design §7.4:
 
 | Sotto-operazione | File | Esito build | Note |
 |---|---|---|---|
-| 1 — hook | `use-list-navigation.ts` | ☐ PASS / ☐ FAIL | |
-| 2 — Dashboard | `DashboardTab.tsx` | ☐ PASS / ☐ FAIL | |
-| 3 — Transactions | `TransactionsTab.tsx` | ☐ PASS / ☐ FAIL | |
-| 4 — FocusIndicator | `FocusIndicator.tsx` | ☐ PASS / ☐ FAIL | |
-| 5 — Verifica finale | — | ☐ PASS / ☐ FAIL | |
+| 1 — hook | `use-list-navigation.ts` | PASS | `npm run build` intermedio exit 0 |
+| 2 — Dashboard | `DashboardTab.tsx` | PASS | `npm run build` intermedio exit 0 |
+| 3 — Transactions | `TransactionsTab.tsx` | PASS | `npm run build` intermedio exit 0 |
+| 4 — FocusIndicator | `FocusIndicator.tsx` | PASS | `npm run build` intermedio exit 0 |
+| 5 — Verifica finale | — | PARZIALE | build, lint e diff confermati; verifiche manuali browser e screen reader non eseguibili da questo ambiente |
 
 | Gate | Atteso | Effettivo |
 |---|---|---|
-| `npm run build` finale | exit 0 | |
-| `npm run lint` finale | exit 0, ≤59 warn | |
-| Warning risolti (jsx-a11y div) | ≤55 | |
-| `git diff --stat` | 4 file | |
-| Focus DOM verificato (DevTools) | sì | |
-| Guard dialogo verificato | sì | |
-| Screen reader verificato | sì (TalkBack / VoiceOver) | |
+| `npm run build` finale | exit 0 | PASS — exit 0 |
+| `npm run lint` finale | exit 0, ≤59 warn | PASS — exit 0, 55 warning |
+| Warning risolti (jsx-a11y div) | ≤55 | PASS — warning globali ridotti a 55; warning mirati su DashboardTab e TransactionsTab azzerati |
+| `git diff --stat` | 4 file | PASS — 4 file `src/` modificati |
+| Focus DOM verificato (DevTools) | sì | NON VERIFICATO — richiede browser interattivo |
+| Guard dialogo verificato | sì | NON VERIFICATO — richiede browser interattivo |
+| Screen reader verificato | sì (TalkBack / VoiceOver) | NON VERIFICATO — richiede device o simulatore assistivo |

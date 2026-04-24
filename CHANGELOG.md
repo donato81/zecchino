@@ -1,5 +1,16 @@
 # Changelog
 
+## [P17] — 2026-04-24
+
+### Accessibilità / Correzioni
+- Corretto bug di gestione del focus DOM nelle liste: il focus ora viene spostato sul reale elemento di lista dopo il commit del DOM, evitando highlight visuali scollegati dallo stato reale.
+- Implementato roving `tabindex` e attributi `data-list-item` / `data-index` sulle righe di `DashboardTab` e `TransactionsTab` per supportare navigazione da tastiera e screen reader.
+- Aggiunto guard per dialog modali (`[aria-modal="true"]`) in `use-list-navigation` per sospendere la navigazione frecce quando un dialog modale è aperto.
+- Introdotto `callbacksRef` in `use-list-navigation` per stabilizzare le callback (`onEnter`, `onDelete`, `onEdit`) ed evitare stale closures.
+- Aggiornati `DashboardTab` e `TransactionsTab`: `tabIndex`, `role="button"`, `aria-label` dettagliato (tipo, descrizione, importo, data, conto, destinazione se trasferimento`) e `focus:outline-none` per evitare doppio bordo visivo.
+- `FocusIndicator` ora riconosce elementi con `data-list-item`, migliorando la coerenza del tooltip e dell'indicazione di focus.
+- Ridotti warning `jsx-a11y` rilevanti su `DashboardTab` e `TransactionsTab`; baseline ESLint documentata a 55 warning.
+
 ## [P16] — 2026-04-24
 
 ### Sicurezza

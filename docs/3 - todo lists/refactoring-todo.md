@@ -121,7 +121,9 @@
 **Stato attuale:** implementazione completata il 2026-04-23; validazione funzionale interattiva ancora da eseguire manualmente in browser.
 
 ## Completati recenti
-
+ 
+- [x] P17 — Fix navigazione frecce e accessibilità liste
+	— completato 2026-04-24
 - [x] P16 — Risoluzione vulnerabilità dipendenze
 	— completato 2026-04-24
 - [x] P15 — Ripristino ESLint e configurazione accessibilità automatica

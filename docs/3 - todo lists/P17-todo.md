@@ -4,19 +4,19 @@
 > Piano di riferimento: `docs/2 - coding plans/P17-coding-plan.md`  
 > Design di riferimento: `docs/1 - projects/P17-list-navigation-a11y-design.md`  
 > Branch: `refactoring-architettura`  
-> Data inizio: ___________  
-> Data completamento: ___________
+> Data inizio: 2026-04-24  
+> Data completamento: 2026-04-24
 
 ---
 
 ## Prima di iniziare
 
-- [ ] Rileggere `docs/2 - coding plans/P17-coding-plan.md` (tutte le sezioni AI1–AI6)
-- [ ] Rileggere `docs/1 - projects/P17-list-navigation-a11y-design.md` §3 e §7
-- [ ] Verificare di essere sul branch `refactoring-architettura`
-- [ ] Eseguire `npm run build` → atteso exit 0 (baseline pulita)
-- [ ] Eseguire `npm run lint` → annotare il numero esatto di warning (baseline: 59)
-- [ ] Eseguire `git status` → nessuna modifica in sospeso
+- [x] Rileggere `docs/2 - coding plans/P17-coding-plan.md` (tutte le sezioni AI1–AI6)
+- [x] Rileggere `docs/1 - projects/P17-list-navigation-a11y-design.md` §3 e §7
+- [x] Verificare di essere sul branch `refactoring-architettura`
+- [x] Eseguire `npm run build` → atteso exit 0 (baseline pulita)
+- [x] Eseguire `npm run lint` → annotare il numero esatto di warning (baseline: 59)
+- [x] Eseguire `git status` → nessuna modifica in sospeso
 
 ---
 
@@ -27,11 +27,11 @@
 
 ### A.1 — `callbacksRef`: struttura e aggiornamento
 
-- [ ] Aprire `src/hooks/use-list-navigation.ts`
-- [ ] Leggere il file per intero per confermare lo stato attuale (vedere AI1 nel coding plan)
-- [ ] Aggiungere `import { useRef } from 'react'` all'import react se non già presente
-- [ ] Aggiungere `const callbacksRef = useRef({ onEnter, onDelete, onEdit })` subito dopo le dichiarazioni delle variabili di stato (`focusedIndex`, ecc.)
-- [ ] Aggiungere il `useEffect` di aggiornamento **senza array di dipendenze**:
+- [x] Aprire `src/hooks/use-list-navigation.ts`
+- [x] Leggere il file per intero per confermare lo stato attuale (vedere AI1 nel coding plan)
+- [x] Aggiungere `import { useRef } from 'react'` all'import react se non già presente
+- [x] Aggiungere `const callbacksRef = useRef({ onEnter, onDelete, onEdit })` subito dopo le dichiarazioni delle variabili di stato (`focusedIndex`, ecc.)
+- [x] Aggiungere il `useEffect` di aggiornamento **senza array di dipendenze**:
   ```typescript
   useEffect(() => {
     callbacksRef.current = { onEnter, onDelete, onEdit }
@@ -41,18 +41,18 @@
 
 ### A.2 — Modificare `handleKeyDown` per leggere le callback dal ref
 
-- [ ] Individuare il `useCallback` di `handleKeyDown`
-- [ ] Sostituire la chiamata diretta `onEnter?.(focusedIndex)` con `callbacksRef.current.onEnter?.(focusedIndex)`
-- [ ] Sostituire la chiamata diretta `onDelete?.(focusedIndex)` con `callbacksRef.current.onDelete?.(focusedIndex)`
-- [ ] Sostituire la chiamata diretta `onEdit?.(focusedIndex)` con `callbacksRef.current.onEdit?.(focusedIndex)`
-- [ ] Rimuovere `onEnter`, `onDelete`, `onEdit` dall'array di dipendenze di `handleKeyDown`
-- [ ] Verificare che `enabled`, `itemCount`, `focusedIndex` restino nelle dipendenze
+- [x] Individuare il `useCallback` di `handleKeyDown`
+- [x] Sostituire la chiamata diretta `onEnter?.(focusedIndex)` con `callbacksRef.current.onEnter?.(focusedIndex)`
+- [x] Sostituire la chiamata diretta `onDelete?.(focusedIndex)` con `callbacksRef.current.onDelete?.(focusedIndex)`
+- [x] Sostituire la chiamata diretta `onEdit?.(focusedIndex)` con `callbacksRef.current.onEdit?.(focusedIndex)`
+- [x] Rimuovere `onEnter`, `onDelete`, `onEdit` dall'array di dipendenze di `handleKeyDown`
+- [x] Verificare che `enabled`, `itemCount`, `focusedIndex` restino nelle dipendenze
 
   ⚠️ `focusedIndex` **deve restare** nelle dipendenze di `handleKeyDown` — è usato nei controlli `focusedIndex >= 0` e calcoli di navigazione. Rimuoverlo causerebbe stale closure.
 
 ### A.3 — Aggiungere guard per dialogo modale
 
-- [ ] All'**inizio** del corpo di `handleKeyDown` (prima di qualsiasi controllo `e.key`), aggiungere:
+- [x] All'**inizio** del corpo di `handleKeyDown` (prima di qualsiasi controllo `e.key`), aggiungere:
   ```typescript
   if (document.querySelector('[data-state="open"][aria-modal="true"]')) return
   ```
@@ -60,7 +60,7 @@
 
 ### A.4 — `useEffect` per focus DOM
 
-- [ ] Aggiungere un **nuovo** `useEffect` — separato dall'`useEffect` del listener e dall'`useEffect` di sincronizzazione `itemCount`:
+- [x] Aggiungere un **nuovo** `useEffect` — separato dall'`useEffect` del listener e dall'`useEffect` di sincronizzazione `itemCount`:
   ```typescript
   useEffect(() => {
     if (!containerRef?.current || focusedIndex < 0) return
@@ -76,7 +76,7 @@
 
 ### A.5 — Verifica intermedia A
 
-- [ ] Eseguire `npm run build`
+- [x] Eseguire `npm run build`
   - ✅ Exit 0 → procedere alla sezione B
   - ❌ Errori → correggere prima di procedere. Tipi di errori comuni: tipo del `callbacksRef` non compatibile con `RefObject`, `useRef` non importato, rimozione accidentale di dipendenze critiche da `handleKeyDown`
 
@@ -88,40 +88,40 @@
 
 ### B.1 — Import `useRef` e `useCallback`
 
-- [ ] Aprire `src/components/DashboardTab.tsx`
-- [ ] Verificare l'import da `'react'` (riga 1 o simile) — aggiungere `useRef` e `useCallback` se non già presenti
+- [x] Aprire `src/components/DashboardTab.tsx`
+- [x] Verificare l'import da `'react'` (riga 1 o simile) — aggiungere `useRef` e `useCallback` se non già presenti
 
 ### B.2 — Aggiungere il ref per il container della lista
 
-- [ ] All'inizio del corpo di `DashboardTab` (dopo le chiamate ai custom hook esistenti, prima del `return`), aggiungere:
+- [x] All'inizio del corpo di `DashboardTab` (dopo le chiamate ai custom hook esistenti, prima del `return`), aggiungere:
   ```typescript
   const recentListContainerRef = useRef<HTMLDivElement>(null)
   ```
 
 ### B.3 — Stabilizzare le callback con `useCallback`
 
-- [ ] Individuare la chiamata a `useListNavigation` (righe ~58–82)
-- [ ] Estrarre `onEnter` come `useCallback` con dipendenze `[recentTransactions, setEditingTransaction, setShowTransactionDialog]`
-- [ ] Estrarre `onDelete` come `useCallback` con dipendenze `[recentTransactions, setDeletingItem, setShowDeleteDialog]`
-- [ ] Estrarre `onEdit` come `useCallback` con stesse dipendenze di `onEnter`
-- [ ] Passare le callback estratte nella chiamata al hook
-- [ ] Aggiungere `containerRef: recentListContainerRef` alla chiamata al hook
+- [x] Individuare la chiamata a `useListNavigation` (righe ~58–82)
+- [x] Estrarre `onEnter` come `useCallback` con dipendenze `[recentTransactions, setEditingTransaction, setShowTransactionDialog]`
+- [x] Estrarre `onDelete` come `useCallback` con dipendenze `[recentTransactions, setDeletingItem, setShowDeleteDialog]`
+- [x] Estrarre `onEdit` come `useCallback` con stesse dipendenze di `onEnter`
+- [x] Passare le callback estratte nella chiamata al hook
+- [x] Aggiungere `containerRef: recentListContainerRef` alla chiamata al hook
 
   ⚠️ Se `setDeletingItem`, `setShowDeleteDialog` o simili non sono ancora presenti nella destrutturazione di `useAppData` per la sezione Movimenti Recenti, verificare il nome esatto degli state setter usati nelle callback inline originali prima di includere le dipendenze.
 
 ### B.4 — Assegnare `ref` al container della lista nel JSX
 
-- [ ] Nella sezione JSX "Movimenti Recenti", trovare il `<div className="divide-y">` che racchiude il `.map()`
-- [ ] Aggiungere `ref={recentListContainerRef}` a questo elemento
+- [x] Nella sezione JSX "Movimenti Recenti", trovare il `<div className="divide-y">` che racchiude il `.map()`
+- [x] Aggiungere `ref={recentListContainerRef}` a questo elemento
 
 ### B.5 — Attributi accessibilità sulle righe
 
-- [ ] Individuare la riga `<div key={transaction.id} ...>` dentro il `map` (riga ~327)
-- [ ] Aggiungere `tabIndex={isFocused ? 0 : -1}`
-- [ ] Aggiungere `role="button"`
-- [ ] Aggiungere `data-list-item` (attributo booleano, senza valore)
-- [ ] Aggiungere `data-index={index}`
-- [ ] Costruire e aggiungere `aria-label`:
+- [x] Individuare la riga `<div key={transaction.id} ...>` dentro il `map` (riga ~327)
+- [x] Aggiungere `tabIndex={isFocused ? 0 : -1}`
+- [x] Aggiungere `role="button"`
+- [x] Aggiungere `data-list-item` (attributo booleano, senza valore)
+- [x] Aggiungere `data-index={index}`
+- [x] Costruire e aggiungere `aria-label`:
   ```
   aria-label={`${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'}: ${
     transaction.descrizione || category?.nome || 'Movimento'
@@ -134,7 +134,7 @@
 
 ### B.6 — Verifica intermedia B
 
-- [ ] Eseguire `npm run build`
+- [x] Eseguire `npm run build`
   - ✅ Exit 0 → procedere alla sezione C
   - ❌ Errori → tipi comuni: `useRef<HTMLDivElement>` su container che poi viene assegnato a un elemento non-div (verificare il tipo del container div), errore TypeScript sull'`aria-label` se alcune variabili sono `undefined` (aggiungere il fallback `|| ''`)
 
@@ -146,36 +146,36 @@
 
 ### C.1 — Import `useRef` e `useCallback`
 
-- [ ] Aprire `src/components/TransactionsTab.tsx`
-- [ ] Verificare l'import da `'react'` — aggiungere `useRef` e `useCallback` se non già presenti
+- [x] Aprire `src/components/TransactionsTab.tsx`
+- [x] Verificare l'import da `'react'` — aggiungere `useRef` e `useCallback` se non già presenti
 
 ### C.2 — Aggiungere il ref per il container
 
-- [ ] All'inizio del corpo di `TransactionsTab`, aggiungere:
+- [x] All'inizio del corpo di `TransactionsTab`, aggiungere:
   ```typescript
   const transactionsListContainerRef = useRef<HTMLDivElement>(null)
   ```
 
 ### C.3 — Stabilizzare le callback e passare `containerRef`
 
-- [ ] Individuare la chiamata a `useListNavigation` (righe ~37–57)
-- [ ] Estrarre `onEnter`, `onEdit` come `useCallback` con dipendenze `[sortedTransactions, setEditingTransaction, setShowTransactionDialog]`
-- [ ] Estrarre `onDelete` come `useCallback` con dipendenze `[sortedTransactions, setDeletingItem, setShowDeleteDialog]`
-- [ ] Aggiungere `containerRef: transactionsListContainerRef`
+- [x] Individuare la chiamata a `useListNavigation` (righe ~37–57)
+- [x] Estrarre `onEnter`, `onEdit` come `useCallback` con dipendenze `[sortedTransactions, setEditingTransaction, setShowTransactionDialog]`
+- [x] Estrarre `onDelete` come `useCallback` con dipendenze `[sortedTransactions, setDeletingItem, setShowDeleteDialog]`
+- [x] Aggiungere `containerRef: transactionsListContainerRef`
 
 ### C.4 — Assegnare `ref` al container
 
-- [ ] Trovare il `<div className="divide-y max-h-[600px] overflow-y-auto">` (riga ~113)
-- [ ] Aggiungere `ref={transactionsListContainerRef}`
+- [x] Trovare il `<div className="divide-y max-h-[600px] overflow-y-auto">` (riga ~113)
+- [x] Aggiungere `ref={transactionsListContainerRef}`
 
 ### C.5 — Attributi accessibilità sulle righe con `aria-label` esteso
 
-- [ ] Individuare la riga `<div key={transaction.id} ...>` (riga ~119)
-- [ ] Aggiungere `tabIndex={isFocused ? 0 : -1}`
-- [ ] Aggiungere `role="button"`
-- [ ] Aggiungere `data-list-item`
-- [ ] Aggiungere `data-index={index}`
-- [ ] Costruire l'`aria-label` esteso con dettaglio trasferimento e categoria:
+- [x] Individuare la riga `<div key={transaction.id} ...>` (riga ~119)
+- [x] Aggiungere `tabIndex={isFocused ? 0 : -1}`
+- [x] Aggiungere `role="button"`
+- [x] Aggiungere `data-list-item`
+- [x] Aggiungere `data-index={index}`
+- [x] Costruire l'`aria-label` esteso con dettaglio trasferimento e categoria:
   ```
   aria-label={`${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'}: ${
     transaction.descrizione || category?.nome || 'Movimento'
@@ -190,7 +190,7 @@
 
 ### C.6 — Verifica intermedia C
 
-- [ ] Eseguire `npm run build`
+- [x] Eseguire `npm run build`
   - ✅ Exit 0 → procedere alla sezione D
   - ❌ Errori → stesse categorie di B.6. Attenzione in più: template literal dell'`aria-label` esteso, controllare che tutti i termini opzionali abbiano gestione `|| ''` o condizioni ternarie complete.
 
@@ -202,9 +202,9 @@
 
 ### D.1 — Aggiunta condizione `data-list-item`
 
-- [ ] Aprire `src/components/FocusIndicator.tsx`
-- [ ] Individuare la condizione `if (target.tagName === 'INPUT' || ...)` in `handleFocusIn`
-- [ ] Aggiungere come **prima condizione** del blocco if:
+- [x] Aprire `src/components/FocusIndicator.tsx`
+- [x] Individuare la condizione `if (target.tagName === 'INPUT' || ...)` in `handleFocusIn`
+- [x] Aggiungere come **prima condizione** del blocco if:
   ```typescript
   target.hasAttribute('data-list-item') ||
   ```
@@ -214,7 +214,7 @@
 
 ### D.2 — Verifica intermedia D
 
-- [ ] Eseguire `npm run build`
+- [x] Eseguire `npm run build`
   - ✅ Exit 0 → procedere alla verifica finale
   - ❌ Errori → verificare che `target.hasAttribute` sia chiamato correttamente (stringa `'data-list-item'`, non `'data-list-item="true"'`)
 
@@ -292,4 +292,11 @@
 | Guard dialogo verificato | sì | | ☐ |
 | Screen reader verificato | TalkBack / VoiceOver | | ☐ |
 
+
 > Quando tutti i gate sono ✅, aggiornare `docs/todo.md` spostando P17 nella sezione completati con la data.
+
+***
+
+**Completato il 2026-04-24.**
+**Bug navigazione frecce corretto — focus DOM reale attivo sulle liste.**
+

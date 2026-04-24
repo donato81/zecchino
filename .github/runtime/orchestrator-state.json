@@ -1,10 +1,10 @@
 {
   "current_phase": "release",
-  "current_agent": "Agent-Docs",
+  "current_agent": "Agent-Orchestrator",
   "retry_count": 0,
-  "confidence": 0.96,
+  "confidence": 0.95,
   "execution_mode": "supervised",
-  "last_updated": "2026-04-24T07:41:53Z",
+  "last_updated": "2026-04-24T14:13:50Z",
   "phase_history": [
     "P01-step1-code-pass",
     "P06-code-pass",
@@ -18,14 +18,18 @@
     "P08-validate-pass",
     "P08-docs-pass",
     "P12-code-pass",
-    "P12-validate-blocked"
+    "P12-validate-blocked",
+    "P17-analyze-pass",
+    "P17-code-pass",
+    "P17-validate-pass",
+    "P17-docs-pass"
   ],
-  "active_task_id": "P07-next-package",
+  "active_task_id": "P17-complete",
   "initialized": true,
   "project_name": "Zecchino",
   "stack": "React+TypeScript+Vite",
   "framework_version": "2.3.1",
-  "last_step_output": "P14 docs PASS dopo correzione locale: sezione 'Struttura documentazione' posizionata correttamente in docs/architettura.md; checklist e changelog confermati.",
+  "last_step_output": "P17 completato fino alla fase Docs: codice, validazione e documentazione finale allineati; esclusi commit e push per richiesta utente.",
   "update_check_done": true,
   "last_update_check": "2026-04-24",
   "available_package_updates": 2,
@@ -34,5 +38,5 @@
     "P05",
     "P06"
   ],
-  "current_package": "P14"
+  "current_package": "P17"
 }

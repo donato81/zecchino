@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, useCallback } from 'react'
 import { useAppData } from '@/context/AppDataContext'
 import { useAuth } from '@/context/AuthContext'
 import { useVisibleData } from '@/hooks/use-visible-data'
@@ -27,35 +27,44 @@ export function TransactionsTab() {
 
   const isMobile = useIsMobile()
 
+  const transactionsListContainerRef = useRef<HTMLDivElement>(null)
+
   const sortedTransactions = useMemo(
     () => [...visibleTransactions].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()),
     [visibleTransactions]
   )
 
+  const onEnterTransactions = useCallback((index: number) => {
+    const transaction = sortedTransactions[index]
+    if (transaction) {
+      setEditingTransaction(transaction)
+      setShowTransactionDialog(true)
+    }
+  }, [sortedTransactions, setEditingTransaction, setShowTransactionDialog])
+
+  const onDeleteTransactions = useCallback((index: number) => {
+    const transaction = sortedTransactions[index]
+    if (transaction) {
+      setDeletingItem({ type: 'transaction', id: transaction.id })
+      setShowDeleteDialog(true)
+    }
+  }, [sortedTransactions, setDeletingItem, setShowDeleteDialog])
+
+  const onEditTransactions = useCallback((index: number) => {
+    const transaction = sortedTransactions[index]
+    if (transaction) {
+      setEditingTransaction(transaction)
+      setShowTransactionDialog(true)
+    }
+  }, [sortedTransactions, setEditingTransaction, setShowTransactionDialog])
+
   const allTransactionsNav = useListNavigation({
     itemCount: sortedTransactions.length,
     enabled: isAuthenticated,
-    onEnter: (index) => {
-      const transaction = sortedTransactions[index]
-      if (transaction) {
-        setEditingTransaction(transaction)
-        setShowTransactionDialog(true)
-      }
-    },
-    onDelete: (index) => {
-      const transaction = sortedTransactions[index]
-      if (transaction) {
-        setDeletingItem({ type: 'transaction', id: transaction.id })
-        setShowDeleteDialog(true)
-      }
-    },
-    onEdit: (index) => {
-      const transaction = sortedTransactions[index]
-      if (transaction) {
-        setEditingTransaction(transaction)
-        setShowTransactionDialog(true)
-      }
-    },
+    onEnter: onEnterTransactions,
+    onDelete: onDeleteTransactions,
+    onEdit: onEditTransactions,
+    containerRef: transactionsListContainerRef,
   })
 
   return (
@@ -104,7 +113,7 @@ export function TransactionsTab() {
               </Button>
             </div>
           ) : (
-            <div className="divide-y max-h-[600px] overflow-y-auto">
+            <div className="divide-y max-h-[600px] overflow-y-auto" ref={transactionsListContainerRef}>
               {sortedTransactions.map((transaction, index) => {
                 const account = visibleAccounts.find(a => a.id === transaction.contoId)
                 const destAccount = transaction.contoDestinazioneId
@@ -118,13 +127,24 @@ export function TransactionsTab() {
                 return (
                   <div
                     key={transaction.id}
-                    className={`p-4 flex items-center justify-between transition-all ${
+                    className={`p-4 flex items-center justify-between transition-all focus:outline-none ${
                       isFocused
                         ? 'bg-accent/10 border-l-4 border-l-accent ring-2 ring-accent/20'
                         : 'hover:bg-muted/50'
                     }`}
                     onClick={() => allTransactionsNav.setFocusedIndex(index)}
+                     onKeyDown={(event) => {
+                       if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+                         event.preventDefault()
+                         allTransactionsNav.setFocusedIndex(index)
+                       }
+                     }}
                     data-focus-info={`Movimento: ${transaction.descrizione || category?.nome} - ${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'} ${formatCurrency(transaction.importo)} - Premi Enter per modificare`}
+                    tabIndex={isFocused ? 0 : -1}
+                    role="button"
+                    data-list-item
+                    data-index={index}
+                    aria-label={`${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'}: ${transaction.descrizione || category?.nome || 'Movimento'}, ${formatCurrency(transaction.importo)}, ${new Date(transaction.data).toLocaleDateString('it-IT')}, ${account?.nome || ''}${isTransfer && destAccount ? ` \u2192 ${destAccount.nome}` : ''}${category && !isTransfer ? `, ${category.nome}` : ''}`}
                   >
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-2">

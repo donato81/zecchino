@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, RefObject } from 'react'
+import { useEffect, useState, useCallback, useRef, RefObject } from 'react'
 
 interface UseListNavigationProps {
   itemCount: number
@@ -19,7 +19,14 @@ export function useListNavigation({
 }: UseListNavigationProps) {
   const [focusedIndex, setFocusedIndex] = useState<number>(-1)
 
+  const callbacksRef = useRef({ onEnter, onDelete, onEdit })
+
+  useEffect(() => {
+    callbacksRef.current = { onEnter, onDelete, onEdit }
+  })
+
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (document.querySelector('[data-state="open"][aria-modal="true"]')) return
     if (!enabled || itemCount === 0) return
 
     if (e.key === 'ArrowDown') {
@@ -42,15 +49,15 @@ export function useListNavigation({
       setFocusedIndex(itemCount - 1)
     } else if (e.key === 'Enter' && focusedIndex >= 0) {
       e.preventDefault()
-      onEnter?.(focusedIndex)
+      callbacksRef.current.onEnter?.(focusedIndex)
     } else if (e.key === 'Delete' && focusedIndex >= 0 && !e.ctrlKey && !e.metaKey) {
       e.preventDefault()
-      onDelete?.(focusedIndex)
+      callbacksRef.current.onDelete?.(focusedIndex)
     } else if ((e.key === 'e' || e.key === 'E') && focusedIndex >= 0 && !e.ctrlKey && !e.metaKey) {
       e.preventDefault()
-      onEdit?.(focusedIndex)
+      callbacksRef.current.onEdit?.(focusedIndex)
     }
-  }, [enabled, itemCount, focusedIndex, onEnter, onDelete, onEdit])
+  }, [enabled, itemCount, focusedIndex])
 
   useEffect(() => {
     const target = containerRef?.current || document
@@ -68,6 +75,14 @@ export function useListNavigation({
       setFocusedIndex(itemCount - 1)
     }
   }, [itemCount, focusedIndex])
+
+  useEffect(() => {
+    if (!containerRef?.current || focusedIndex < 0) return
+    const el = containerRef.current.querySelector<HTMLElement>(
+      `[data-list-item][data-index="${focusedIndex}"]`
+    )
+    el?.focus()
+  }, [focusedIndex, containerRef])
 
   const resetFocus = useCallback(() => {
     setFocusedIndex(-1)
