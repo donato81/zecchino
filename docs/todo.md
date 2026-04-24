@@ -13,15 +13,13 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| Refactoring P13 — App.tsx finale | `docs/3 - todo lists/P13-todo.md` | 🟡 Validazione manuale | Alta |
-
-> ⚠️ **P13 è il passo conclusivo** della serie di refactoring architetturale. Implementazione e gate automatici sono completati (`tsc` e build PASS); resta da chiudere la validazione funzionale manuale in browser.
+| Pulizia P14 — root directory | `docs/3 - todo lists/P14-todo.md` | 🔴 Da fare | Alta |
 
 ## TODO completati
 
 | Feature / Sprint | File specifico | Completato il |
 |---|---|---|
-| Refactoring P12 — DialogsOverlay | `docs/3 - todo lists/P12-todo.md` | 2026-04-23 |
+| Refactoring P13 — App.tsx finale | `docs/3 - todo lists/P13-todo.md` | 2026-04-23 |
 | Refactoring P11 — AuthScreen | `docs/3 - todo lists/P11-todo.md` | 2026-04-23 |
 | Refactoring P10 — AppHeader | `docs/3 - todo lists/P10-todo.md` | 2026-04-23 |
 | Refactoring P09 — ReportsTab | `docs/3 - todo lists/P09-todo.md` | 2026-04-23 |
