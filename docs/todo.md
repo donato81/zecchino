@@ -13,6 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| Risoluzione P17 — fix navigazione frecce e accessibilità liste | `docs/3 - todo lists/P17-todo.md` | 🔴 Da fare | Alta |
 
 
 ## TODO completati
