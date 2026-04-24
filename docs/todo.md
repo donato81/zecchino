@@ -13,12 +13,13 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| Ripristino P15 — ESLint e jsx-a11y | `docs/3 - todo lists/P15-todo.md` | 🔴 Da fare | Alta |
+| Risoluzione P16 — vulnerabilità dipendenze | `docs/3 - todo lists/P16-todo.md` | 🔴 Da fare | Alta |
 
 ## TODO completati
 
 | Feature / Sprint | File specifico | Completato il |
 |---|---|---|
+| Ripristino P15 — ESLint e jsx-a11y | `docs/3 - todo lists/P15-todo.md` | 2026-04-24 |
 | Pulizia P14 — root directory | `docs/3 - todo lists/P14-todo.md` | 2026-04-24 |
 | Refactoring P13 — App.tsx finale | `docs/3 - todo lists/P13-todo.md` | 2026-04-23 |
 | Refactoring P11 — AuthScreen | `docs/3 - todo lists/P11-todo.md` | 2026-04-23 |
