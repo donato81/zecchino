@@ -13,6 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| P21 — GitHub Actions CI: pipeline minimale | `docs/3 - todo lists/P21-todo.md` | 🔵 In lavorazione | Alta |
 
 
 ## TODO completati
