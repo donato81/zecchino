@@ -1,10 +1,10 @@
 {
-  "current_phase": "validate",
+  "current_phase": "docs",
   "current_agent": "Agent-Orchestrator",
-  "retry_count": 1,
-  "confidence": 0.6,
+  "retry_count": 0,
+  "confidence": 0.93,
   "execution_mode": "supervised",
-  "last_updated": "2026-04-25T06:49:09Z",
+  "last_updated": "2026-04-25T09:43:55Z",
   "phase_history": [
     "P01-step1-code-pass",
     "P06-code-pass",
@@ -30,14 +30,14 @@
   "project_name": "Zecchino",
   "stack": "React+TypeScript+Vite",
   "framework_version": "2.3.1",
-  "last_step_output": "P20 validazione tecnica completata: lint 0/0, tsc ok, build ok, smoke test 5/5 passed. Blocco residuo: scenari manuali browser non automatizzabili con gli strumenti attivi; warning Radix Dialog presenti durante i test.",
+  "last_step_output": "P21 docs pass: aggiornati P21-todo.md, refactoring-todo.md, todo.md e architettura.md; gate locali lint/build/test passati; verifica remota CI demandata al push/PR dell'utente.",
   "update_check_done": true,
-  "last_update_check": "2026-04-24",
+  "last_update_check": "2026-04-25",
   "available_package_updates": 2,
   "completed_packages": [
     "P01",
     "P05",
     "P06"
   ],
-  "current_package": "P20"
+  "current_package": "P21"
 }

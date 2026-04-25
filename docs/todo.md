@@ -13,13 +13,13 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| P21 — GitHub Actions CI: pipeline minimale | `docs/3 - todo lists/P21-todo.md` | 🔵 In lavorazione | Alta |
 
 
 ## TODO completati
 
 | Feature / Sprint | File specifico | Completato il |
 |---|---|---|
+| P21 — GitHub Actions CI: pipeline minimale | `docs/3 - todo lists/P21-todo.md` | 2026-04-25 |
 | P20 — Lint Cleanup: azzeramento dei 56 warning ESLint | `docs/3 - todo lists/P20-todo.md` | 2026-04-25 |
 | P19 — Introduzione Vitest e 5 smoke test | `docs/3 - todo lists/P19-todo.md` | 2026-04-24 |
 | P18 — VisibleDataProvider fonte unica dati elaborati | `docs/3 - todo lists/P18-todo.md` | 2026-04-24 |
