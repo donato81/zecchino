@@ -238,5 +238,6 @@ npm run lint      # ESLint
 
 - `eslint.config.js` e attivo in root come flat config ESLint 9 in formato ESModule.
 - Il gate lint P15 opera in **Fase A**: tutte le regole sono configurate in modalita `warn`, senza errori bloccanti sul codice esistente.
-- La configurazione e organizzata in 5 layer: `@eslint/js`, `typescript-eslint`, `react-hooks`, `react-refresh`, `jsx-a11y`.
-- La baseline warning reale del progetto e documentata in `docs/2 - coding plans/P15-coding-plan.md` e costituisce il punto di partenza per la futura Fase B.
+- La configurazione e organizzata in 6 layer: `@eslint/js`, `typescript-eslint`, `react-hooks`, `react-refresh`, `jsx-a11y`, e un Layer 6 che disabilita `react-refresh/only-export-components` per i file `src/components/ui/**` e `src/context/**`.
+- La baseline warning del progetto post-P20 è: **0 warning, 0 errori**.
+- Questa baseline è il gate di ingresso per la futura CI pipeline (P21).
