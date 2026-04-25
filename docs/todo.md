@@ -13,13 +13,14 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| P19 — Introduzione Vitest e 5 smoke test | `docs/3 - todo lists/P19-todo.md` | In corso | Alta |
+| P20 — Lint Cleanup: azzeramento dei 56 warning ESLint | `docs/3 - todo lists/P20-todo.md` | In corso | Alta |
 
 
 ## TODO completati
 
 | Feature / Sprint | File specifico | Completato il |
 |---|---|---|
+| P19 — Introduzione Vitest e 5 smoke test | `docs/3 - todo lists/P19-todo.md` | 2026-04-24 |
 | P18 — VisibleDataProvider fonte unica dati elaborati | `docs/3 - todo lists/P18-todo.md` | 2026-04-24 |
 | Risoluzione P17 — fix navigazione frecce e accessibilità liste | `docs/3 - todo lists/P17-todo.md` | 2026-04-24 |
 | Risoluzione P16 — vulnerabilità dipendenze | `docs/3 - todo lists/P16-todo.md` | 2026-04-24 |

@@ -1,0 +1,7 @@
+
+C:\Users\forbi\OneDrive\Documenti\GitHub\zecchino\src\components\CategoryManagement.tsx
+   15:55  warning  'X' is defined but never used                                                                  @typescript-eslint/no-unused-vars
+  367:17  warning  The autoFocus prop should not be used, as it can reduce usability and accessibility for users  jsx-a11y/no-autofocus
+
+Ô£û 2 problems (0 errors, 2 warnings)
+
