@@ -7,10 +7,10 @@ import { useScreenReader } from '@/hooks/use-screen-reader'
 import { toast } from 'sonner'
 
 interface AuthContextValue {
-  globalPinHash: string | null
-  setGlobalPinHash: (value: string | ((prev: string | null) => string)) => void
-  privatePinHash: string | null
-  setPrivatePinHash: (value: string | ((prev: string | null) => string)) => void
+  globalPinHash: string | undefined
+  setGlobalPinHash: (value: string | ((prev?: string) => string)) => void
+  privatePinHash: string | undefined
+  setPrivatePinHash: (value: string | ((prev?: string) => string)) => void
   isAuthenticated: boolean
   setIsAuthenticated: (v: boolean) => void
   isPrivateUnlocked: boolean
@@ -44,6 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [showPrivatePinDialog, setShowPrivatePinDialog] = useState(false)
 
   const screenReader = useScreenReader()
+  // Intenzionale: questo effect deve girare solo al mount per scegliere setup o login iniziale.
+  // Aggiungere globalPinHash ai deps riaprirebbe il dialog PIN dopo ogni cambio PIN.
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     if (!globalPinHash) {
       setIsSetupMode(true)
@@ -52,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setShowPinDialog(true)
     }
   }, [])
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   const handleGlobalPinSubmit = async (pin: string) => {
     if (isSetupMode) {

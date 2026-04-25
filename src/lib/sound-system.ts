@@ -128,7 +128,7 @@ class SoundSystem {
     if (this.initialized) return
     
     try {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      this.audioContext = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)()
       this.masterGain = this.audioContext.createGain()
       this.masterGain.gain.value = this.volume
       this.masterGain.connect(this.audioContext.destination)

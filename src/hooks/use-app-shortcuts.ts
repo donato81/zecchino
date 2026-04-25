@@ -211,6 +211,7 @@ export function useAppShortcuts(options: AppShortcutsOptions): void {
       description: 'Show keyboard shortcuts help'
     },
   ], [
+    isAuthenticated,
     activeTab,
     allCategoriesVisible,
     hasPrivateAccount,

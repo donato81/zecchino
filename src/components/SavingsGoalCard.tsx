@@ -27,7 +27,7 @@ import {
 } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, typeof Target> = {
   'piggy-bank': PiggyBank,
   'airplane': Airplane,
   'house': House,

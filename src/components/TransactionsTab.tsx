@@ -2,7 +2,6 @@ import { useMemo, useRef, useCallback } from 'react'
 import { useAppData } from '@/context/AppDataContext'
 import { useAuth } from '@/context/AuthContext'
 import { useVisibleData } from '@/context/VisibleDataContext'
-import { useIsMobile } from '@/hooks/use-mobile'
 import { useListNavigation } from '@/hooks/use-list-navigation'
 import { formatCurrency } from '@/lib/helpers'
 import { Button } from '@/components/ui/button'
@@ -24,8 +23,6 @@ export function TransactionsTab() {
   const { isAuthenticated } = useAuth()
 
   const { visibleTransactions, visibleAccounts } = useVisibleData()
-
-  const isMobile = useIsMobile()
 
   const transactionsListContainerRef = useRef<HTMLDivElement>(null)
 

@@ -6,7 +6,7 @@ interface UseListNavigationProps {
   onDelete?: (index: number) => void
   onEdit?: (index: number) => void
   enabled?: boolean
-  containerRef?: RefObject<HTMLElement>
+  containerRef?: RefObject<HTMLElement | null>
 }
 
 export function useListNavigation({

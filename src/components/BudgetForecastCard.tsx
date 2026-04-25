@@ -4,7 +4,6 @@ import { getBudgetProgress, formatCurrency } from '@/lib/helpers'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Progress } from '@/components/ui/progress'
 import { ChartLine, TrendUp, TrendDown, Warning, CheckCircle, Info } from '@phosphor-icons/react'
 
 interface BudgetForecastCardProps {

@@ -65,6 +65,8 @@ function DialogContent({
         )}
         {...props}
       >
+        <DialogPrimitive.Title className="sr-only">Finestra di dialogo</DialogPrimitive.Title>
+        <DialogPrimitive.Description className="sr-only">Contenuto del dialogo</DialogPrimitive.Description>
         {children}
         <DialogPrimitive.Close 
           className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent/20 data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-lg opacity-70 transition-all hover:opacity-100 hover:bg-accent/30 hover:scale-110 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 p-2"

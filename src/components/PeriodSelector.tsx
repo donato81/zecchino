@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { soundSystem } from '@/lib/sound-system'
 import { useScreenReader } from '@/hooks/use-screen-reader'
 

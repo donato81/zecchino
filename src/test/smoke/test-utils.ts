@@ -15,11 +15,10 @@ export function renderApp(options: RenderAppOptions = {}) {
 
   const user = userEvent.setup()
   const result = render(
-    createElement(
-      TooltipProvider,
-      { delayDuration: 200 },
-      createElement(App)
-    )
+    createElement(TooltipProvider, {
+      delayDuration: 200,
+      children: createElement(App),
+    })
   )
   return { ...result, user }
 }

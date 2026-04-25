@@ -81,7 +81,7 @@ class ScreenReaderAnnouncer {
     this.announce(`${count} ${plural}`, 'polite')
   }
 
-  announceBalance(accountName: string, balance: number, currency: string = '€') {
+  announceBalance(accountName: string, balance: number, _currency: string = '€') {
     const formattedBalance = new Intl.NumberFormat('it-IT', {
       style: 'currency',
       currency: 'EUR'

@@ -66,7 +66,6 @@ export function AppHeader() {
                   aria-live="polite"
                   aria-atomic="true"
                   aria-label={`Saldo totale: ${formatCurrency(totalBalance)}`}
-                  tabIndex={0}
                 >
                   <p className="text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-wider" id="total-balance-label">
                     {isMobile ? 'Saldo' : 'Saldo Totale'}

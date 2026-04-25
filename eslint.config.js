@@ -40,7 +40,12 @@ export default [
     rules: {
       ...config.rules,
       // Fase A: abbasso a warn le regole error del preset recommended
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', {
+        argsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        destructuredArrayIgnorePattern: '^_',
+      }],
       '@typescript-eslint/no-explicit-any': 'warn',
       'prefer-const': 'warn',
     },
@@ -75,6 +80,16 @@ export default [
       ...Object.fromEntries(
         Object.keys(jsxA11y.flatConfigs.recommended.rules).map((rule) => [rule, 'warn'])
       ),
+    },
+  },
+
+  // Layer 6 — Disabilita react-refresh/only-export-components per file shadcn/ui e context
+  // Questi file seguono pattern legittimi di multi-export (componenti shadcn e hook + provider React).
+  {
+    files: ['src/components/ui/**/*.{ts,tsx}', 'src/context/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      'jsx-a11y/anchor-has-content': 'off',
     },
   },
 ];

@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { useTalkBack } from '@/hooks/use-talkback'
+import { useTalkBack, type TalkBackAdaptations } from '@/hooks/use-talkback'
 import { useScreenReader } from '@/hooks/use-screen-reader'
 import { soundSystem } from '@/lib/sound-system'
 import { hapticSystem } from '@/lib/haptic-system'
@@ -55,8 +55,8 @@ export function TalkBackSettings() {
     screenReader.announceSuccess('Tutte le ottimizzazioni TalkBack sono state ripristinate ai valori predefiniti.')
   }
 
-  const handleAdaptationChange = (key: string, value: boolean, label: string) => {
-    updateAdaptation(key as any, value)
+  const handleAdaptationChange = (key: keyof TalkBackAdaptations, value: boolean, label: string) => {
+    updateAdaptation(key, value)
     soundSystem.play('click')
     hapticSystem.buttonPress()
     const action = value ? 'attivata' : 'disattivata'

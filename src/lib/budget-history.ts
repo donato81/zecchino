@@ -1,5 +1,4 @@
 import { Budget, Transaction } from './types'
-import { getBudgetPeriodDates } from './helpers'
 
 export interface BudgetPeriodData {
   periodLabel: string
@@ -48,7 +47,6 @@ function getPeriodLabel(budget: Budget, periodIndex: number): string {
 
 function getPeriodDates(budget: Budget, periodIndex: number): { start: Date; end: Date } {
   const currentStart = new Date(budget.dataInizio)
-  const currentEnd = new Date(budget.dataFine)
   
   switch (budget.periodo) {
     case 'mensile': {

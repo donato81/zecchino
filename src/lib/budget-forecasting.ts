@@ -29,7 +29,6 @@ function getCurrentPeriodSpending(
   transactions: Transaction[]
 ): { spent: number; transactionCount: number } {
   const startDate = new Date(budget.dataInizio)
-  const endDate = new Date(budget.dataFine)
   const now = new Date()
   
   const periodTransactions = transactions.filter(t => {
@@ -104,7 +103,7 @@ export function calculateBudgetForecast(
   
   const historicalDailyAverage = averageHistoricalSpending / totalDays
   
-  const trendData = calculateBudgetTrend(budget, transactions, historicalPeriods)
+  calculateBudgetTrend(budget, transactions, historicalPeriods)
   
   let projectedSpending: number
   let forecastMethod: 'current-trend' | 'historical-average' | 'weighted'

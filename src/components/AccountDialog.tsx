@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Account, AccountType } from '@/lib/types'
 import { ACCOUNT_TYPE_LABELS, ACCOUNT_TYPE_ICONS, ACCOUNT_TYPE_DESCRIPTIONS, ACCOUNT_CATEGORIES } from '@/lib/constants'
 import { generateId } from '@/lib/helpers'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { soundSystem } from '@/lib/sound-system'
@@ -24,10 +24,13 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
   const [tipo, setTipo] = useState<AccountType>(account?.tipo || 'bancario')
   const [saldoIniziale, setSaldoIniziale] = useState(account?.saldoIniziale.toString() || '0')
   const [error, setError] = useState('')
+  const nameInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (open) {
       soundSystem.play('dialog-open')
+      const timer = setTimeout(() => nameInputRef.current?.focus(), 100)
+      return () => clearTimeout(timer)
     }
   }, [open])
 
@@ -102,11 +105,11 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
             <div className="space-y-2">
               <Label htmlFor="account-name">Nome del Conto</Label>
               <Input
+                ref={nameInputRef}
                 id="account-name"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="es. Conto Corrente, Portafoglio, ecc."
-                autoFocus
                 aria-invalid={!!error}
               />
             </div>

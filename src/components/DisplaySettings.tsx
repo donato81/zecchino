@@ -106,7 +106,7 @@ export function DisplaySettings() {
               <Switch
                 id="show-balances"
                 checked={showBalances ?? true}
-                onCheckedChange={(checked) => handleToggle(setShowBalances, showBalances ?? true, 'Visualizzazione saldi')}
+                onCheckedChange={(_checked) => handleToggle(setShowBalances, showBalances ?? true, 'Visualizzazione saldi')}
                 aria-label="Mostra o nascondi i saldi dei conti"
               />
             </div>
@@ -125,7 +125,7 @@ export function DisplaySettings() {
               <Switch
                 id="show-account-icons"
                 checked={showAccountIcons ?? true}
-                onCheckedChange={(checked) => handleToggle(setShowAccountIcons, showAccountIcons ?? true, 'Icone conti')}
+                onCheckedChange={(_checked) => handleToggle(setShowAccountIcons, showAccountIcons ?? true, 'Icone conti')}
                 aria-label="Mostra o nascondi le icone dei tipi di conto"
               />
             </div>
@@ -144,7 +144,7 @@ export function DisplaySettings() {
               <Switch
                 id="show-categories"
                 checked={showCategories ?? true}
-                onCheckedChange={(checked) => handleToggle(setShowCategories, showCategories ?? true, 'Visualizzazione categorie')}
+                onCheckedChange={(_checked) => handleToggle(setShowCategories, showCategories ?? true, 'Visualizzazione categorie')}
                 aria-label="Mostra o nascondi le categorie nei movimenti"
               />
             </div>
@@ -163,7 +163,7 @@ export function DisplaySettings() {
               <Switch
                 id="show-transaction-icons"
                 checked={showTransactionIcons ?? true}
-                onCheckedChange={(checked) => handleToggle(setShowTransactionIcons, showTransactionIcons ?? true, 'Icone movimenti')}
+                onCheckedChange={(_checked) => handleToggle(setShowTransactionIcons, showTransactionIcons ?? true, 'Icone movimenti')}
                 aria-label="Mostra o nascondi le icone dei movimenti"
               />
             </div>
@@ -182,7 +182,7 @@ export function DisplaySettings() {
               <Switch
                 id="show-percentages"
                 checked={showPercentages ?? true}
-                onCheckedChange={(checked) => handleToggle(setShowPercentages, showPercentages ?? true, 'Visualizzazione percentuali')}
+                onCheckedChange={(_checked) => handleToggle(setShowPercentages, showPercentages ?? true, 'Visualizzazione percentuali')}
                 aria-label="Mostra o nascondi le percentuali"
               />
             </div>
@@ -201,7 +201,7 @@ export function DisplaySettings() {
               <Switch
                 id="compact-mode"
                 checked={compactMode ?? false}
-                onCheckedChange={(checked) => handleToggle(setCompactMode, compactMode ?? false, 'Modalità compatta')}
+                onCheckedChange={(_checked) => handleToggle(setCompactMode, compactMode ?? false, 'Modalità compatta')}
                 aria-label="Attiva o disattiva la modalità compatta"
               />
             </div>
@@ -307,7 +307,7 @@ export function DisplaySettings() {
               <Switch
                 id="high-contrast"
                 checked={highContrast ?? false}
-                onCheckedChange={(checked) => handleToggle(setHighContrast, highContrast ?? false, 'Alto contrasto')}
+                onCheckedChange={(_checked) => handleToggle(setHighContrast, highContrast ?? false, 'Alto contrasto')}
                 aria-label="Attiva o disattiva l'alto contrasto"
               />
             </div>
@@ -326,7 +326,7 @@ export function DisplaySettings() {
               <Switch
                 id="animations-enabled"
                 checked={animationsEnabled ?? true}
-                onCheckedChange={(checked) => handleToggle(setAnimationsEnabled, animationsEnabled ?? true, 'Animazioni')}
+                onCheckedChange={(_checked) => handleToggle(setAnimationsEnabled, animationsEnabled ?? true, 'Animazioni')}
                 aria-label="Attiva o disattiva le animazioni"
               />
             </div>
@@ -345,7 +345,7 @@ export function DisplaySettings() {
               <Switch
                 id="reduce-motion"
                 checked={reduceMotion ?? false}
-                onCheckedChange={(checked) => handleToggle(setReduceMotion, reduceMotion ?? false, 'Riduci movimento')}
+                onCheckedChange={(_checked) => handleToggle(setReduceMotion, reduceMotion ?? false, 'Riduci movimento')}
                 aria-label="Attiva o disattiva riduzione movimento"
               />
             </div>

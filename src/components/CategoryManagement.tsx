@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Category, CategoryType } from '@/lib/types'
 import { generateId } from '@/lib/helpers'
@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Tag, Plus, PencilSimple, Trash, CheckCircle, X, TrendUp, TrendDown } from '@phosphor-icons/react'
+import { Tag, Plus, PencilSimple, Trash, CheckCircle, TrendUp, TrendDown } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -45,10 +45,18 @@ export function CategoryManagement() {
   const [categoryName, setCategoryName] = useState('')
   const [categoryType, setCategoryType] = useState<CategoryType>('uscita')
   const [error, setError] = useState('')
+  const categoryNameRef = useRef<HTMLInputElement>(null)
 
   const safeCategories = categories || []
   const incomeCategories = safeCategories.filter(c => c.tipo === 'entrata')
   const expenseCategories = safeCategories.filter(c => c.tipo === 'uscita')
+
+  useEffect(() => {
+    if (showCategoryDialog) {
+      const timer = setTimeout(() => categoryNameRef.current?.focus(), 100)
+      return () => clearTimeout(timer)
+    }
+  }, [showCategoryDialog])
 
   const handleOpenCategoryDialog = (category?: Category) => {
     setEditingCategory(category || null)
@@ -357,6 +365,7 @@ export function CategoryManagement() {
             <div className="space-y-2">
               <Label htmlFor="category-name">Nome Categoria</Label>
               <Input
+                ref={categoryNameRef}
                 id="category-name"
                 placeholder="es. Spesa, Stipendio, Bollette..."
                 value={categoryName}
@@ -364,7 +373,6 @@ export function CategoryManagement() {
                   setCategoryName(e.target.value)
                   setError('')
                 }}
-                autoFocus
               />
             </div>
 

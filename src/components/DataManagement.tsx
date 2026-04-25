@@ -29,7 +29,7 @@ export function DataManagement() {
       soundSystem.play('export')
       
       const allKeys = await window.spark.kv.keys()
-      const exportData: Record<string, any> = {}
+      const exportData: Record<string, unknown> = {}
       
       for (const key of allKeys) {
         const value = await window.spark.kv.get(key)
@@ -49,7 +49,7 @@ export function DataManagement() {
 
       toast.success('Backup completato con successo')
       screenReader.announceSuccess(`Backup dei dati esportato. File: zecchino-backup-${new Date().toISOString().split('T')[0]}.json`)
-    } catch (error) {
+    } catch (_error) {
       soundSystem.play('error')
       toast.error('Errore durante l\'esportazione dei dati')
       screenReader.announceError('Errore durante il backup dei dati')
@@ -92,7 +92,7 @@ export function DataManagement() {
       setTimeout(() => {
         window.location.reload()
       }, 2000)
-    } catch (error) {
+    } catch (_error) {
       soundSystem.play('error')
       toast.error('Errore durante l\'importazione. Verifica che il file sia valido.')
       screenReader.announceError('Errore durante l\'importazione dei dati')
@@ -165,6 +165,7 @@ export function DataManagement() {
                     accept=".json,application/json"
                     onChange={handleFileSelect}
                     className="hidden"
+                    aria-label="Seleziona file di backup JSON da importare"
                   />
                   <Button
                     onClick={() => {

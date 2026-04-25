@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -48,6 +48,21 @@ export function TransactionDialog({
   )
   const [error, setError] = useState('')
   const [previousError, setPreviousError] = useState('')
+  const amountInputRef = useRef<HTMLInputElement>(null)
+
+  const resetForm = useCallback(() => {
+    setTipo('uscita')
+    setData(new Date().toISOString().split('T')[0])
+    setImporto('')
+    setContoId(accounts[0]?.id || '')
+    setContoDestinazioneId('')
+    const defaultCategory = categories.find(c => c.tipo === 'uscita')
+    setCategoriaId(defaultCategory?.id || '')
+    setDescrizione('')
+    setRicorrente(false)
+    setFrequenzaRicorrenza('')
+    setError('')
+  }, [accounts, categories])
 
   useEffect(() => {
     if (open) {
@@ -56,9 +71,11 @@ export function TransactionDialog({
       screenReader.announceDialogOpen(dialogTitle)
       if (!transaction) {
         resetForm()
+        const timer = setTimeout(() => amountInputRef.current?.focus(), 100)
+        return () => clearTimeout(timer)
       }
     }
-  }, [open, transaction, screenReader])
+  }, [open, transaction, screenReader, resetForm])
 
   useEffect(() => {
     if (tipo !== 'trasferimento') {
@@ -104,20 +121,6 @@ export function TransactionDialog({
       }
     }
   }, [tipo, categoriaId, categories])
-
-  const resetForm = () => {
-    setTipo('uscita')
-    setData(new Date().toISOString().split('T')[0])
-    setImporto('')
-    setContoId(accounts[0]?.id || '')
-    setContoDestinazioneId('')
-    const defaultCategory = categories.find(c => c.tipo === 'uscita')
-    setCategoriaId(defaultCategory?.id || '')
-    setDescrizione('')
-    setRicorrente(false)
-    setFrequenzaRicorrenza('')
-    setError('')
-  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -257,6 +260,7 @@ export function TransactionDialog({
               <div className="space-y-2">
                 <Label htmlFor="transaction-amount">Importo (€) *</Label>
                 <Input
+                  ref={amountInputRef}
                   id="transaction-amount"
                   type="number"
                   step="0.01"
@@ -264,7 +268,6 @@ export function TransactionDialog({
                   onChange={(e) => setImporto(e.target.value)}
                   placeholder="0.00"
                   className="font-mono"
-                  autoFocus={!transaction}
                   required
                   aria-required="true"
                   aria-invalid={error.includes('importo') ? 'true' : 'false'}

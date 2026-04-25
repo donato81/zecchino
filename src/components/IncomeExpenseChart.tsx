@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts'
+import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts'
 import { Transaction } from '@/lib/types'
 import { formatCurrency } from '@/lib/helpers'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,7 +20,7 @@ interface ChartDataPoint {
 export function IncomeExpenseChart({ transactions, period = 'month' }: IncomeExpenseChartProps) {
   const chartData = useMemo(() => {
     const now = new Date()
-    let startDate = new Date()
+    const startDate = new Date()
     let groupBy: 'day' | 'week' | 'month' = 'day'
 
     switch (period) {
@@ -134,7 +134,12 @@ export function IncomeExpenseChart({ transactions, period = 'month' }: IncomeExp
 
   const netBalance = totalIncome - totalExpenses
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  interface RechartsTooltipProps {
+    active?: boolean
+    payload?: Array<{ payload: { date: string; entrate: number; uscite: number } }>
+  }
+
+  const CustomTooltip = ({ active, payload }: RechartsTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-card border border-border rounded-lg shadow-lg p-3 space-y-1">

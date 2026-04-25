@@ -1,4 +1,5 @@
 import { useRef, useCallback } from 'react'
+import type { ComponentProps } from 'react'
 import { useAppData } from '@/context/AppDataContext'
 import { useAuth } from '@/context/AuthContext'
 import { useVisibleData } from '@/context/VisibleDataContext'
@@ -243,7 +244,7 @@ export function DashboardTab() {
                         <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 hidden sm:inline-flex">{keyNumber}</Badge>
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent variant={category.id as any}>
+                    <TooltipContent variant={category.id as ComponentProps<typeof TooltipContent>['variant']}>
                       <div className="space-y-0.5">
                         <p className="font-semibold">{category.label}</p>
                         <p className="text-xs opacity-90">{category.description}</p>

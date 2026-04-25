@@ -3,7 +3,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Transaction } from '@/lib/types'
 import { formatCurrency } from '@/lib/helpers'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { ArrowUp, ArrowDown, Minus } from '@phosphor-icons/react'
 
 interface MonthlyComparisonChartProps {
@@ -98,7 +97,12 @@ export function MonthlyComparisonChart({ transactions }: MonthlyComparisonChartP
     }
   ]
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  interface RechartsTooltipProps {
+    active?: boolean
+    payload?: Array<{ payload: { name: string } }>
+  }
+
+  const CustomTooltip = ({ active, payload }: RechartsTooltipProps) => {
     if (active && payload && payload.length) {
       const isCurrentMonth = payload[0].payload.name === comparisonData.currentMonth.name.split(' ')[0]
       const data = isCurrentMonth ? comparisonData.currentMonth : comparisonData.previousMonth

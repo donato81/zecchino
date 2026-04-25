@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { hashPin, verifyPin } from '@/lib/crypto'
 import { soundSystem } from '@/lib/sound-system'
@@ -34,6 +34,14 @@ export function SecuritySettings() {
   const [confirmPin, setConfirmPin] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState('')
+  const currentPinRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (showPinDialog) {
+      const timer = setTimeout(() => currentPinRef.current?.focus(), 100)
+      return () => clearTimeout(timer)
+    }
+  }, [showPinDialog])
 
   const handleOpenPinChange = (mode: PinChangeMode) => {
     setPinChangeMode(mode)
@@ -130,7 +138,7 @@ export function SecuritySettings() {
       }
 
       handleClosePinDialog()
-    } catch (err) {
+    } catch (_err) {
       setError('Errore durante la modifica del PIN')
       soundSystem.play('error')
       screenReader.announceError('Errore durante la modifica del PIN. Riprova.')
@@ -285,6 +293,7 @@ export function SecuritySettings() {
             <div className="space-y-2">
               <Label htmlFor="current-pin">PIN Attuale</Label>
               <Input
+                ref={currentPinRef}
                 id="current-pin"
                 type="password"
                 inputMode="numeric"
@@ -297,7 +306,6 @@ export function SecuritySettings() {
                 }}
                 onKeyPress={handleKeyPress}
                 disabled={isProcessing}
-                autoFocus
               />
             </div>
 

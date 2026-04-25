@@ -1,4 +1,4 @@
-import { Account, Transaction, Budget, Category } from './types'
+import { Account, Transaction, Budget } from './types'
 
 export function calculateAccountBalance(
   account: Account,

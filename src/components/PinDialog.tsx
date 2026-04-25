@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -27,10 +27,13 @@ export function PinDialog({
   const [confirmPin, setConfirmPin] = useState('')
   const [showPin, setShowPin] = useState(false)
   const [error, setError] = useState('')
+  const pinInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (open) {
       soundSystem.play('dialog-open')
+      const timer = setTimeout(() => pinInputRef.current?.focus(), 100)
+      return () => clearTimeout(timer)
     }
   }, [open])
 
@@ -86,13 +89,13 @@ export function PinDialog({
               </Label>
               <div className="relative">
                 <Input
+                  ref={pinInputRef}
                   id="pin"
                   type={showPin ? 'text' : 'password'}
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
                   placeholder={confirmMode ? 'Inserisci il nuovo PIN' : 'Inserisci il tuo PIN'}
                   className="pr-10"
-                  autoFocus
                   aria-invalid={!!error}
                   aria-describedby={error ? 'pin-error' : undefined}
                 />
