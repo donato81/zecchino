@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useMemo } from 'react'
 import { screenReader, type AnnouncementPriority } from '@/lib/screen-reader'
 
 export function useScreenReader() {
@@ -150,7 +150,7 @@ export function useScreenReader() {
     screenReader.announceImportComplete(itemCount, dataType)
   }, [])
 
-  return {
+  return useMemo(() => ({
     announce,
     announceNavigation,
     announceAction,
@@ -188,7 +188,45 @@ export function useScreenReader() {
     announcePrivateAccountLocked,
     announceDataCleared,
     announceImportComplete
-  }
+  }), [
+    announce,
+    announceNavigation,
+    announceAction,
+    announceError,
+    announceSuccess,
+    announceCount,
+    announceBalance,
+    announceTransaction,
+    announceDialogOpen,
+    announceDialogClose,
+    announceProgress,
+    announceBudgetStatus,
+    announceFocus,
+    announceListNavigation,
+    announceFilter,
+    announceSort,
+    announceAccountCreated,
+    announceAccountDeleted,
+    announceBudgetCreated,
+    announceBudgetDeleted,
+    announceSavingsGoalCreated,
+    announceSavingsGoalProgress,
+    announceSavingsGoalDeleted,
+    announceVolumeChange,
+    announcePresetApplied,
+    announceTemplateSelected,
+    announceFormError,
+    announceFormFieldFilled,
+    announceToggleState,
+    announceCardAction,
+    announceExport,
+    announcePeriodChange,
+    announceHelpOpened,
+    announceHelpClosed,
+    announcePrivateAccountLocked,
+    announceDataCleared,
+    announceImportComplete,
+  ])
 }
 
 export function useAnnouncePage(pageName: string) {

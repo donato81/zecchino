@@ -2,9 +2,9 @@
   "current_phase": "docs",
   "current_agent": "Agent-Orchestrator",
   "retry_count": 0,
-  "confidence": 0.93,
+  "confidence": 0.9,
   "execution_mode": "supervised",
-  "last_updated": "2026-04-25T09:43:55Z",
+  "last_updated": "2026-04-27T04:22:57Z",
   "phase_history": [
     "P01-step1-code-pass",
     "P06-code-pass",
@@ -30,14 +30,14 @@
   "project_name": "Zecchino",
   "stack": "React+TypeScript+Vite",
   "framework_version": "2.3.1",
-  "last_step_output": "P21 docs pass: aggiornati P21-todo.md, refactoring-todo.md, todo.md e architettura.md; gate locali lint/build/test passati; verifica remota CI demandata al push/PR dell'utente.",
+  "last_step_output": "P22 code+validate+docs pass: corretti use-screen-reader.ts e TransactionDialog.tsx; gate tsc/lint/build/test passati; aggiornati P22-todo.md, refactoring-todo.md, todo.md e architettura.md; verifica comportamentale eseguita con test temporaneo del dialog rimosso a fine controllo.",
   "update_check_done": true,
-  "last_update_check": "2026-04-25",
+  "last_update_check": "2026-04-27",
   "available_package_updates": 2,
   "completed_packages": [
     "P01",
     "P05",
     "P06"
   ],
-  "current_package": "P21"
+  "current_package": "P22"
 }

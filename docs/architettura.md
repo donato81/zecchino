@@ -153,6 +153,10 @@ A partire da P01–P13, parte dello stato è migrata in Context dedicati:
   useAppData(), useAuth(), useVisibleData(); debito tecnico dichiarato:
   undici stati UI dialog in AppDataContext, candidati a UIContext separato
   in fase futura
+- `TransactionDialog` — bugfix BUG-04 (P22): l'hook `useScreenReader`
+      ora restituisce un oggetto stabile tramite `useMemo`; i dep array dei
+      4 `useEffect` del componente referenziano le singole funzioni estratte
+      per destructuring invece dell'oggetto contenitore.
 - `App.tsx` — file di pura composizione (~140 righe); provider, guard
       autenticazione, layout strutturale, navigazione tab; nessun useMemo,
       nessun handler, nessun calcolo derivato; tutti i dati arrivano da

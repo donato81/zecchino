@@ -122,6 +122,8 @@
 
 ## Completati recenti
  
+- [x] P22 — Bugfix BUG-04: loop infinito campo importo TransactionDialog
+	— completato 2026-04-27
 - [x] P21 — GitHub Actions CI: pipeline minimale lint + build + test
 	— completato 2026-04-25
 - [x] P20 — Lint Cleanup: azzeramento dei 56 warning ESLint

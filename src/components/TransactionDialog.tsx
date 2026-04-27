@@ -32,7 +32,12 @@ export function TransactionDialog({
   accounts,
   categories
 }: TransactionDialogProps) {
-  const screenReader = useScreenReader()
+  const {
+    announceDialogOpen,
+    announce,
+    announceFormError,
+    announceSuccess,
+  } = useScreenReader()
   const [tipo, setTipo] = useState<TransactionType>(transaction?.tipo || 'uscita')
   const [data, setData] = useState(
     transaction?.data || new Date().toISOString().split('T')[0]
@@ -68,14 +73,14 @@ export function TransactionDialog({
     if (open) {
       soundSystem.play('dialog-open')
       const dialogTitle = transaction ? 'Modifica Movimento' : 'Nuovo Movimento'
-      screenReader.announceDialogOpen(dialogTitle)
+      announceDialogOpen(dialogTitle)
       if (!transaction) {
         resetForm()
         const timer = setTimeout(() => amountInputRef.current?.focus(), 100)
         return () => clearTimeout(timer)
       }
     }
-  }, [open, transaction, screenReader, resetForm])
+  }, [open, transaction, announceDialogOpen, resetForm])
 
   useEffect(() => {
     if (tipo !== 'trasferimento') {
@@ -84,32 +89,32 @@ export function TransactionDialog({
       const contoOrigine = accounts.find(a => a.id === contoId)
       const contoDestinazione = accounts.find(a => a.id === contoDestinazioneId)
       if (contoOrigine && contoDestinazione) {
-        screenReader.announce(
+        announce(
           `Trasferimento da ${contoOrigine.nome} a ${contoDestinazione.nome}`,
           'polite'
         )
       }
     }
-  }, [tipo, contoId, contoDestinazioneId, accounts, screenReader])
+  }, [tipo, contoId, contoDestinazioneId, accounts, announce])
 
   useEffect(() => {
     if (ricorrente && frequenzaRicorrenza) {
       const frequenzaLabel = RECURRENCE_LABELS[frequenzaRicorrenza as RecurrenceFrequency]
-      screenReader.announce(`Movimento ricorrente: ${frequenzaLabel}`, 'polite')
+      announce(`Movimento ricorrente: ${frequenzaLabel}`, 'polite')
     }
-  }, [ricorrente, frequenzaRicorrenza, screenReader])
+  }, [ricorrente, frequenzaRicorrenza, announce])
 
   useEffect(() => {
     if (error && error !== previousError) {
       const fieldMatch = error.match(/^(.*?)(è obbligatori[ao]|deve essere|seleziona)/i)
       const fieldName = fieldMatch ? fieldMatch[1].trim() : 'Campo'
-      screenReader.announceFormError(fieldName, error)
+      announceFormError(fieldName, error)
       setPreviousError(error)
     } else if (!error && previousError) {
-      screenReader.announceSuccess('Errore corretto')
+      announceSuccess('Errore corretto')
       setPreviousError('')
     }
-  }, [error, previousError, screenReader])
+  }, [error, previousError, announceFormError, announceSuccess])
 
   useEffect(() => {
     if (!categoriaId || !categories.find(c => c.id === categoriaId)) {
@@ -393,9 +398,9 @@ export function TransactionDialog({
                     const isChecked = checked as boolean
                     setRicorrente(isChecked)
                     if (isChecked) {
-                      screenReader.announce('Movimento ricorrente attivato. Seleziona la frequenza.', 'polite')
+                      announce('Movimento ricorrente attivato. Seleziona la frequenza.', 'polite')
                     } else {
-                      screenReader.announce('Movimento ricorrente disattivato', 'polite')
+                      announce('Movimento ricorrente disattivato', 'polite')
                     }
                   }}
                   aria-describedby="transaction-recurring-desc"
