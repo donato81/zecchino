@@ -13,6 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| P22 — Bugfix BUG-04: loop infinito TransactionDialog | `docs/3 - todo lists/P22-todo.md` | 🔵 In lavorazione | Alta |
 
 
 ## TODO completati
