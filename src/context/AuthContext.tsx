@@ -44,33 +44,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [showPrivatePinDialog, setShowPrivatePinDialog] = useState(false)
 
   const hasInitialized = useRef(false)
-  const isAuthenticatedRef = useRef(isAuthenticated)
-  isAuthenticatedRef.current = isAuthenticated
   const screenReader = useScreenReader()
 
-  useEffect(() => {
-    if (isAuthenticatedRef.current) return
-    if (globalPinHash === undefined) {
-      setIsSetupMode(true)
-      setShowPinDialog(true)
-      return
-    }
-    if (hasInitialized.current) return
+useEffect(() => {
+  if (globalPinHash === undefined) return
+  if (hasInitialized.current) return
+  hasInitialized.current = true
+  if (!globalPinHash) {
+    setIsSetupMode(true)
+  }
+  setShowPinDialog(true)
+}, [globalPinHash])
 
-    const openAuthDialog = (pinHash: string) => {
-      hasInitialized.current = true
-      if (!pinHash) {
-        setIsSetupMode(true)
-      } else {
-        setIsSetupMode(false)
-      }
-      setShowPinDialog(true)
-    }
 
-    openAuthDialog(globalPinHash)
-  }, [globalPinHash])
-
-  const handleGlobalPinSubmit = async (pin: string) => {
+const handleGlobalPinSubmit = async (pin: string) => {
     if (isSetupMode) {
       const hash = await hashPin(pin)
       setGlobalPinHash(hash)
