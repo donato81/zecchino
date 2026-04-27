@@ -137,6 +137,12 @@ A partire da P01–P13, parte dello stato è migrata in Context dedicati:
 - `AppDataContext` — dati applicazione (conti, movimenti, budget, obiettivi,
   stato dialog transazioni ed eliminazioni)
 - `AuthContext` — autenticazione (PIN globale e privato)
+- `AuthContext` — bugfix BUG-01 (P23): `useKV<string | undefined>` con
+      default `undefined` come sentinella di caricamento; bootstrap con
+      `window.spark.kv.get('global-pin-hash')` per distinguere caricamento da
+      "nessun PIN"; `useRef` one-shot `hasInitialized` per garantire che il dialog
+      di autenticazione si apra esattamente una volta per sessione; deps array
+      `[globalPinHash]` semanticamente corretto (rimosso eslint-disable).
 - `useVisibleData` — valori derivati calcolati dai due context
 - `AppHeader` — header applicazione estratto come componente autonomo;
       `showKeyboardHelp` migrato da `useState` locale in `App.tsx` a `AppDataContext`;

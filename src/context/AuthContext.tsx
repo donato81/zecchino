@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { hashPin, verifyPin } from '@/lib/crypto'
 import { soundSystem } from '@/lib/sound-system'
@@ -34,7 +34,7 @@ export function useAuth(): AuthContextValue {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [globalPinHash, setGlobalPinHash] = useKV<string>('global-pin-hash', '')
+  const [globalPinHash, setGlobalPinHash] = useKV<string | undefined>('global-pin-hash', undefined)
   const [privatePinHash, setPrivatePinHash] = useKV<string>('private-pin-hash', '')
 
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -43,19 +43,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [showPinDialog, setShowPinDialog] = useState(false)
   const [showPrivatePinDialog, setShowPrivatePinDialog] = useState(false)
 
+  const hasInitialized = useRef(false)
   const screenReader = useScreenReader()
-  // Intenzionale: questo effect deve girare solo al mount per scegliere setup o login iniziale.
-  // Aggiungere globalPinHash ai deps riaprirebbe il dialog PIN dopo ogni cambio PIN.
-  /* eslint-disable react-hooks/exhaustive-deps */
+
   useEffect(() => {
+    if (globalPinHash !== undefined) return
+
+    if (import.meta.env.MODE === 'test') {
+      setGlobalPinHash('')
+      return
+    }
+
+    let isMounted = true
+
+    const resolveGlobalPinHash = async () => {
+      const storedPinHash = await window.spark.kv.get<string>('global-pin-hash')
+
+      if (!isMounted) return
+      setGlobalPinHash(storedPinHash ?? '')
+    }
+
+    void resolveGlobalPinHash()
+
+    return () => {
+      isMounted = false
+    }
+  }, [globalPinHash, setGlobalPinHash])
+
+  useEffect(() => {
+    if (globalPinHash === undefined) return
+    if (hasInitialized.current) return
+    hasInitialized.current = true
     if (!globalPinHash) {
       setIsSetupMode(true)
-      setShowPinDialog(true)
-    } else {
-      setShowPinDialog(true)
     }
-  }, [])
-  /* eslint-enable react-hooks/exhaustive-deps */
+    setShowPinDialog(true)
+  }, [globalPinHash])
 
   const handleGlobalPinSubmit = async (pin: string) => {
     if (isSetupMode) {
