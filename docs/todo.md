@@ -13,6 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| P23 — Bugfix BUG-01: persistenza PIN e flusso di inizializzazione AuthContext | `docs/3 - todo lists/P23-todo.md` | 🔵 In lavorazione | Alta |
 
 
 ## TODO completati
