@@ -44,40 +44,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [showPrivatePinDialog, setShowPrivatePinDialog] = useState(false)
 
   const hasInitialized = useRef(false)
+  const isAuthenticatedRef = useRef(isAuthenticated)
+  isAuthenticatedRef.current = isAuthenticated
   const screenReader = useScreenReader()
 
   useEffect(() => {
-    if (globalPinHash !== undefined) return
-
-    if (import.meta.env.MODE === 'test') {
-      setGlobalPinHash('')
+    if (isAuthenticatedRef.current) return
+    if (globalPinHash === undefined) {
+      setIsSetupMode(true)
+      setShowPinDialog(true)
       return
     }
-
-    let isMounted = true
-
-    const resolveGlobalPinHash = async () => {
-      const storedPinHash = await window.spark.kv.get<string>('global-pin-hash')
-
-      if (!isMounted) return
-      setGlobalPinHash(storedPinHash ?? '')
-    }
-
-    void resolveGlobalPinHash()
-
-    return () => {
-      isMounted = false
-    }
-  }, [globalPinHash, setGlobalPinHash])
-
-  useEffect(() => {
-    if (globalPinHash === undefined) return
     if (hasInitialized.current) return
-    hasInitialized.current = true
-    if (!globalPinHash) {
-      setIsSetupMode(true)
+
+    const openAuthDialog = (pinHash: string) => {
+      hasInitialized.current = true
+      if (!pinHash) {
+        setIsSetupMode(true)
+      } else {
+        setIsSetupMode(false)
+      }
+      setShowPinDialog(true)
     }
-    setShowPinDialog(true)
+
+    openAuthDialog(globalPinHash)
   }, [globalPinHash])
 
   const handleGlobalPinSubmit = async (pin: string) => {
