@@ -166,6 +166,12 @@ ciclo P23) è il **sintomo**, non la causa. La causa reale è strutturale:
     `isAuthReady`.
   - Nuova `AuthScreen` con form email/password e link a signup.
   - Timer di inattività client-side che chiama `signOut()` allo scadere.
+  - **Recovery password**: link "Hai dimenticato la password?" nella nuova
+    AuthScreen che invoca `supabase.auth.resetPasswordForEmail(email)`.
+    L'utente riceve un link via email per reimpostare la password.
+    Obbligatorio nel primo rilascio: senza recovery, un utente che
+    dimentica le credenziali perde l'accesso a tutti i propri dati
+    (RLS impedisce qualunque accesso senza sessione valida).
 - **Fuori scope**: biometrico (rimandato a fase futura), magic link,
   social login.
 
@@ -303,7 +309,7 @@ completamento della migrazione. Eccezione: `dismissed-budget-alerts`
 | 5 | `savings-goals` | `obiettivi_risparmio` | Aggiungere `user_id`. `colore`/`icona` restano metadati visivi. |
 | 6 | `private-pin-hash` | `impostazioni_utente.pin_privato_hash` | Hash con bcrypt/argon2, vedi §4.3. |
 | 6 | `visible-categories` | `impostazioni_utente.visible_categories` (text[] o JSONB) | Schema esatto da definire. |
-| 6 | `dismissed-budget-alerts` | `impostazioni_utente` o `notifiche` | Decisione nel design operativo dedicato. |
+| 6 | `dismissed-budget-alerts` | `notifiche` | Ogni avviso budget genera una riga in `notifiche` con tipo `budget_soglia` o `budget_superato` e campo `letta = FALSE`. Quando l'utente lo chiude, si imposta `letta = TRUE`. L'app non mostra nuovamente avvisi con `letta = TRUE` per la stessa entità. Nessuna modifica allo schema della tabella `notifiche` necessaria: i campi `tipo`, `letta`, `entita_tipo`, `entita_id` coprono già questo caso. |
 | 6 | 24 chiavi UI/A11y/Audio | `impostazioni_utente.*` o `impostazioni_utente.preferences` JSONB | Schema esatto da definire. |
 | — | `global-pin-hash` | `auth.users` (gestito da Supabase Auth) | Eliminato dallo storage applicativo. |
 | — | `budget-percentages` | **non migrato** | Resta `useState` client-side (cache di sessione). |
@@ -620,7 +626,7 @@ sono **bloccanti** per tutto ciò che segue.
 | R14 | Mapping camelCase ↔ snake_case: dove farlo (repository layer vs componenti). | Medio | Blocco 2 |
 | R15 | Sessione 5 minuti: rischio UX (logout durante inserimento lungo). Necessario warning UI a 1 minuto dalla scadenza. | Medio | Blocco 3 |
 | R16 | Confronto colonne attese vs schema reale Supabase: il presente documento descrive le **aspettative**. Il design operativo di ogni blocco dovrà confermarle leggendo lo schema reale. | Alto se trascurato | Tutti i blocchi |
-| R17 | Recovery password: in scope o rimandato? Senza, un utente che dimentica la password perde tutti i dati (RLS impedisce accesso). | Critico per UX | Blocco 3 (decisione) |
+| R17 | Recovery password: senza reset via email un utente che dimentica le credenziali perde l'accesso permanentemente (RLS impedisce qualunque accesso senza sessione valida). | **Critico per UX e dati** — **IN SCOPE blocco 3**: implementare `resetPasswordForEmail` nella nuova AuthScreen al primo rilascio. | Blocco 3 |
 
 ---
 
