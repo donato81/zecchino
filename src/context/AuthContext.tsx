@@ -7,6 +7,7 @@ import { useScreenReader } from '@/hooks/use-screen-reader'
 import { toast } from 'sonner'
 
 interface AuthContextValue {
+  isAuthReady: boolean
   globalPinHash: string
   setGlobalPinHash: (value: string | ((prev: string) => string)) => void
   privatePinHash: string | undefined
@@ -42,8 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isSetupMode, setIsSetupMode] = useState(false)
   const [showPinDialog, setShowPinDialog] = useState(false)
   const [showPrivatePinDialog, setShowPrivatePinDialog] = useState(false)
-  const [, setIsAuthReady] = useState(false)
-
+  const [isAuthReady, setIsAuthReady] = useState(false)
   const screenReader = useScreenReader()
 
 useEffect(() => {
@@ -123,6 +123,7 @@ const handleGlobalPinSubmit = async (pin: string) => {
 
   return (
     <AuthContext.Provider value={{
+      isAuthReady,
       globalPinHash: globalPinHash ?? '',
       setGlobalPinHash,
       privatePinHash, setPrivatePinHash,
