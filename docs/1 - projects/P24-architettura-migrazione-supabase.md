@@ -81,7 +81,7 @@ ciclo P23) è il **sintomo**, non la causa. La causa reale è strutturale:
 | Sicurezza | `global-pin-hash` | **RIMOSSA** (Supabase Auth) |
 | Sicurezza | `private-pin-hash` | `impostazioni_utente.pin_privato_hash` |
 | Preferenza | `visible-categories` | `impostazioni_utente` (colonna o JSONB) |
-| Preferenza | `dismissed-budget-alerts` | `impostazioni_utente` o `notifiche` |
+| Preferenza | `dismissed-budget-alerts` | `notifiche` |
 | Cache | `budget-percentages` | **NON migrata** — `useState` client-side |
 | Preferenza | 12 chiavi `display-*` | `impostazioni_utente` |
 | Preferenza | 12 chiavi `sr-*` | `impostazioni_utente` |
@@ -323,7 +323,7 @@ modifiche allo schema.
 | `tag` | Esiste, non toccata | Funzionalità futura. |
 | `transazioni_tag` | Esiste, non toccata | Giunzione N:M con `tag`. |
 | `ricorrenze` | Esiste, non toccata | I campi `ricorrente`/`frequenzaRicorrenza` su `transazioni` restano inline per ora. La normalizzazione è progetto separato. |
-| `notifiche` | Esiste, non toccata | Solo eventuale destinazione di `dismissed-budget-alerts` da decidere. |
+| `notifiche` | Esiste, non toccata | Usata per `dismissed-budget-alerts` tramite il campo `letta`. Nessuna modifica allo schema necessaria. Decisione già chiusa in §4.8 e §5.1. |
 | `storico_accessi` | Esiste, non toccata | Logging accessi futuro. |
 | `allegati_transazioni` | Esiste, non toccata | Foto ricevute futuro (richiede Supabase Storage). |
 
@@ -484,7 +484,8 @@ sono **bloccanti** per tutto ciò che segue.
 - **Complessità**: **Complessa** — bloccante per tutto il resto: tutti i
   provider sono montati sotto `AuthProvider`.
 - **Punti aperti**:
-  - Recovery password (link via email): in scope o rimandato?
+  - Recovery password: in scope. Implementare `resetPasswordForEmail`
+    nella nuova AuthScreen (vedi §4.2 e R17).
   - Conferma email obbligatoria all'iscrizione?
   - Persistenza del valore di timeout inattività (locale o server).
 
