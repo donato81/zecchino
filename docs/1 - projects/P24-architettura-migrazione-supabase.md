@@ -254,8 +254,9 @@ ciclo P23) è il **sintomo**, non la causa. La causa reale è strutturale:
 ### 4.7 Preferenze UI
 
 - **Scelta**: tutte le 24 chiavi (`display-*`, `sr-*`, `audio-*`,
-  `talkback-*`) + `visible-categories` + `dismissed-budget-alerts`
-  confluiscono in `impostazioni_utente`.
+  `talkback-*`) + `visible-categories` confluiscono in `impostazioni_utente`.
+  `dismissed-budget-alerts` confluisce invece in `notifiche`
+  (vedi §4.8 e §5.1).
 - **Strategia di accesso**: un **unico hook `useUserSettings()`** che:
   1. al login carica una sola volta il record dell'utente;
   2. lo tiene in memoria nel context;
@@ -291,8 +292,9 @@ dal codice in questa migrazione:
 
 Sono funzionalità future, da schedulare come **progetti separati** dopo il
 completamento della migrazione. Eccezione: `dismissed-budget-alerts`
-**potrebbe** confluire in `notifiche` invece che in `impostazioni_utente`
-— decisione rimandata al design operativo del blocco 5.
+confluisce in `notifiche` tramite il campo `letta`. Decisione già chiusa
+in §5.1 — la tabella `notifiche` esistente supporta questo caso senza
+modifiche allo schema.
 
 ---
 
@@ -449,7 +451,6 @@ sono **bloccanti** per tutto ciò che segue.
 - **Punti aperti**:
   - 24 colonne tipizzate vs `preferences JSONB`.
   - Trigger vs `GENERATED ALWAYS AS` per `cifrato`.
-  - `dismissed-budget-alerts` in `impostazioni_utente` o `notifiche`.
 
 ### Blocco 2 — Strato di accesso dati Supabase
 
