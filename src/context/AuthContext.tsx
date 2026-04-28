@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { hashPin, verifyPin } from '@/lib/crypto'
 import { soundSystem } from '@/lib/sound-system'
@@ -7,8 +7,8 @@ import { useScreenReader } from '@/hooks/use-screen-reader'
 import { toast } from 'sonner'
 
 interface AuthContextValue {
-  globalPinHash: string | undefined
-  setGlobalPinHash: (value: string | ((prev?: string) => string)) => void
+  globalPinHash: string
+  setGlobalPinHash: (value: string | ((prev: string) => string)) => void
   privatePinHash: string | undefined
   setPrivatePinHash: (value: string | ((prev?: string) => string)) => void
   isAuthenticated: boolean
@@ -34,7 +34,7 @@ export function useAuth(): AuthContextValue {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [globalPinHash, setGlobalPinHash] = useKV<string | undefined>('global-pin-hash', undefined)
+  const [globalPinHash, setGlobalPinHash] = useKV<string>('global-pin-hash', '')
   const [privatePinHash, setPrivatePinHash] = useKV<string>('private-pin-hash', '')
 
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -42,19 +42,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isSetupMode, setIsSetupMode] = useState(false)
   const [showPinDialog, setShowPinDialog] = useState(false)
   const [showPrivatePinDialog, setShowPrivatePinDialog] = useState(false)
+  const [, setIsAuthReady] = useState(false)
 
-  const hasInitialized = useRef(false)
   const screenReader = useScreenReader()
 
 useEffect(() => {
-  if (globalPinHash === undefined) return
-  if (hasInitialized.current) return
-  hasInitialized.current = true
-  if (!globalPinHash) {
-    setIsSetupMode(true)
-  }
-  setShowPinDialog(true)
-}, [globalPinHash])
+  let cancelled = false
+  ;(async () => {
+    const storedHash = (await window.spark.kv.get('global-pin-hash')) as string | undefined
+    if (cancelled) return
+    if (!storedHash) {
+      setIsSetupMode(true)
+    }
+    setShowPinDialog(true)
+    setIsAuthReady(true)
+  })()
+  return () => { cancelled = true }
+}, [])
 
 
 const handleGlobalPinSubmit = async (pin: string) => {
@@ -119,7 +123,8 @@ const handleGlobalPinSubmit = async (pin: string) => {
 
   return (
     <AuthContext.Provider value={{
-      globalPinHash, setGlobalPinHash,
+      globalPinHash: globalPinHash ?? '',
+      setGlobalPinHash,
       privatePinHash, setPrivatePinHash,
       isAuthenticated, setIsAuthenticated,
       isPrivateUnlocked, setIsPrivateUnlocked,

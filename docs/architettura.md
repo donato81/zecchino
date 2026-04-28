@@ -137,12 +137,14 @@ A partire da P01–P13, parte dello stato è migrata in Context dedicati:
 - `AppDataContext` — dati applicazione (conti, movimenti, budget, obiettivi,
   stato dialog transazioni ed eliminazioni)
 - `AuthContext` — autenticazione (PIN globale e privato)
-- `AuthContext` — bugfix BUG-01 (P23): `useKV<string | undefined>` con
-      default `undefined` come sentinella di caricamento; bootstrap con
-      `window.spark.kv.get('global-pin-hash')` per distinguere caricamento da
-      "nessun PIN"; `useRef` one-shot `hasInitialized` per garantire che il dialog
-      di autenticazione si apra esattamente una volta per sessione; deps array
-      `[globalPinHash]` semanticamente corretto (rimosso eslint-disable).
+- `AuthContext` — bugfix BUG-01 definitivo (P23 rev. 2026-04-28): bootstrap
+      one-shot tramite IIFE async in `useEffect(() => {…}, [])`. Usa
+      `window.spark.kv.get('global-pin-hash')` (API asincrona contrattuale) per
+      decidere setup vs login; flag `cancelled` per cleanup sicuro. `useKV<string>`
+      con default `''` (rimosso `undefined` come sentinella). `useRef`/`hasInitialized`
+      eliminati. `isAuthReady` stato interno privato, mai esposto nel context value.
+      Mock `sparkKvMock.get/set/keys` allineato al `kvStore` reale (P19). Gate:
+      5/5 smoke test PASS.
 - `useVisibleData` — valori derivati calcolati dai due context
 - `AppHeader` — header applicazione estratto come componente autonomo;
       `showKeyboardHelp` migrato da `useState` locale in `App.tsx` a `AppDataContext`;

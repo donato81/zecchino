@@ -122,8 +122,8 @@
 
 ## Completati recenti
  
-- [x] P23 — Bugfix BUG-01: persistenza PIN e flusso di inizializzazione AuthContext
-	— completato 2026-04-27
+- [x] P23 — Bugfix BUG-01: bootstrap asincrono AuthContext + mock KV allineato
+	— completato 2026-04-28 (revisione definitiva — sostituisce P23 v1)
 - [x] P22 — Bugfix BUG-04: loop infinito campo importo TransactionDialog
 	— completato 2026-04-27
 - [x] P21 — GitHub Actions CI: pipeline minimale lint + build + test

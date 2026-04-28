@@ -47,9 +47,14 @@ vi.mock('@github/spark/hooks', () => ({
 }))
 
 const sparkKvMock = {
-  get: vi.fn(async () => undefined),
-  set: vi.fn(async () => undefined),
-  keys: vi.fn(async () => []),
+  get: vi.fn(async (key: string) => {
+    if (kvStore.has(key)) return cloneValue(kvStore.get(key))
+    return undefined
+  }),
+  set: vi.fn(async (key: string, value: unknown) => {
+    kvStore.set(key, cloneValue(value))
+  }),
+  keys: vi.fn(async () => Array.from(kvStore.keys())),
 }
 
 Object.defineProperty(window, 'spark', {

@@ -24,7 +24,7 @@ export function renderApp(options: RenderAppOptions = {}) {
 }
 
 export async function authenticateWithPin(user: ReturnType<typeof userEvent.setup>, pin = '1234') {
-  const pinField = screen.getByLabelText(/Nuovo PIN/i)
+  const pinField = await screen.findByLabelText(/Nuovo PIN/i)
   await user.type(pinField, pin)
 
   const confirmField = screen.getByLabelText(/Conferma PIN/i)
