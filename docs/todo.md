@@ -13,13 +13,12 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-
+| P23 — Bugfix BUG-01: bootstrap asincrono AuthContext + mock KV allineato | `docs/3 - todo lists/P23-todo.md` | 🔵 In lavorazione | Alta |
 
 ## TODO completati
 
 | Feature / Sprint | File specifico | Completato il |
 |---|---|---|
-| P23 — Bugfix BUG-01: persistenza PIN e flusso di inizializzazione AuthContext | `docs/3 - todo lists/P23-todo.md` | 2026-04-27 |
 | P22 — Bugfix BUG-04: loop infinito campo importo TransactionDialog | `docs/3 - todo lists/P22-todo.md` | 2026-04-27 |
 | P21 — GitHub Actions CI: pipeline minimale | `docs/3 - todo lists/P21-todo.md` | 2026-04-25 |
 | P20 — Lint Cleanup: azzeramento dei 56 warning ESLint | `docs/3 - todo lists/P20-todo.md` | 2026-04-25 |

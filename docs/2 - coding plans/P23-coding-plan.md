@@ -1,49 +1,49 @@
-# P23 — Coding Plan: Bugfix BUG-01 — persistenza PIN e flusso di inizializzazione in AuthContext
-
-> Documento operativo.  
-> Fase: Plan → Code  
-> Pacchetto: 23 — Decimo passo post-refactoring  
-> Design di riferimento: `docs/1 - projects/P23-auth-context-pin-persistence-bugfix-design.md`  
-> Bug di riferimento: BUG-01 — `docs/4 - reports/report-diagnostico-bug-pre-merge.md`  
-> Data: 2026-04-27
-
+﻿# P23 — Coding Plan: Bugfix BUG-01 — bootstrap asincrono AuthContext + mock KV allineato
+> Documento operativo.
+> Fase: Plan → Code
+> Pacchetto: 23 — Decimo passo post-refactoring (revisione definitiva)
+> Design di riferimento: `docs/1 - projects/P23-design-definitivo-pin-auth.md`
+> Report di riferimento: `docs/4 - reports/report-definitivo-pin-auth.md`
+> Data: 2026-04-28
 ---
-
 ## Note preliminari
-
 - Branch di lavoro: `refactoring-architettura`. Prerequisiti completati: P19, P20, P21, P22.
 - Questo passo è un **bugfix puro**: nessun refactoring, nessuna nuova feature.
-- ⚠️ **Perimetro stretto:** un solo file sorgente viene modificato: `src/context/AuthContext.tsx`. Nessun altro file sorgente, di configurazione, di documentazione o framework SCF deve essere toccato.
-- ⚠️ **Ordine obbligatorio delle 4 modifiche** (come da sezione 4 e 8.1 del design): import → `useKV` default → `hasInitialized` ref → `useEffect`. Questo ordine permette di eseguire `tsc --noEmit` dopo i primi 3 step e verificare l'assenza di errori prima di toccare il corpo dell'effect.
-- ⚠️ **Interfaccia `AuthContextValue` non modificata:** `globalPinHash: string | undefined` era già dichiarata in `AuthContextValue` — questo cambiamento non altera l'interfaccia pubblica.
-- ⚠️ **`handleGlobalPinSubmit`, `handlePrivatePinSubmit`, JSX del return di `AuthProvider`**: invariati — nessuna riga deve essere modificata.
-- ⚠️ **Nessun componente consumer toccato:** `src/components/AuthScreen.tsx`, `src/components/PinDialog.tsx`, `src/App.tsx` non devono essere modificati; beneficiano automaticamente della correzione.
-- ⚠️ Il file `src/lib/crypto.ts` (`hashPin`, `verifyPin`) **non viene modificato**.
-- ⚠️ I file di configurazione (`package.json`, `vite.config.ts`, `tsconfig.json`, `vitest.config.ts`, `eslint.config.js`) rimangono invariati.
-- ⚠️ I file framework SCF sotto `.github/` sono protetti da `framework-guard.instructions.md` e non devono essere toccati.
-
+- ⚠️ **Perimetro:** 4 file modificati nell'ordine obbligatorio indicato nella sezione 10.1 del design: (1) `src/test/setup.ts`, (2) `src/context/AuthContext.tsx`, (3) `src/test/smoke/01-app-renders.test.tsx`, (4) `src/test/smoke/test-utils.ts`.
+- ⚠️ **Ordine obbligatorio:** prima il mock, poi il context, poi i test. Questo ordine permette di eseguire `npm run test:run` dopo ogni passo e vedere i test avanzare verso il verde.
+- ⚠️ `handleGlobalPinSubmit`, `handlePrivatePinSubmit` e il JSX del return di `AuthProvider` rimangono invariati.
+- ⚠️ I componenti consumer (`AuthScreen.tsx`, `PinDialog.tsx`, `App.tsx`) non vengono toccati.
+- ⚠️ Il mock `useKV` in `setup.ts` (blocco `vi.mock('@github/spark/hooks', ...)`) non viene toccato: solo `sparkKvMock.get`, `sparkKvMock.set` e `sparkKvMock.keys` vengono aggiornati.
+- ⚠️ I file di test `02`, `03`, `04`, `05` non vengono modificati.
+- ⚠️ File di configurazione (`package.json`, `vite.config.ts`, `tsconfig.json`, `vitest.config.ts`, `eslint.config.js`) invariati.
+- ⚠️ File framework SCF sotto `.github/` protetti da `framework-guard.instructions.md`.
 ---
-
 **File modificati:**
-
 | Categoria | File | Tipo intervento |
 |---|---|---|
-| Context | `src/context/AuthContext.tsx` | Modifica (4 modifiche chirurgiche — vedi schema) |
-
+| Mock test | `src/test/setup.ts` | Modifica (aggiornamento `sparkKvMock.get`, `set`, `keys` — sezione 5 del design) |
+| Context | `src/context/AuthContext.tsx` | Modifica (6 modifiche chirurgiche M1–M6 — sezione 4 del design) |
+| Test smoke | `src/test/smoke/01-app-renders.test.tsx` | Modifica (conversione `async` + query `findBy*` — sezione 6.1 del design) |
+| Test utils | `src/test/smoke/test-utils.ts` | Modifica (prima query `authenticateWithPin` → `findByLabelText` — sezione 6.2 del design) |
 **File invariati:**
-
 | File / Area | Motivazione |
 |---|---|
-| `src/components/AuthScreen.tsx` | Consumer del context — legge `showPinDialog`, `isSetupMode`, `handleGlobalPinSubmit`; beneficia automaticamente della correzione |
-| `src/components/PinDialog.tsx` | Consumer del context — non coinvolto nella causa radice |
-| `src/App.tsx` | Guard `!isAuthenticated` — invariato |
-| `src/lib/crypto.ts` | `hashPin`, `verifyPin` — non coinvolti |
-| `src/context/AuthContext.tsx` — interfaccia | `AuthContextValue` invariata: nessun campo aggiunto/rimosso |
-| `src/context/AppDataContext.tsx` | Non coinvolto in BUG-01 |
-| `src/hooks/use-screen-reader.ts` | Già corretto in P22; non coinvolto in BUG-01 |
-| `src/hooks/use-app-shortcuts.ts` | Non coinvolto in BUG-01 |
-| `src/components/DashboardTab.tsx` | Non coinvolto in BUG-01 |
-| `src/components/TransactionDialog.tsx` | Già corretto in P22; non coinvolto in BUG-01 |
+| `src/context/AuthContext.tsx` — `handleGlobalPinSubmit` | Handler invariato: usa `globalPinHash` da `useKV`, già risolto al momento del submit utente |
+| `src/context/AuthContext.tsx` — `handlePrivatePinSubmit` | Handler invariato: flusso PIN privato non coinvolto in BUG-01 |
+| `src/context/AuthContext.tsx` — JSX return provider | Invariato: `isAuthReady` non viene aggiunto al `value` del provider |
+| `src/components/AuthScreen.tsx` | Consumer che legge `showPinDialog`/`isSetupMode` — beneficia automaticamente senza modifiche |
+| `src/components/PinDialog.tsx` | Renderizza su prop `open` — nessuna dipendenza dal ciclo di vita interno del context |
+| `src/App.tsx` | Ordine provider invariato |
+| `src/context/AppDataContext.tsx` | Non coinvolto |
+| `src/context/VisibleDataContext.tsx` | Non coinvolto |
+| `src/test/setup.ts` — mock `useKV` | Blocco `vi.mock('@github/spark/hooks', ...)` invariato |
+| `src/test/setup.ts` — `resetTestKvStore` | Invariato |
+| `src/test/setup.ts` — `seedTestKvStore` | Invariato |
+| `src/test/setup.ts` — blocco `afterEach` | Invariato |
+| `src/test/smoke/02-authentication.test.tsx` | Usa `authenticateWithPin` aggiornato — nessuna modifica diretta |
+| `src/test/smoke/03-dashboard-tab.test.tsx` | Usa `authenticateWithPin` aggiornato — nessuna modifica diretta |
+| `src/test/smoke/04-transactions-tab.test.tsx` | Usa `authenticateWithPin` aggiornato — nessuna modifica diretta |
+| `src/test/smoke/05-private-account.test.tsx` | Usa `authenticateWithPin` aggiornato — query post-auth su DOM stabile, nessuna modifica diretta |
 | `package.json` | Nessuna dipendenza aggiunta/rimossa |
 | `vite.config.ts` | Invariato |
 | `tsconfig.json` | Invariato |
@@ -57,277 +57,305 @@
 | `.github/skills/` | Protetto da `framework-guard.instructions.md` |
 | `.github/prompts/` | Protetto da `framework-guard.instructions.md` |
 | `.github/changelogs/` | Protetto da `framework-guard.instructions.md` |
-
 ---
-
 ## Schema riepilogativo delle operazioni
-
 ```
-Passo 23 — Bugfix BUG-01: persistenza PIN e flusso di inizializzazione AuthContext
+Passo 23 — Bugfix BUG-01: bootstrap asincrono AuthContext + mock KV allineato
 │
-├── Step 1: Modifica riga 1 — import React
-│   │
-│   ├── Aggiungere useRef all'import
-│   │   Prima:  import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-│   │   Dopo:   import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react'
-│   │
-│   └── (gate intermedio insieme a Step 2 e 3)
+├── Step 1: Modifica src/test/setup.ts — allineamento sparkKvMock al kvStore
+│   ├── sparkKvMock.get: da `async () => undefined` a lookup nel kvStore
+│   ├── sparkKvMock.set: da no-op a scrittura nel kvStore con cloneValue
+│   ├── sparkKvMock.keys: da `[]` costante a `Array.from(kvStore.keys())`
+│   └── Gate: npm run test:run (i test resteranno rossi, ma con errori diversi)
 │
-├── Step 2: Modifica riga 37 — default useKV
-│   │
-│   ├── Cambiare generic e default value
-│   │   Prima:  const [globalPinHash, setGlobalPinHash] = useKV<string>('global-pin-hash', '')
-│   │   Dopo:   const [globalPinHash, setGlobalPinHash] = useKV<string | undefined>('global-pin-hash', undefined)
-│   │
-│   └── (gate intermedio insieme a Step 1 e 3)
+├── Step 2: Modifica src/context/AuthContext.tsx — bootstrap asincrono
+│   ├── M1: rimuovere useRef dall'import React (riga 1)
+│   ├── M2: useKV<string | undefined> → useKV<string> con default ''  (riga 37)
+│   ├── M3: AuthContextValue — globalPinHash: string | undefined → string; setter prev? → prev
+│   ├── M4: rimuovere const hasInitialized = useRef(false) (riga 46)
+│   ├── M5: aggiungere const [isAuthReady, setIsAuthReady] = useState(false)
+│   ├── M6: sostituire integralmente l'useEffect di inizializzazione
+│   │       (deps [] → window.spark.kv.get one-shot con flag cancelled)
+│   └── Gate: tsc --noEmit → 0 errori
 │
-├── Step 3: Aggiunta dopo riga 44 — hasInitialized ref
-│   │
-│   ├── Aggiungere una riga prima di const screenReader = useScreenReader()
-│   │   const hasInitialized = useRef(false)
-│   │
-│   └── Gate intermedio: tsc --noEmit → 0 errori
+├── Step 3: Modifica src/test/smoke/01-app-renders.test.tsx
+│   ├── Firma it: () => { → async () => {
+│   ├── screen.getByRole('dialog') → await screen.findByRole('dialog')
+│   ├── screen.getByText(/Imposta PIN Globale/i) → await screen.findByText(...)
+│   └── screen.getByText(/Crea un PIN.../) → resta sincrono (invariato)
 │
-├── Step 4: Sostituzione righe 47–58 — useEffect di inizializzazione
-│   │
-│   ├── Rimuovere: commento // Intenzionale + eslint-disable + eslint-enable
-│   ├── Sostituire body e deps array dell'useEffect
-│   │   Prima deps:  []  (con eslint-disable)
-│   │   Dopo deps:   [globalPinHash]
-│   │   Nuovo body:
-│   │     if (globalPinHash === undefined) return
-│   │     if (hasInitialized.current) return
-│   │     hasInitialized.current = true
-│   │     if (!globalPinHash) { setIsSetupMode(true) }
-│   │     setShowPinDialog(true)
-│   │
-│   └── Gate: tsc --noEmit → 0 errori, npm run lint → 0 problems
+├── Step 4: Modifica src/test/smoke/test-utils.ts
+│   └── authenticateWithPin riga 1: getByLabelText → await findByLabelText
 │
-├── Step 5: Test locali
+├── Step 5: Verifica locale
+│   ├── tsc --noEmit → 0 errori
 │   ├── npm run lint → 0 problems
 │   ├── npm run build → exit 0
-│   └── npm run test:run → 5 passed
+│   └── npm run test:run → 0 failures
 │
-└── Step 6: Verifica manuale (4 scenari — sezione 8.5 del design)
-    ├── Scenario A: browser incognito → dialog "Imposta PIN Globale"
-    ├── Scenario B: F5 con PIN configurato → dialog "Inserisci PIN" (non setup)
-    ├── Scenario C: PIN errato → messaggio errore, dialog rimane aperto
-    └── Scenario D: navigazione app → dialog autenticazione non riappare
+└── Step 6: Verifica manuale (4 scenari — sezione 7 del design)
+    ├── Scenario 7.1: primo avvio reale → dialog "Imposta PIN Globale"
+    ├── Scenario 7.2: refresh F5 con PIN salvato → dialog "Inserisci PIN"
+    ├── Scenario 7.3: test KV vuoto → findByText("Imposta PIN Globale") passa
+    └── Scenario 7.4: test KV seedato → dialog "Inserisci PIN" corretto
 ```
-
 ---
-
 ## Ambiguità verificate
-
 Le seguenti ambiguità sono state **verificate sul repository reale** sul branch `refactoring-architettura` con lettura diretta dei file sorgente prima della stesura di questo piano.
-
 ---
-
-### AI1 — Causa radice: timing asincrono di `useKV` + deps `[]` nell'effect
-
-**Verifica eseguita:** lettura di `src/context/AuthContext.tsx` (righe 37 e 50–58)
-
-**Risultato:** al mount, `useKV('global-pin-hash', '')` restituisce in modo sincrono il default `''`, che è falsy. L'`useEffect` con array di dipendenze `[]` si esegue una sola volta al mount, valutando `!globalPinHash === true` — quindi imposta sempre `isSetupMode(true)`. Quando il KV store carica il valore reale in modo asincrono, l'effect non si riesegue. Il comportamento errato è deterministico e si manifesta ad ogni refresh.
-
+### AI1 — Causa radice: `useKV` svolge due ruoli incompatibili
+**Verifica eseguita:** lettura completa di `src/context/AuthContext.tsx` e `src/test/setup.ts`.
+**Risultato:** Il codice attuale di `AuthContext.tsx` usa `useKV<string | undefined>('global-pin-hash', undefined)` e si affida alla transizione `undefined → valore reale` per decidere il flusso setup/login. Questo funziona sulla piattaforma reale (il KV risolve in modo asincrono e scatena un re-render) ma fallisce sistematicamente nel mock: `useKV` in `setup.ts` è implementato con `useState` sincrono che restituisce il default `undefined` in modo definitivo, senza mai simulare la transizione asincrona. Il guard `if (globalPinHash === undefined) return` blocca il bootstrap per sempre nel test con KV vuoto: VARIANTE B sistematica.
 ---
-
-### AI2 — Soluzione scelta: Alternativa C (default `undefined` + `useRef` one-shot)
-
-**Verifica eseguita:** analisi delle tre alternative in sezione 3 del design (`P23-auth-context-pin-persistence-bugfix-design.md`)
-
-**Risultato:** l'Alternativa C risolve la causa radice senza modificare l'interfaccia pubblica né i componenti UI. Il default `undefined` fornisce una sentinella semanticamente corretta per "KV non ancora caricato"; il `useRef` garantisce che l'effect di inizializzazione sia eseguito esattamente una volta, anche quando `globalPinHash` cambia in seguito (es. creazione o cambio PIN).
-
+### AI2 — Perché i tentativi P23 e P23-fix non erano sufficienti
+**Verifica eseguita:** lettura del design definitivo (sezioni 2 e 3.1), tracciamento del flusso nei file sorgente attuali.
+**Risultato:** P23 aveva introdotto il guard `=== undefined` che è corretto per la piattaforma reale ma invalicabile nel mock sincrono. P23-fix aveva tentato di correggere con rami `import.meta.env.MODE === 'test'` nel codice di produzione, introducendo una doppia sorgente di verità (`useKV` + `window.spark.kv.get`) con race condition: la transizione `undefined → ''` artificiale consumava `hasInitialized` prima del valore reale, portando a VARIANTE A (setup mode su refresh). I due fix hanno oscillato tra le varianti perché la causa profonda — il disallineamento sincrono/asincrono tra mock e piattaforma — non era mai stata affrontata.
 ---
-
-### AI3 — Perché `useRef` e non `useState` per `hasInitialized`
-
-**Verifica eseguita:** analisi del comportamento di `useState` vs `useRef` in React per la logica one-shot richiesta
-
-**Risultato:** `useState(false)` causerebbe un re-render aggiuntivo nel momento in cui `setHasInitialized(true)` viene chiamato, con rischio di race condition. `useRef` è la scelta corretta per i flag di stato imperativo che non devono influenzare il ciclo di rendering: `hasInitialized.current = true` è una mutazione silenziosa che non innesca un re-render. Inoltre, a differenza di variabili `let` a livello di modulo, il `useRef` è scoped al singolo `AuthProvider` — garantendo isolamento tra istanze.
-
+### AI3 — Perché `window.spark.kv.get` direttamente e non `useKV`
+**Verifica eseguita:** analisi dell'API `window.spark.kv` in `src/test/setup.ts` (dove già esiste `sparkKvMock`) e in `src/components/DataManagement.tsx` (uso reale in produzione).
+**Risultato:** `window.spark.kv.get` è un'API contrattualmente asincrona (`async`): restituisce sempre una promessa, sia sulla piattaforma reale sia nel mock. Il mock `sparkKvMock.get` in `setup.ts` è già definito come `vi.fn(async () => undefined)`. Usare questa API nel bootstrap elimina la dipendenza dal ciclo di vita sincrono/asincrono interno di `useKV`: la promessa si risolve sempre in un microtask, React batcha i `setState` post-await, il dialog appare correttamente. Non è necessario modificare il mock di `useKV` (che resta sincrono) perché `useKV` non partecipa più alla decisione di bootstrap.
 ---
-
-### AI4 — `setIsSetupMode(false)` non necessario nel branch login
-
-**Verifica eseguita:** lettura della dichiarazione di stato in `AuthContext.tsx` riga 41
-
-**Risultato:** `isSetupMode` è dichiarato come `useState(false)` — il valore di default è già `false`. Nel branch login, non chiamare `setIsSetupMode` è corretto: il valore rimane al suo default senza necessità di un'assegnazione esplicita. Aggiungere `setIsSetupMode(false)` non sarebbe errato, ma sarebbe ridondante e introduce un'asimmetria visiva nel codice che potrebbe confondere i futuri manutentori.
-
+### AI4 — Perché `isAuthReady` è `useState` e non `useRef`
+**Verifica eseguita:** analisi dell'uso di `isAuthReady` nel design (sezione 3.3 e 4.4).
+**Risultato:** `isAuthReady` è dichiarato come `useState(false)` e non come `useRef(false)` per due motivi: (1) la modifica da `false` a `true` deve scatenare un re-render del provider per propagare lo stato ai consumer — un ref non scatenerebbe il re-render; (2) se in futuro si decidesse di esporre `isAuthReady` nell'interfaccia pubblica (es. per mostrare un indicatore di caricamento), la scelta di `useState` è già coerente con la filosofia React dei context. Per ora `isAuthReady` è interno e non viene aggiunto al `value` del provider (sezione 3.3 del design).
 ---
-
-### AI5 — Rimozione commenti e `eslint-disable/enable`
-
-**Verifica eseguita:** analisi dello scenario descritto nella sezione 3.1 del design (Alternativa A) e lettura dei commenti esistenti in `AuthContext.tsx`
-
-**Risultato:** il commento originale motivava `deps: []` con "Aggiungere `globalPinHash` ai deps riaprirebbe il dialog PIN dopo ogni cambio PIN." Con la soluzione adottata, questo problema è risolto dal `useRef`: anche se `globalPinHash` cambia dopo l'inizializzazione, `hasInitialized.current === true` produce un early return prima di qualsiasi effetto collaterale. L'array `[globalPinHash]` è ora **semanticamente corretto** per `react-hooks/exhaustive-deps` e i commenti di override non hanno più ragion d'essere.
-
+### AI5 — Perché il flag `cancelled` nell'IIFE asincrona
+**Verifica eseguita:** analisi del pattern di cleanup degli `useEffect` asincroni, sezione 10.2 del design.
+**Risultato:** Il flag `cancelled` protegge dallo scenario in cui `AuthProvider` viene smontato mentre la promessa `window.spark.kv.get` è ancora in attesa. Nelle sessioni utente normali questo non avviene (il provider vive per tutta la sessione), ma nei test con `cleanup()` aggressivo — come quelli basati sul blocco `afterEach` di `setup.ts` — il componente può essere smontato prima che la promessa risolva. Senza il flag, i `setState` chiamati su un componente già smontato generano un warning React che può oscurare altri errori nei test. Il costo è una variabile locale e un assignment nel cleanup: overhead trascurabile, protezione non negoziabile.
 ---
-
-### AI6 — `handleGlobalPinSubmit` già safe per il tipo `string | undefined`
-
-**Verifica eseguita:** lettura dell'handler in `AuthContext.tsx` (righe 62–90)
-
-**Risultato:** nell'handler, il ramo login contiene `const isValid = await verifyPin(pin, globalPinHash || '')`. Il fallback `|| ''` rende la chiamata safe anche quando `globalPinHash` è `undefined`. Non è necessaria alcuna modifica all'handler; il tipo `string | undefined` del nuovo generic `useKV<string | undefined>` è già gestito correttamente.
-
+### AI6 — Perché solo la prima query di `authenticateWithPin` diventa `findByLabelText`
+**Verifica eseguita:** lettura di `src/test/smoke/test-utils.ts` e analisi del comportamento del dialog post-apertura.
+**Risultato:** `authenticateWithPin` cerca il campo "Nuovo PIN" come prima azione. Con il bootstrap asincrono, il dialog non è nel DOM al momento sincrono dopo `renderApp()`. La prima query deve quindi diventare `await screen.findByLabelText(/Nuovo PIN/i)` — che aspetta il re-render post-promessa. Una volta che il dialog è aperto (garantito da `findByLabelText`), tutti i suoi elementi (`Conferma PIN`, il pulsante `Conferma`, l'intero form) sono presenti nello stesso render: le query successive `screen.getByLabelText(/Conferma PIN/i)` e `screen.getByRole('button', { name: /Conferma/i })` sono sincrone e corrette. Convertirle in `findBy*` sarebbe ridondante e potenzialmente più lento senza alcun beneficio.
 ---
-
 ## Piano operativo dettagliato
-
-### Step 1 — Aggiunta di `useRef` all'import React
-
-**File coinvolto:** `src/context/AuthContext.tsx`  
-**Riga interessata:** riga 1
-
-`useRef` è necessario per dichiarare `hasInitialized` (Step 3). L'aggiunta va inserita nella stessa istruzione di import, prima di `ReactNode`, rispettando l'ordine alfabetico degli hook React.
-
-**Prima (riga 1 — attuale):**
-```tsx
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+### Step 1 — Modifica `src/test/setup.ts`
+**File coinvolto:** `src/test/setup.ts`
+**Righe interessate:** blocco `sparkKvMock` (righe ~49–53)
+Il mock `sparkKvMock` attualmente definisce `get`, `set` e `keys` come no-op o costanti che ignorano completamente il `kvStore`. Il bootstrap di `AuthContext` chiama `await window.spark.kv.get('global-pin-hash')`: se il mock restituisce sempre `undefined`, i test con KV seedato (es. test 05) classificherebbero erroneamente la sessione come setup mode. Allineare i tre metodi al `kvStore` garantisce coerenza tra `useKV` e `window.spark.kv`.
+**Prima:**
+```ts
+const sparkKvMock = {
+  get: vi.fn(async () => undefined),
+  set: vi.fn(async () => undefined),
+  keys: vi.fn(async () => []),
+}
 ```
-
 **Dopo:**
+```ts
+const sparkKvMock = {
+  get: vi.fn(async (key: string) => {
+    if (kvStore.has(key)) return cloneValue(kvStore.get(key))
+    return undefined
+  }),
+  set: vi.fn(async (key: string, value: unknown) => {
+    kvStore.set(key, cloneValue(value))
+  }),
+  keys: vi.fn(async () => Array.from(kvStore.keys())),
+}
+```
+**Motivazione tecnica:** `window.spark.kv.get` e `useKV` leggono ora dalla stessa mappa `kvStore`. `seedTestKvStore` e `resetTestKvStore` continuano a gestire lo stato di partenza del `kvStore` prima del render, garantendo che sia `useKV` sia `window.spark.kv.get` vedano gli stessi valori.
+**Conferma:** il blocco `vi.mock('@github/spark/hooks', () => ({ useKV: ... }))` (righe 22–47) non viene toccato.
+---
+### Step 2 — Modifica `src/context/AuthContext.tsx`
+**File coinvolto:** `src/context/AuthContext.tsx`
+**Righe interessate:** riga 1 (import), righe 10–11 (interfaccia), riga 37 (useKV), riga 46 (hasInitialized), dopo riga 45 (isAuthReady), righe 49–57 (useEffect)
+#### Modifica M1 — Import React
+**Prima (riga 1):**
 ```tsx
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react'
 ```
-
-**Motivazione:** aggiungere all'import esistente senza creare un nuovo blocco di import. `ReactNode` rimane l'ultimo elemento prima della keyword `from` per coerenza con lo stile originale.
-
----
-
-### Step 2 — Modifica default di `useKV` per `globalPinHash`
-
-**File coinvolto:** `src/context/AuthContext.tsx`  
-**Riga interessata:** riga 37
-
-Il default `''` non permette di distinguere "KV non ancora caricato" da "KV caricato, nessun PIN configurato". Cambiare il generic e il default per usare `undefined` come sentinella semantica.
-
-**Prima (riga 37 — attuale):**
-```tsx
-  const [globalPinHash, setGlobalPinHash] = useKV<string>('global-pin-hash', '')
-```
-
 **Dopo:**
 ```tsx
-  const [globalPinHash, setGlobalPinHash] = useKV<string | undefined>('global-pin-hash', undefined)
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 ```
-
-**Motivazione:** con `undefined` come default, al mount `globalPinHash === undefined` è il segnale inequivocabile che il KV non ha ancora completato il caricamento. Il tipo `string | undefined` è già presente nella dichiarazione `AuthContextValue` (riga 10) — questa modifica è quindi coerente con l'interfaccia pubblica esistente senza alterarla.
-
-**Impatto su `handleGlobalPinSubmit`:** già safe — usa `globalPinHash || ''` nel ramo login (riga ~79). Nessuna modifica all'handler.
-
----
-
-### Step 3 — Aggiunta di `hasInitialized` ref
-
-**File coinvolto:** `src/context/AuthContext.tsx`  
-**Posizione:** dopo la riga 44 (ultima dichiarazione `useState`), prima della riga con `const screenReader = useScreenReader()`
-
-Il `useRef(false)` fornisce un flag one-shot che impedisce la riesecuzione del corpo dell'`useEffect` di inizializzazione dopo il suo primo completamento. A differenza di `useState`, la mutazione di `.current` non causa re-render.
-
-**Prima (righe 44–46 — attuale):**
+**Motivazione:** `useRef` è usato solo in due posizioni nel file: riga 1 (import) e riga 46 (dichiarazione `hasInitialized`). Poiché `hasInitialized` viene rimosso (M4), nessun'altra riga usa `useRef`. Verifica preventiva obbligatoria: cercare `useRef` nel file prima di rimuoverlo — deve comparire solo nelle due righe citate.
+#### Modifica M2 — Tipo `useKV` per `globalPinHash`
+**Prima (riga 37):**
 ```tsx
-  const [showPrivatePinDialog, setShowPrivatePinDialog] = useState(false)
-
-  const screenReader = useScreenReader()
+const [globalPinHash, setGlobalPinHash] = useKV<string | undefined>('global-pin-hash', undefined)
 ```
-
 **Dopo:**
 ```tsx
-  const [showPrivatePinDialog, setShowPrivatePinDialog] = useState(false)
-
+const [globalPinHash, setGlobalPinHash] = useKV<string>('global-pin-hash', '')
+```
+**Motivazione:** `undefined` non ha più il ruolo di sentinella di loading. Il tipo torna al più semplice `string` con default `''`.
+#### Modifica M3 — Interfaccia `AuthContextValue`
+**Prima (righe 10–11):**
+```tsx
+  globalPinHash: string | undefined
+  setGlobalPinHash: (value: string | ((prev?: string) => string)) => void
+```
+**Dopo:**
+```tsx
+  globalPinHash: string
+  setGlobalPinHash: (value: string | ((prev: string) => string)) => void
+```
+**Motivazione:** coerenza con il cambio di tipo in M2. Il `?` opzionale su `prev` viene rimosso — il default `''` garantisce che `prev` sia sempre una stringa.
+#### Modifica M4 — Rimozione `hasInitialized`
+**Prima (riga 46):**
+```tsx
   const hasInitialized = useRef(false)
-  const screenReader = useScreenReader()
 ```
-
-**Motivazione:** posizionare `hasInitialized` prima di `screenReader` mantiene il raggruppamento visivo "stato → ref → hook derivati". Il `useRef` non aggiunge dipendenze all'array dell'`useEffect`.
-
-**Gate intermedio:** dopo i tre step 1–3, eseguire `tsc --noEmit` e verificare 0 errori prima di procedere con la modifica più delicata (Step 4).
-
----
-
-### Step 4 — Riscrittura dell'`useEffect` di inizializzazione
-
-**File coinvolto:** `src/context/AuthContext.tsx`  
-**Righe interessate:** righe 47–58 (commento + eslint-disable + useEffect body + eslint-enable)
-
-Questo è il blocco centrale del bugfix. Il vecchio blocco viene sostituito integralmente: si rimuovono le direttive eslint e i commenti, si riscrive il body e si corregge l'array di dipendenze.
-
-**Prima (righe 47–58 — attuale — CODICE BUGGY):**
+**Dopo:** la riga viene eliminata interamente.
+**Motivazione:** il bootstrap one-shot è garantito da `deps=[]` nell'useEffect. Il ref `hasInitialized` era un workaround per impedire la riesecuzione del vecchio effect con `deps=[globalPinHash]` — non più necessario.
+#### Modifica M5 — Aggiunta `isAuthReady`
+Dopo l'ultima riga del blocco degli stati (attuale riga 45 `const [showPrivatePinDialog, setShowPrivatePinDialog] = useState(false)`), aggiungere:
 ```tsx
-  // Intenzionale: questo effect deve girare solo al mount per scegliere setup o login iniziale.
-  // Aggiungere globalPinHash ai deps riaprirebbe il dialog PIN dopo ogni cambio PIN.
-  /* eslint-disable react-hooks/exhaustive-deps */
-  useEffect(() => {
-    if (!globalPinHash) {
-      setIsSetupMode(true)
-      setShowPinDialog(true)
-    } else {
-      setShowPinDialog(true)
-    }
-  }, [])
-  /* eslint-enable react-hooks/exhaustive-deps */
+  const [isAuthReady, setIsAuthReady] = useState(false)
 ```
-
+**Motivazione:** stato interno che segnala il completamento del bootstrap. Non viene aggiunto al `value` del provider — rimane privato.
+#### Modifica M6 — Sostituzione integrale del `useEffect` di inizializzazione
+**Prima (righe 49–57):**
+```tsx
+useEffect(() => {
+  if (globalPinHash === undefined) return
+  if (hasInitialized.current) return
+  hasInitialized.current = true
+  if (!globalPinHash) {
+    setIsSetupMode(true)
+  }
+  setShowPinDialog(true)
+}, [globalPinHash])
+```
 **Dopo:**
 ```tsx
-  useEffect(() => {
-    if (globalPinHash === undefined) return
-    if (hasInitialized.current) return
-    hasInitialized.current = true
-    if (!globalPinHash) {
+useEffect(() => {
+  let cancelled = false
+  ;(async () => {
+    const storedHash = (await window.spark.kv.get('global-pin-hash')) as string | undefined
+    if (cancelled) return
+    if (!storedHash) {
       setIsSetupMode(true)
     }
     setShowPinDialog(true)
-  }, [globalPinHash])
+    setIsAuthReady(true)
+  })()
+  return () => { cancelled = true }
+}, [])
 ```
-
-**Motivazione tecnica, riga per riga:**
-
-| Riga | Ruolo |
-|---|---|
-| `if (globalPinHash === undefined) return` | Guard di caricamento: esce silenziosamente se il KV non ha ancora restituito il valore reale. Evita l'esecuzione con il default sincrono. |
-| `if (hasInitialized.current) return` | Guard one-shot: blocca le riesecuzioni successive (es. dopo cambio PIN). La prima esecuzione con valore definito è l'unica che conta. |
-| `hasInitialized.current = true` | Segna l'inizializzazione come completata. Mutazione silenziosa (nessun re-render). |
-| `if (!globalPinHash) { setIsSetupMode(true) }` | Solo nel caso "nessun PIN configurato" si imposta la modalità setup. In tutti gli altri casi, `isSetupMode` rimane `false` (il suo default). |
-| `setShowPinDialog(true)` | Chiamato fuori dall'if/else: il dialog appare in entrambe le modalità (setup e login). Elimina la duplicazione presente nel codice originale. |
-| `}, [globalPinHash])` | Array di dipendenze corretto: l'effect si riesegue ogni volta che `globalPinHash` cambia, ma le guard interne ne controllano l'idempotenza. |
-
-**Gate finale:** `tsc --noEmit` → 0 errori, poi `npm run lint` → 0 problems.
-
+**Motivazione tecnica:** `deps=[]` garantisce l'esecuzione one-shot al mount. `window.spark.kv.get` è contrattualmente asincrona — sia sulla piattaforma reale sia nel mock aggiornato. La IIFE async permette l'uso di `await` senza rendere l'effect direttamente `async` (pattern non supportato da React). `cancelled` protegge da setState su componente smontato. La sequenza `setIsSetupMode → setShowPinDialog → setIsAuthReady` è atomica in un singolo microtask: React batcha i tre setState in un unico re-render.
+**Gate intermedio:** dopo questa modifica, eseguire `tsc --noEmit` → 0 errori prima di procedere allo Step 3.
 ---
-
+### Step 3 — Modifica `src/test/smoke/01-app-renders.test.tsx`
+**File coinvolto:** `src/test/smoke/01-app-renders.test.tsx`
+**Righe interessate:** firma `it`, due query `screen.getBy*`
+Con il bootstrap asincrono, il dialog appare in un re-render successivo alla risoluzione della promessa — non nel render iniziale sincrono. Le query `getByRole`/`getByText` falliscono perché cercano il dialog prima che esista nel DOM.
+**Prima:**
+```tsx
+import { screen } from '@testing-library/react'
+import { renderApp } from './test-utils'
+describe('01 — App renders', () => {
+  it('dovrebbe mostrare la schermata di autenticazione al mount', () => {
+    renderApp()
+    // Radix Dialog nasconde il background con aria-hidden; verifichiamo
+    // l'esistenza del contenitore tramite querySelector diretto
+    const authMain = document.querySelector('[role="main"][aria-label*="Schermata di autenticazione"]')
+    expect(authMain).not.toBeNull()
+    screen.getByRole('dialog')
+    screen.getByText(/Imposta PIN Globale/i)
+    screen.getByText(/Crea un PIN per proteggere l'applicazione/i)
+  })
+})
+```
+**Dopo:**
+```tsx
+import { screen } from '@testing-library/react'
+import { renderApp } from './test-utils'
+describe('01 — App renders', () => {
+  it('dovrebbe mostrare la schermata di autenticazione al mount', async () => {
+    renderApp()
+    // Radix Dialog nasconde il background con aria-hidden; verifichiamo
+    // l'esistenza del contenitore tramite querySelector diretto
+    const authMain = document.querySelector('[role="main"][aria-label*="Schermata di autenticazione"]')
+    expect(authMain).not.toBeNull()
+    await screen.findByRole('dialog')
+    await screen.findByText(/Imposta PIN Globale/i)
+    screen.getByText(/Crea un PIN per proteggere l'applicazione/i)
+  })
+})
+```
+**Motivazione riga per riga:**
+| Modifica | Motivazione |
+|---|---|
+| `() => {` → `async () => {` | Le query `findBy*` restituiscono promise — la funzione test deve essere async |
+| `getByRole('dialog')` → `await findByRole('dialog')` | Il dialog appare nel re-render post-promessa, non nel render iniziale |
+| `getByText(/Imposta PIN Globale/i)` → `await findByText(...)` | Stesso motivo — il titolo del dialog è nel re-render post-promessa |
+| `getByText(/Crea un PIN.../)` → invariato | Il testo appare nello stesso render del titolo — `getByText` è corretto dopo `findByText` |
+| `document.querySelector(...)` → invariato | `<main role="main">` è renderizzato da `AuthScreen` sincrono al mount |
+---
+### Step 4 — Modifica `src/test/smoke/test-utils.ts`
+**File coinvolto:** `src/test/smoke/test-utils.ts`
+**Righe interessate:** prima riga del corpo di `authenticateWithPin`
+**Prima:**
+```ts
+export async function authenticateWithPin(user: ReturnType<typeof userEvent.setup>, pin = '1234') {
+  const pinField = screen.getByLabelText(/Nuovo PIN/i)
+  await user.type(pinField, pin)
+  const confirmField = screen.getByLabelText(/Conferma PIN/i)
+  await user.type(confirmField, pin)
+  const confirmButton = screen.getByRole('button', { name: /Conferma/i })
+  await user.click(confirmButton)
+  await screen.findByText(/I Tuoi Conti/i)
+}
+```
+**Dopo:**
+```ts
+export async function authenticateWithPin(user: ReturnType<typeof userEvent.setup>, pin = '1234') {
+  const pinField = await screen.findByLabelText(/Nuovo PIN/i)
+  await user.type(pinField, pin)
+  const confirmField = screen.getByLabelText(/Conferma PIN/i)
+  await user.type(confirmField, pin)
+  const confirmButton = screen.getByRole('button', { name: /Conferma/i })
+  await user.click(confirmButton)
+  await screen.findByText(/I Tuoi Conti/i)
+}
+```
+**Motivazione:** `getByLabelText(/Nuovo PIN/i)` fallisce perché il dialog non è ancora nel DOM al momento del primo render. `findByLabelText` attende il re-render post-promessa. Le query successive (`getByLabelText(/Conferma PIN/i)`, `getByRole(...)`) restano sincrone: una volta che il dialog è aperto, tutti i suoi elementi sono presenti nello stesso render.
+**Impatto a cascata (nessuna modifica diretta necessaria):** i test `02`, `03`, `04`, `05` usano `authenticateWithPin` e beneficiano automaticamente di questa correzione.
+---
 ## Tabella dei rischi
-
 | Codice | Scenario | Probabilità | Impatto | Mitigazione |
 |---|---|---|---|---|
-| R1 | Default `undefined` introduce incompatibilità di tipo con usages di `globalPinHash` che assumono `string` | Bassa — `string \| undefined` già dichiarato in `AuthContextValue` e l'handler usa `globalPinHash \|\| ''` | Alto — errore TypeScript in compilazione | Gate `tsc --noEmit` dopo Step 1–3 (prima di modificare l'`useEffect`) |
-| R2 | `hasInitialized.current` non resettato al remount | Non applicabile — i `useRef` vengono reinizializzati al mount; `hasInitialized.current` riparte da `false` ad ogni fresh load / F5 | — | Per conferma: verificare Scenario B della verifica manuale (F5 con PIN configurato) |
-| R3 | Regressione flusso cambio PIN: dopo setup, `setGlobalPinHash(hash)` aggiorna `globalPinHash` → effect rieseguito → dialog riappare inaspettatamente | Bassa — bloccata da `hasInitialized.current === true` che produce early return | Alto — dialog riaperto inaspettatamente dopo la creazione del PIN | Verificare Scenario D della verifica manuale (navigazione senza ricomparsa del dialog) |
-| R4 | Commento eslint-disable non rimosso: l'array `[globalPinHash]` viene ignorato e il comportamento del linter oscura la correzione | Bassa — la sostituzione integrale del blocco include la rimozione dei commenti | Medio — il warning linter rimane silente ma la logica è corretta | Gate `npm run lint` → 0 problems; cercare manualmente `eslint-disable react-hooks/exhaustive-deps` nel file modificato |
-
+| R1 | Rimozione `useRef` dall'import mentre altre righe del file lo usano ancora | Bassa — verifica preventiva obbligatoria descritta in M1 | Alto — errore TypeScript immediato | Cercare `useRef` nel file prima della rimozione; il gate `tsc --noEmit` lo intercetta comunque |
+| R2 | `sparkKvMock.set` non aggiornato → `window.spark.kv.set` nel bootstrap non persiste nel `kvStore` → test 05 (PIN privato con `initialKv`) fallisce | Bassa — le tre modifiche al mock sono nel medesimo blocco | Alto — test 05 rompe | Applicare le tre modifiche `get/set/keys` insieme in un unico passo; gate `npm run test:run` |
+| R3 | `isAuthReady` aggiunto al `value` del provider per errore → esposto ai consumer | Bassa — il design lo esclude esplicitamente (sezione 3.3) | Medio — interfaccia allargata non intenzionalmente | Verificare CA-A08: `isAuthReady` non compare nel blocco `value={{ ... }}` del provider |
+| R4 | Query sincrone nei test `02–05` diventano instabili perché `authenticateWithPin` non attende correttamente il dialog | Molto bassa — `findByLabelText` in `test-utils.ts` garantisce l'attesa; le query post-auth lavorano su DOM stabile | Alto — test a cascata rossi | Gate `npm run test:run` → 0 failures su tutti e 5 i test |
 ---
-
 ## Criteri di uscita — Definition of Done
-
-- [ ] **CA-01** — `useRef` è importato da `react` nella riga 1 (insieme a `createContext`, `useContext`, `useState`, `useEffect`, `ReactNode`)
-- [ ] **CA-02** — `useKV` per `global-pin-hash` è dichiarato come `useKV<string | undefined>('global-pin-hash', undefined)` — default `undefined`, non `''`
-- [ ] **CA-03** — `const hasInitialized = useRef(false)` è presente nel body di `AuthProvider`, prima dell'`useEffect` di inizializzazione
-- [ ] **CA-04** — Il commento `// Intenzionale:` (2 righe) e le direttive `/* eslint-disable/enable react-hooks/exhaustive-deps */` sono stati rimossi
-- [ ] **CA-05** — L'array di dipendenze dell'`useEffect` di inizializzazione è `[globalPinHash]` (non `[]`)
-- [ ] **CA-06** — La prima istruzione dell'`useEffect` è `if (globalPinHash === undefined) return`
-- [ ] **CA-07** — La seconda istruzione dell'`useEffect` è `if (hasInitialized.current) return`
-- [ ] **CA-08** — La terza istruzione dell'`useEffect` è `hasInitialized.current = true`
-- [ ] **CA-09** — `setIsSetupMode(true)` è chiamato solo nel branch `if (!globalPinHash)`; nessun `setIsSetupMode(false)` nel branch login
-- [ ] **CA-10** — `setShowPinDialog(true)` è chiamato una sola volta, fuori dall'if/else, come ultima istruzione dell'`useEffect`
-- [ ] **CA-11** — L'interfaccia `AuthContextValue` è identica all'originale — nessun campo aggiunto, rimosso o modificato nel tipo
-- [ ] **CA-12** — `handleGlobalPinSubmit` è identica all'originale — nessuna riga modificata
-- [ ] **CA-13** — `handlePrivatePinSubmit` è identica all'originale — nessuna riga modificata
-- [ ] **CA-14** — Il JSX del return di `AuthProvider` è identico all'originale
-- [ ] **CA-15** — Nessun altro file nel repository è stato modificato
-- [ ] **CA-16** — `tsc --noEmit` → 0 errori dopo la modifica
-- [ ] **CA-17** — `npm run lint` → 0 problems (nessun nuovo warning, in particolare nessun `react-hooks/exhaustive-deps`)
-- [ ] **CA-18** — Test manuale: F5 con PIN configurato → appare il dialog "Inserisci PIN" (non "Imposta PIN Globale")
-- [ ] **Gate lint** — `npm run lint` → `0 problems (0 errors, 0 warnings)` (invariato rispetto a P22)
+### Blocco A — Modifiche a `AuthContext.tsx`
+- [ ] **CA-A01** — `useRef` è rimosso dall'import React (riga 1)
+- [ ] **CA-A02** — `useKV<string>('global-pin-hash', '')` — il tipo generico è `string`, il default è `''`
+- [ ] **CA-A03** — `useKV<string>('private-pin-hash', '')` — invariato rispetto all'originale
+- [ ] **CA-A04** — `AuthContextValue.globalPinHash` è tipizzato `string` (non `string | undefined`)
+- [ ] **CA-A05** — Il setter `setGlobalPinHash` ha tipo `(value: string | ((prev: string) => string)) => void` (nessun `?` su `prev`)
+- [ ] **CA-A06** — `const hasInitialized = useRef(false)` non compare più nel file
+- [ ] **CA-A07** — `const [isAuthReady, setIsAuthReady] = useState(false)` è presente tra le dichiarazioni di stato
+- [ ] **CA-A08** — `isAuthReady` **non** è presente nel `value` passato al `<AuthContext.Provider>`
+- [ ] **CA-A09** — Il `useEffect` di bootstrap ha `deps=[]` (array vuoto, non `[globalPinHash]`)
+- [ ] **CA-A10** — Il `useEffect` usa `window.spark.kv.get('global-pin-hash')` — non `globalPinHash` da React state
+- [ ] **CA-A11** — Il `useEffect` contiene il flag `cancelled` e il cleanup `return () => { cancelled = true }`
+- [ ] **CA-A12** — La sequenza di `setState` nell'effect è: `setIsSetupMode(true)` (condizionale), poi `setShowPinDialog(true)`, poi `setIsAuthReady(true)`
+- [ ] **CA-A13** — `handleGlobalPinSubmit` e `handlePrivatePinSubmit` sono identici all'originale
+- [ ] **CA-A14** — Il JSX del provider è identico all'originale
+### Blocco B — Modifiche a `setup.ts`
+- [ ] **CB-01** — `sparkKvMock.get` legge dal `kvStore` — non restituisce `undefined` incondizionatamente
+- [ ] **CB-02** — `sparkKvMock.get` restituisce `cloneValue(kvStore.get(key))` se la chiave esiste, `undefined` altrimenti
+- [ ] **CB-03** — `sparkKvMock.set` scrive nel `kvStore` con `cloneValue`
+- [ ] **CB-04** — `sparkKvMock.keys` restituisce `Array.from(kvStore.keys())`
+- [ ] **CB-05** — Il blocco `vi.mock('@github/spark/hooks', () => ({ useKV: ... }))` è identico all'originale — nessuna riga toccata
+- [ ] **CB-06** — `resetTestKvStore`, `seedTestKvStore` e il blocco `afterEach` sono identici all'originale
+### Blocco C — Modifiche ai test e validazione finale
+- [ ] **CC-01** — La firma di `it(...)` in `01-app-renders.test.tsx` è `async () => {`
+- [ ] **CC-02** — `screen.getByRole('dialog')` è sostituito con `await screen.findByRole('dialog')`
+- [ ] **CC-03** — `screen.getByText(/Imposta PIN Globale/i)` è sostituito con `await screen.findByText(/Imposta PIN Globale/i)`
+- [ ] **CC-04** — `screen.getByText(/Crea un PIN per proteggere l'applicazione/i)` resta sincrono (nessuna modifica)
+- [ ] **CC-05** — In `test-utils.ts`, la prima riga di `authenticateWithPin` è `await screen.findByLabelText(/Nuovo PIN/i)`
+- [ ] **CC-06** — Le righe successive di `authenticateWithPin` (`getByLabelText(/Conferma PIN/i)`, `getByRole(...)`) restano sincrone
+- [ ] **CC-07** — I file `02`, `03`, `04`, `05` non sono stati modificati
+- [ ] **CC-08** — `tsc --noEmit` → 0 errori
+- [ ] **CC-09** — `npm run lint` → 0 problemi sui file modificati
+- [ ] **CC-10** — `npm run test:run` → 0 failures
+- [ ] **Gate lint** — `npm run lint` → `0 problems (0 errors, 0 warnings)`
 - [ ] **Gate build** — `npm run build` → exit 0
-- [ ] **Gate test** — `npm run test:run` → `5 passed`
-- [ ] **Gate manuale** — 4 scenari della sezione 8.5 del design verificati (A: primo avvio; B: F5 con PIN; C: PIN errato; D: navigazione senza ricomparsa dialog)
+- [ ] **Gate test** — `npm run test:run` → 0 failures
+- [ ] **Gate manuale** — 4 scenari sezione 7 del design verificati
