@@ -169,6 +169,7 @@
 | `mostra_saldo_homepage` | BOOLEAN | ✅ | TRUE | Privacy in luoghi pubblici |
 | `pin_hash` | TEXT | ❌ | — | PIN globale cifrato |
 | `pin_privato_hash` | TEXT | ❌ | — | PIN conti privati cifrato |
+| `preferences` | `jsonb` | No (nullable) | `null` | Preferenze utente serializzate: display, audio, screen reader, categorie visibili. Sostituisce 28+ chiavi `useKV`. Struttura interna definita in P29. |
 | `created_at` | TIMESTAMPTZ | ✅ | ora attuale | — |
 | `updated_at` | TIMESTAMPTZ | ✅ | ora attuale | — |
 

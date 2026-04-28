@@ -235,6 +235,9 @@ validazione e le query dirette hanno senso.
 | `nome_visualizzato` | `TEXT` | `NULL` | SÌ | Nome mostrato nell'header. Impostato in onboarding. |
 | `valuta_default` | `TEXT` | `'EUR'` | NO | Valuta per visualizzazione importi. |
 | `visible_categories` | `TEXT[]` | `ARRAY[]::TEXT[]` | NO | ID delle categorie conto visibili nella sidebar. |
+
+> **⚠ Errata — decisione superata da P29:** La colonna separata `visible_categories` (TEXT[]) descritta in questa sezione **non viene creata** nel database. Per decisione architetturale presa in P29 (§ 4 — Struttura `preferences` JSONB), le categorie visibili sono salvate come `preferences.visible_category_ids` all'interno del campo `preferences jsonb` della stessa tabella. Questa scelta è stata adottata per coerenza con tutte le altre preferenze utente e per minimizzare le ALTER TABLE future. P29 è il documento autoritativo su questo punto.
+
 | `pin_privato_hash` | `TEXT` | `NULL` | SÌ | Hash bcrypt/argon2 del PIN privato. NULL = nessun PIN privato impostato. |
 | `preferences` | `JSONB` | `'{}'::jsonb` | NO | Tutte le 24 preferenze UI/A11y/Audio/TalkBack. Chiavi in snake_case (vedi Opzione 2 §3.1). |
 | `created_at` | `TIMESTAMPTZ` | `now()` | NO | Creazione automatica. |
