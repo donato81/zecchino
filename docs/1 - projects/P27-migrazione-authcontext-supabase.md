@@ -629,6 +629,11 @@ indipendentemente dal timer.
 - [ ] Nessuna contraddizione con P24, P25, P26.
 - [ ] Tutti i link a file `src/` usano path relativi (`../../src/...`).
 - [ ] Nessun frammento di codice TypeScript o JSX eseguibile in tutto il documento.
+- [ ] `SecuritySettings.tsx` non contiene più alcuna chiamata `useKV`
+      per `global-pin-hash`: il `useKV` parallelo ad `AuthContext` è stato
+      rimosso contestualmente alla rimozione della sezione "Cambio PIN
+      globale" (deduplicazione esplicita — vedi MINORE 6 del report di
+      verifica coerenza).
 
 ---
 

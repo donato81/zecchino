@@ -200,7 +200,7 @@ Contenuto tipico:
 
 **Motivazione:**
 
-L'app gestisce già oggi **24 preferenze** che potrebbero crescere con
+L'app gestisce già oggi **28 preferenze** (12 `display-*` + 12 `sr-*` + 2 `audio-*` + 2 `talkback-*` — dettaglio in P31 §3) che potrebbero crescere con
 funzionalità future (es. impostazioni temi, shortcut personalizzati,
 preferenze di notifica). Con l'Opzione 1, ogni nuova preferenza richiede
 un `ALTER TABLE` e una migrazione coordinata su tutti gli ambienti, con
@@ -239,7 +239,7 @@ validazione e le query dirette hanno senso.
 > **⚠ Errata — decisione superata da P29:** La colonna separata `visible_categories` (TEXT[]) descritta in questa sezione **non viene creata** nel database. Per decisione architetturale presa in P29 (§ 4 — Struttura `preferences` JSONB), le categorie visibili sono salvate come `preferences.visible_category_ids` all'interno del campo `preferences jsonb` della stessa tabella. Questa scelta è stata adottata per coerenza con tutte le altre preferenze utente e per minimizzare le ALTER TABLE future. P29 è il documento autoritativo su questo punto.
 
 | `pin_privato_hash` | `TEXT` | `NULL` | SÌ | Hash bcrypt/argon2 del PIN privato. NULL = nessun PIN privato impostato. |
-| `preferences` | `JSONB` | `'{}'::jsonb` | NO | Tutte le 24 preferenze UI/A11y/Audio/TalkBack. Chiavi in snake_case (vedi Opzione 2 §3.1). |
+| `preferences` | `JSONB` | `'{}'::jsonb` | NO | Tutte le 28 preferenze UI/A11y/Audio/TalkBack. Chiavi in snake_case (vedi Opzione 2 §3.1). |
 | `created_at` | `TIMESTAMPTZ` | `now()` | NO | Creazione automatica. |
 | `updated_at` | `TIMESTAMPTZ` | `now()` | NO | Aggiornato da trigger `set_updated_at`. |
 
@@ -466,7 +466,7 @@ FOR EACH ROW EXECUTE FUNCTION propagate_cifrato_on_conto_update();
 - [ ] La Decisione B ha una scelta **DEFINITIVA** dichiarata (Opzione 1 — Trigger).
 - [ ] Lo schema §3.4 è completo: ogni colonna ha nome, tipo, default, nullable
       e nota. Nessuna colonna è marcata "da definire".
-- [ ] Il JSONB default (§3.4) include tutte le 24 chiavi Spark derivate da
+- [ ] Il JSONB default (§3.4) include tutte le 28 chiavi di preferenza (dettaglio completo in P31 §3 — 12 `display-*`, 12 `sr-*`, 2 `audio-*`, 2 `talkback-*`) derivate da
       [use-display-preferences.ts](../../src/hooks/use-display-preferences.ts),
       [ScreenReaderSettings.tsx](../../src/components/ScreenReaderSettings.tsx),
       [AudioSettings.tsx](../../src/components/AudioSettings.tsx) e

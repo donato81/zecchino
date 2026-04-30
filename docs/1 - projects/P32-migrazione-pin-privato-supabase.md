@@ -543,6 +543,11 @@ da `src/test/setup.ts`.
 - [ ] Nessuna contraddizione con P24–P31 rilevata.
 - [ ] Tutti i link `src/` usano path relativi (`../../src/...`).
 - [ ] Nessun frammento di codice TypeScript, JSX o SQL eseguibile nel documento.
+- [ ] `SecuritySettings.tsx` non contiene più alcuna chiamata `useKV`
+      per `private-pin-hash`: il `useKV` parallelo ad `AuthContext` è stato
+      rimosso contestualmente alla riscrittura della sezione "Cambio PIN
+      privato" (deduplicazione esplicita — vedi MINORE 6 del report di
+      verifica coerenza).
 
 ---
 

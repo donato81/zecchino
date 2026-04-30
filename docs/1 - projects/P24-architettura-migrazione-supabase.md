@@ -63,9 +63,9 @@ ciclo P23) è il **sintomo**, non la causa. La causa reale è strutturale:
 - **45 chiamate `useKV`** nei sorgenti applicativi.
 - **8 chiamate dirette `window.spark.kv.*`** (in `AuthContext`,
   `DataManagement`, `sound-system`).
-- **31 chiavi distinte** suddivise in **3 famiglie**:
+- **35 chiavi distinte** suddivise in **3 famiglie**:
   1. **Dominio** (5 chiavi) — mappano 1:1 sulle 5 tabelle ereditate.
-  2. **Preferenze UI/A11y/Audio** (24 chiavi) — confluiscono in
+  2. **Preferenze UI/A11y/Audio** (28 chiavi — 12 `display-*` + 12 `sr-*` + 2 `audio-*` + 2 `talkback-*`) — confluiscono in
      `impostazioni_utente`.
   3. **Sicurezza** (2 chiavi) — `global-pin-hash`, `private-pin-hash`.
 
@@ -185,6 +185,13 @@ ciclo P23) è il **sintomo**, non la causa. La causa reale è strutturale:
 - **Storage**: hash del PIN privato salvato nella colonna
   `impostazioni_utente.pin_privato_hash` su Supabase. Sincronizzato tra
   dispositivi.
+
+  > **Nota di naming**: il nome canonico del campo è `pin_privato_hash`
+  > (snake_case italiano, coerente con la convenzione dello schema DB).
+  > Il report di analisi originale lo citava come `private_account_pin_hash`
+  > in via esemplificativa. Tutti i design operativi P25–P36 usano
+  > `pin_privato_hash` come riferimento autoritativo.
+
 - **Algoritmo di hashing**: l'attuale **SHA-256 puro**
   ([src/lib/crypto.ts](../../src/lib/crypto.ts)) è **inadeguato** per un
   hash che transita via rete. Va sostituito con **bcrypt o argon2** lato
@@ -253,8 +260,8 @@ ciclo P23) è il **sintomo**, non la causa. La causa reale è strutturale:
 
 ### 4.7 Preferenze UI
 
-- **Scelta**: tutte le 24 chiavi (`display-*`, `sr-*`, `audio-*`,
-  `talkback-*`) + `visible-categories` confluiscono in `impostazioni_utente`.
+- **Scelta**: tutte le 28 chiavi (`display-*`, `sr-*`, `audio-*`,
+  `talkback-*` — 12 + 12 + 2 + 2 — dettaglio in P31 §3) + `visible-categories` confluiscono in `impostazioni_utente`.
   `dismissed-budget-alerts` confluisce invece in `notifiche`
   (vedi §4.8 e §5.1).
 - **Strategia di accesso**: un **unico hook `useUserSettings()`** che:
@@ -312,7 +319,7 @@ modifiche allo schema.
 | 6 | `private-pin-hash` | `impostazioni_utente.pin_privato_hash` | Hash con bcrypt/argon2, vedi §4.3. |
 | 6 | `visible-categories` | `impostazioni_utente.visible_categories` (text[] o JSONB) | Schema esatto da definire. |
 | 6 | `dismissed-budget-alerts` | `notifiche` | Ogni avviso budget genera una riga in `notifiche` con tipo `budget_soglia` o `budget_superato` e campo `letta = FALSE`. Quando l'utente lo chiude, si imposta `letta = TRUE`. L'app non mostra nuovamente avvisi con `letta = TRUE` per la stessa entità. Nessuna modifica allo schema della tabella `notifiche` necessaria: i campi `tipo`, `letta`, `entita_tipo`, `entita_id` coprono già questo caso. |
-| 6 | 24 chiavi UI/A11y/Audio | `impostazioni_utente.*` o `impostazioni_utente.preferences` JSONB | Schema esatto da definire. |
+| 6 | 28 chiavi UI/A11y/Audio | `impostazioni_utente.*` o `impostazioni_utente.preferences` JSONB | Schema esatto da definire. |
 | — | `global-pin-hash` | `auth.users` (gestito da Supabase Auth) | Eliminato dallo storage applicativo. |
 | — | `budget-percentages` | **non migrato** | Resta `useState` client-side (cache di sessione). |
 
@@ -451,6 +458,7 @@ sono **bloccanti** per tutto ciò che segue.
 - **Punti aperti**:
   - 24 colonne tipizzate vs `preferences JSONB`.
   - Trigger vs `GENERATED ALWAYS AS` per `cifrato`.
+- **Design operativo**: P25
 
 ### Blocco 2 — Strato di accesso dati Supabase
 
@@ -467,6 +475,7 @@ sono **bloccanti** per tutto ciò che segue.
   - Strategia di error/retry (toast vs throw).
   - Convenzione di mapping camelCase ↔ snake_case (manuale vs libreria).
   - Politica di subscription realtime (sì o no in fase 1).
+- **Design operativo**: P26
 
 ### Blocco 3 — Migrazione `AuthContext` a Supabase Auth
 
@@ -488,6 +497,7 @@ sono **bloccanti** per tutto ciò che segue.
     nella nuova AuthScreen (vedi §4.2 e R17).
   - Conferma email obbligatoria all'iscrizione?
   - Persistenza del valore di timeout inattività (locale o server).
+- **Design operativo**: P27
 
 ### Blocco 4 — Migrazione dati di dominio in `AppDataContext`
 
@@ -505,6 +515,7 @@ sono **bloccanti** per tutto ciò che segue.
 - **Punti aperti**:
   - Comportamento di loading (spinner globale vs per-tabella).
   - Politica di cache locale tra sessioni.
+- **Design operativo**: P28 + P33 (P33: deduplicazione `CategoryManagement.tsx`)
 
 ### Blocco 5 — Migrazione preferenze UI/A11y/Audio
 
@@ -526,6 +537,7 @@ sono **bloccanti** per tutto ciò che segue.
   - Strategia per `sound-system.ts` non React (probabilmente: il singleton
     espone `setClient(supabase)` e `loadSettings()` viene chiamato dal
     `AuthProvider` post-login).
+- **Design operativo**: P29 (hook `useUserSettings`) + P31 (Display, Audio, ScreenReader)
 
 ### Blocco 6 — Cache `budget-percentages` client-side
 
@@ -537,6 +549,7 @@ sono **bloccanti** per tutto ciò che segue.
 - **Complessità**: **Semplice**.
 - **Punti aperti**: scelta `useState` (perde stato a refresh) vs
   `localStorage` (persiste ma è per-device).
+- **Design operativo**: P30
 
 ### Blocco 7 — Migratore one-shot Spark → Supabase
 
@@ -552,6 +565,7 @@ sono **bloccanti** per tutto ciò che segue.
 - **Punti aperti**:
   - Transazione atomica vs best-effort.
   - Gestione collisioni di `id` se l'utente ri-importa.
+- **Design operativo**: P34
 
 ### Blocco 8 — PIN privato su Supabase
 
@@ -573,7 +587,8 @@ sono **bloccanti** per tutto ciò che segue.
 - **Punti aperti**:
   - bcrypt/argon2 client-side (libreria, dimensione bundle) **vs**
     Edge Function server-side.
-  - Politica di rate limiting su tentativi fallidi.
+  - Politica di rate limiting su tentativi falliti.
+- **Design operativo**: P32
 
 ### Blocco 9 — Onboarding primo accesso
 
@@ -588,6 +603,7 @@ sono **bloccanti** per tutto ciò che segue.
   - Detection "primo accesso" (assenza riga `impostazioni_utente`?).
   - Categorie template: tabella dedicata o righe in `categorie` con
     `user_id IS NULL`.
+- **Design operativo**: P35
 
 ### Blocco 10 — Decommissionamento Spark + offline read-only
 
@@ -605,6 +621,7 @@ sono **bloccanti** per tutto ciò che segue.
   - Service worker (Workbox) vs cache nel client Supabase via `localStorage`.
   - TTL della cache.
   - Indicatore UI di stato offline.
+- **Design operativo**: P36
 
 ---
 
