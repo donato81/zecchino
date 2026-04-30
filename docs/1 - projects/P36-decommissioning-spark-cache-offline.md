@@ -11,7 +11,7 @@
 | **Branch** | `refactoring-architettura` |
 | **Data** | 30 aprile 2026 |
 | **Autore** | Agent-Design |
-| **File modificati** | `package.json` · `vite.config.ts` · `src/test/setup.ts` · `src/lib/constants.ts` (certificazione o rimozione `DEFAULT_CATEGORIES`) · `src/components/DataManagement.tsx` (rimozione Fronte A dopo periodo di grazia) · `src/lib/supabase/cache.ts` (nuovo — parte 10b) · `src/components/AppHeader.tsx` (aggiunta indicatore offline — parte 10b) |
+| **File modificati** | `package.json` · `vite.config.ts` · `src/test/setup.ts` · `src/lib/constants.ts` (certificazione o rimozione `DEFAULT_CATEGORIES`) · `src/components/DataManagement.tsx` (rimozione Fronte A dopo periodo di grazia) · `src/lib/supabase/cache.ts` (nuovo — parte 10b) · `src/components/AppHeader.tsx` (aggiunta indicatore offline — parte 10b) · `src/hooks/use-online-status.ts` (nuovo — parte 10b) |
 | **Documenti di riferimento** | [P24](./P24-architettura-migrazione-supabase.md) · [P26](./P26-strato-accesso-dati-supabase.md) · [P27](./P27-migrazione-authcontext-supabase.md) · [P28](./P28-migrazione-appdatacontext-supabase.md) · [P29](./P29-migrazione-usersettings-preferenze-ui.md) · [P30](./P30-migrazione-budgetpercentages-usestate.md) · [P31](./P31-migrazione-preferenze-display-audio-screenreader.md) · [P32](./P32-migrazione-pin-privato-supabase.md) · [P33](./P33-migrazione-categorymanagement-useappdata.md) · [P34](./P34-migrazione-datamanagement-supabase.md) · [P35](./P35-onboarding-primo-accesso-supabase.md) · [src/test/setup.ts](../../src/test/setup.ts) · [src/lib/constants.ts](../../src/lib/constants.ts) · [src/lib/sound-system.ts](../../src/lib/sound-system.ts) · [vite.config.ts](../../vite.config.ts) |
 | **Stato** | Bozza — in attesa di validazione |
 
@@ -153,6 +153,9 @@ il completamento di 10b.
 **Perimetro di 10b** (descritto in §6 di questo documento):
 - `src/lib/supabase/cache.ts`: nuovo file (layer di cache localStorage)
 - `src/components/AppHeader.tsx`: aggiunta indicatore stato offline
+- `src/hooks/use-online-status.ts`: nuovo hook per il rilevamento dello stato online/offline
+  (descritto in §6.3 e §7); importato da `AppHeader.tsx` per controllare la visibilità del
+  banner offline
 - Eventuale aggiornamento dei repository di P26 per integrazione con la cache
 
 **Impatto su PA-4 §10**: la divisione in 10a e 10b è esplicitamente documentata come PA-4:
@@ -803,7 +806,8 @@ in precedenza ma la cui cache è stata cancellata (es. dopo logout). Il coding p
       comportamento al ritorno della connessione (PA-2), comportamento scrittura offline
       (messaggio bloccante, senza accodamento).
 - [ ] §6.3 elenca i file nuovi e modificati dalla parte 10b: `src/lib/supabase/cache.ts` (nuovo),
-      `AppDataContext.tsx` (minimo), `AppHeader.tsx` (aggiunta visiva).
+      `AppDataContext.tsx` (minimo), `src/hooks/use-online-status.ts` (nuovo),
+      `AppHeader.tsx` (aggiunta visiva).
 - [ ] §6.3 certifica conformità con P26 §8 (aggiunta, non modifica ai repository esistenti).
 - [ ] Decisione C (§7) specifica: posizione (banner in AppHeader), testo, `aria-live="assertive"`,
       quando appare e quando scompare, file coinvolto, conformità con P24 §8 componenti invariati.
