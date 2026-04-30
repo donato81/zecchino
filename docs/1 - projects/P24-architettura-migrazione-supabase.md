@@ -269,7 +269,7 @@ ciclo P23) è il **sintomo**, non la causa. La causa reale è strutturale:
   2. lo tiene in memoria nel context;
   3. su scrittura fa **upsert sul singolo campo** (debounce consigliato
      per slider e toggle rapidi).
-- **Motivazione**: 24 query separate ad ogni render sono inaccettabili;
+- **Motivazione**: 28 query separate ad ogni render sono inaccettabili;
   un singolo record letto una volta è semplice, prevedibile, cache-friendly.
 - **Strategia colonne**: due opzioni, da dirimere nel design operativo
   dedicato:
@@ -429,7 +429,7 @@ tipi `Account`, `Transaction`, ecc. invariati.
 
 - `user_id` su tutte le 5 tabelle di dominio + `categorie` + `impostazioni_utente`.
 - `created_at` / `updated_at` (best practice, da chiarire se attivi).
-- Eventuali colonne di `impostazioni_utente` per le 24 preferenze UI.
+- Eventuali colonne di `impostazioni_utente` per le 28 preferenze UI.
 
 #### Campi eliminati o smessi di scrivere
 
@@ -520,7 +520,7 @@ sono **bloccanti** per tutto ciò che segue.
 ### Blocco 5 — Migrazione preferenze UI/A11y/Audio
 
 - **Obiettivo**: introdurre `useUserSettings()` come unica fonte verità
-  per le 24 chiavi + `visible-categories` + `dismissed-budget-alerts`.
+  per le 28 chiavi + `visible-categories` + `dismissed-budget-alerts`.
 - **File coinvolti**:
   [DisplaySettings.tsx](../../src/components/DisplaySettings.tsx),
   [ScreenReaderSettings.tsx](../../src/components/ScreenReaderSettings.tsx),
@@ -701,7 +701,7 @@ verificare che:
       "nessun file modificato".
 - [ ] Il contesto (§2) cita esplicitamente che BUG-01 è sintomo, non causa.
 - [ ] La fotografia stato attuale (§3) riporta i numeri: 45 chiamate `useKV`,
-      31 chiavi, 3 famiglie, e i 5 problemi tecnici (duplicazioni, `cifrato`
+      35 chiavi, 3 famiglie, e i 5 problemi tecnici (duplicazioni, `cifrato`
       morto, cache `budget-percentages`, `sound-system` non React,
       `HapticSettings` da chiarire).
 - [ ] Le 6 decisioni architetturali (§4.1–§4.7 + §4.8) sono documentate
