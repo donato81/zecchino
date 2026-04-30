@@ -1,10 +1,10 @@
 {
-  "current_phase": "docs",
+  "current_phase": "validate",
   "current_agent": "Agent-Orchestrator",
-  "retry_count": 0,
-  "confidence": 0.9,
+  "retry_count": 2,
+  "confidence": 0.72,
   "execution_mode": "supervised",
-  "last_updated": "2026-04-27T04:22:57Z",
+  "last_updated": "2026-04-30T17:24:28Z",
   "phase_history": [
     "P01-step1-code-pass",
     "P06-code-pass",
@@ -23,21 +23,23 @@
     "P17-code-pass",
     "P17-validate-pass",
     "P17-docs-pass",
-    "P20-code-pass"
+    "P20-code-pass",
+    "P25-code-pass",
+    "P25-validate-fail"
   ],
   "active_task_id": "P20-validate-blocked",
   "initialized": true,
   "project_name": "Zecchino",
   "stack": "React+TypeScript+Vite",
   "framework_version": "2.3.1",
-  "last_step_output": "P22 code+validate+docs pass: corretti use-screen-reader.ts e TransactionDialog.tsx; gate tsc/lint/build/test passati; aggiornati P22-todo.md, refactoring-todo.md, todo.md e architettura.md; verifica comportamentale eseguita con test temporaneo del dialog rimosso a fine controllo.",
+  "last_step_output": "P25 code pass: creati docs/5 - sql/P25-schema-impostazioni-utente.sql e docs/5 - sql/P25-trigger-cifrato.sql. P25 validate fail: build pass, lint exit 1 senza diagnostica utile, test 4 passed 1 failed in src/test/smoke/01-app-renders.test.tsx; perimetro repo confermato senza modifiche in src/ o .github/. Docs non eseguito per gate validate fallito.",
   "update_check_done": true,
-  "last_update_check": "2026-04-27",
+  "last_update_check": "2026-04-30",
   "available_package_updates": 2,
   "completed_packages": [
     "P01",
     "P05",
     "P06"
   ],
-  "current_package": "P22"
+  "current_package": "P25"
 }
