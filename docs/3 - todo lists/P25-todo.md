@@ -4,7 +4,7 @@
 > Piano di riferimento: `docs/2 - coding plans/P25-coding-plan.md`  
 > Design di riferimento: `docs/1 - projects/P25-schema-impostazioni-utente-cifrato.md`  
 > Branch: `refactoring-architettura`  
-> Data inizio: —  
+> Data inizio: 2026-04-30  
 > Data completamento: —
 
 ---

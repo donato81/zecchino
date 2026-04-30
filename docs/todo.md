@@ -13,7 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| P25 — Schema impostazioni_utente e campo cifrato | `docs/3 - todo lists/P25-todo.md` | In corso | Alta (Blocco 1 — gatekeeper formale di tutti i blocchi successivi) |
+| P25 — Schema impostazioni_utente e campo cifrato | `docs/3 - todo lists/P25-todo.md` | In corso — Code ✓ Validate ✓ | In attesa esecuzione SQL su Supabase | Alta (Blocco 1 — gatekeeper formale di tutti i blocchi successivi) |
 
 ## TODO completati
 
