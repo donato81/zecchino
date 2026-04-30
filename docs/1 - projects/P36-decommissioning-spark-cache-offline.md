@@ -233,7 +233,7 @@ rimuovere `@github/spark` da `package.json`.
 
 **Stato attuale** (dal file letto direttamente):
 
-Il file ha 133 righe e contiene:
+Il file contiene i seguenti blocchi, nell'ordine:
 
 - **Righe 1–3**: import di `@testing-library/jest-dom`, `cleanup` e `useState`. L'import di
   `useState` è usato esclusivamente dentro il mock di `useKV`.
@@ -548,7 +548,8 @@ scritture richiedono rete.
 | File | Tipo | Descrizione |
 |---|---|---|
 | `src/lib/supabase/cache.ts` | **Nuovo** | Layer di cache localStorage. Espone `cache.write(userId, tabella, data)`, `cache.read(userId, tabella)`, `cache.invalidate(userId)`, `cache.isStale(userId, tabella, ttlMs)`. Non ha dipendenze da React; è un modulo TypeScript puro. |
-| `src/context/AppDataContext.tsx` | **Modificato** (minimo) | Integrazione con `cache.read()` nel path di fallback durante il bootstrap quando la rete non è disponibile. Integrazione con `cache.write()` al completamento di `refreshAll()` e del bootstrap iniziale. Nessuna modifica alla superficie pubblica esposta (P28 §4). |
+| `src/context/AppDataContext.tsx` | **Modificato** (minimo) | Integrazione con `cache.read()` nel path di fallback durante il bootstrap quando la rete non è disponibile. Integrazione con `cache.write()` al completamento di `refreshAll()` e del bootstrap iniziale. Nessuna modifica alla superficie pubblica esposta (P28 §4). Lo stato online/offline non viene aggiunto ad AppDataContext: è esposto da `useOnlineStatus()` (vedi riga successiva in tabella). |
+| `src/hooks/use-online-status.ts` | **Nuovo** | Hook React che legge `navigator.onLine` al mount e ascolta gli eventi `window.online` / `window.offline` per restituire `isOffline: boolean`. Nessuna dipendenza da AppDataContext o dai repository P26. Importato da `AppHeader.tsx` (parte 10b) per controllare la visibilità del banner offline. |
 | `src/components/AppHeader.tsx` | **Modificato** (solo aggiunta visiva) | Aggiunta dell'indicatore stato offline (§7). Nessuna modifica alla logica esistente o alla firma delle props. |
 
 **Certificazione P26 §8**: il layer `src/lib/supabase/` è esteso con il nuovo file `cache.ts`,
@@ -587,9 +588,11 @@ esiste), perché in quel caso i dati sono freschi da Supabase.
   successo.
 
 **File coinvolto**: `src/components/AppHeader.tsx` (modifica esistente, aggiunta visiva). La
-logica di stato online/offline viene esposta da `AppDataContext` tramite un campo
-`isOffline: boolean` aggiunto alla superficie pubblica (o tramite un hook separato
-`useOnlineStatus()` — da decidere nel coding plan, PA-2 §10).
+logica di stato online/offline è esposta dal nuovo hook `useOnlineStatus()`
+(`src/hooks/use-online-status.ts` — nuovo file del Blocco 10b, descritto in §6.3).
+`AppHeader.tsx` importa `useOnlineStatus()` direttamente, senza passare per `AppDataContext`.
+La superficie pubblica di `AppDataContext` (P28 §4) non viene modificata — coerente con la
+certificazione di §6.3.
 
 **Certificazione componenti invariati**: `AppHeader.tsx` è nella lista «comportamento invariato»
 di P24 §8 per la sua struttura visiva e la firma delle props. P36 aggiunge solo un banner
@@ -709,9 +712,12 @@ Questa decisione impatta significativamente la copertura e la manutenibilità de
 
 ### PA-2 — Comportamento al ritorno della connessione (auto-refresh vs manuale)
 
-§6.2 lascia aperto se il ritorno della rete produca un auto-refresh automatico dei dati o
-solo l'attivazione di un pulsante «Aggiorna ora» nel banner offline. Il coding plan del
-Blocco 10b deve scegliere e implementare uno dei due comportamenti, considerando:
+Il meccanismo di rilevamento dello stato online/offline è già deciso: `useOnlineStatus()` in
+`src/hooks/use-online-status.ts` (vedi §6.3 e §7). PA-2 rimane aperto solo sulla seconda
+parte: auto-refresh automatico al ritorno della rete vs pulsante «Aggiorna ora» nel banner.
+
+§6.2 lascia aperto questo comportamento. Il coding plan del Blocco 10b deve scegliere e
+implementare uno dei due, considerando:
 - L'auto-refresh interrompe eventualmente un'operazione di lettura o un dialog aperto.
 - Il refresh manuale lascia dati potenzialmente obsoleti finché l'utente non clicca.
 
