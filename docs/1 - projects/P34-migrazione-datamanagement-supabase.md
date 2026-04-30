@@ -13,7 +13,7 @@
 | **Autore** | Agent-Design |
 | **File modificati** | Nessuno |
 | **Documenti di riferimento** | [P24](./P24-architettura-migrazione-supabase.md) · [P25](./P25-schema-impostazioni-utente-cifrato.md) · [P26](./P26-strato-accesso-dati-supabase.md) · [P27](./P27-migrazione-authcontext-supabase.md) · [P28](./P28-migrazione-appdatacontext-supabase.md) · [P29](./P29-migrazione-usersettings-preferenze-ui.md) · [P30](./P30-migrazione-budgetpercentages-usestate.md) · [P31](./P31-migrazione-preferenze-display-audio-screenreader.md) · [P32](./P32-migrazione-pin-privato-supabase.md) · [P33](./P33-migrazione-categorymanagement-useappdata.md) · [DataManagement.tsx](../../src/components/DataManagement.tsx) · [AppDataContext.tsx](../../src/context/AppDataContext.tsx) · [AuthContext.tsx](../../src/context/AuthContext.tsx) · [types.ts](../../src/lib/types.ts) |
-| **Stato** | Bozza — in attesa di validazione |
+| **Stato** | Approvato — riferimento vincolante per il coding plan del Blocco 7 e per P35 in poi |
 
 > **Questo documento è vincolante per tutti i design operativi successivi (P35 in poi).
 > Le decisioni qui contenute sono già state validate e non vengono rimesse in discussione:
@@ -152,7 +152,11 @@ al monte dell'applicazione:
 - Chiamate ai repository `conti`, `transazioni`, `budget`, `obiettivi_risparmio`
   (P26 §7.1–§7.5) per la funzione di import
 - Lettura delle preferenze utente per il flag `legacy_domain_migrated`
-  tramite il repository `impostazioni-utente` (P26 §7.6)
+  tramite `useUserSettings()` (P29) — già in memoria al mount del componente,
+  senza necessità di una chiamata diretta al repository `impostazioni-utente`.
+  La scrittura del flag a migrazione completata avviene invece tramite il
+  metodo `updatePreference()` del repository `impostazioni-utente` (P26 §7.6),
+  come descritto in §7 Fase 4.
 - Pannello di migrazione one-shot condizionale (visibile solo se `legacy_domain_migrated`
   non è `true` e il KV Spark contiene le chiavi di dominio)
 - Report accumulato degli errori di import (Decisione A — §5)
@@ -354,6 +358,27 @@ La dipendenza dalla mancanza di un metodo `createWithId()` nei repository di P26
 aperto documentato al §11: la Decisione B presuppone che il coding plan del Blocco 7 risolva
 la questione dell'ID-preservation o dell'ID-remapping prima dell'implementazione.
 
+**Dipendenza critica con PA-1 (Fronte A):**
+Il meccanismo di upsert semantico descritto in questa sezione si comporta
+in modo diverso a seconda del fronte di applicazione.
+
+Per il **Fronte B** (import di un file JSON esportato da Zecchino post-P34),
+il meccanismo funziona immediatamente: gli ID presenti nel file JSON sono UUID
+generati da Supabase al momento dell'inserimento originale, quindi `getById(id)`
+li trova correttamente e decide se creare o aggiornare.
+
+Per il **Fronte A** (migrazione one-shot Spark → Supabase), il meccanismo è
+**condizionato alla risoluzione di PA-1**. Il motivo è strutturale: i repository
+di P26 generano sempre un nuovo UUID lato database tramite `gen_random_uuid()`.
+L'ID originale dell'entità nel KV Spark (generato da `generateId()` lato client)
+non viene preservato. Di conseguenza, al retry di una migrazione parzialmente
+interrotta, `getById(sparkId)` cerca su Supabase un UUID che non esiste — e
+il processo creerebbe un duplicato invece di aggiornare il record già inserito.
+
+**Il coding plan del Blocco 7 deve risolvere PA-1 prima di implementare la
+logica di upsert per il Fronte A.** Fino a quel momento, il Fronte A non è
+implementabile in modo sicuro rispetto ai retry con deduplicazione corretta.
+
 ---
 
 ## §7 — Flusso Fronte A: migrazione one-shot Spark → Supabase
@@ -425,6 +450,14 @@ gli obiettivi di risparmio, infine le transazioni. Per ogni entità:
 - Il processo verifica se un record con l'identificatore corrispondente esiste già su
   Supabase (Decisione B — upsert semantico). Se esiste, viene aggiornato; se non esiste,
   viene creato tramite i repository di P26.
+  **Nota di dipendenza (PA-1):** questa verifica presuppone che l'ID dell'entità
+  Spark sia confrontabile con un ID già presente su Supabase. Poiché i repository
+  di P26 generano nuovi UUID al momento dell'inserimento, i record creati nella
+  migrazione avranno UUID diversi dagli ID originali Spark. Il meccanismo di
+  check-esistenza e upsert per questa fase deve essere implementato con la strategia
+  di remapping o di estensione definita nella risoluzione di PA-1 (§11). Il coding
+  plan del Blocco 7 deve esplicitare quale approccio adotta prima di implementare
+  questa fase.
 - Il campo `cifrato` delle transazioni viene **omesso dal payload di creazione e aggiornamento**
   (P24 §4.4 e P25): è un campo derivato popolato dal trigger database `trg_sync_cifrato`.
   Il valore eventualmente presente nell'oggetto Spark viene scartato senza errore.
@@ -501,6 +534,7 @@ i dati in memoria vengono aggiornati a ogni operazione di scrittura.
 |---|---|
 | Categorie (`categories`) | Già gestite da P33 Decisione B. Non sono nel perimetro di P34. |
 | Impostazioni utente (`impostazioni_utente`) | Contengono dati sensibili (`pin_privato_hash`) e preferenze UI. Il loro backup/ripristino non è nel perimetro del flusso generale di backup dati finanziari. |
+| Notifiche / `dismissed-budget-alerts` | Dati effimeri di stato UI: indicano quali alert di budget sono stati già visualizzati dall'utente. Non sono dati finanziari persistenti né fanno parte del patrimonio informativo dell'utente. Il loro ripristino da backup non ha valore pratico e potrebbe causare la ricomparsa di alert già letti. Gestite da P29 verso la tabella `notifiche`. |
 | Dati di preferenze e accessibilità | Gestiti da P29/P31; non nel perimetro di P34. |
 
 **Formato e nome file**
@@ -726,6 +760,27 @@ che ri-apre la migrazione one-shot su un account già migrato), ma richiede un'o
 con il runtime Spark. Il Blocco 10 (decommissioning) potrebbe essere il contesto più
 appropriato per questa pulizia. Il coding plan del Blocco 7 deve dichiarare esplicitamente
 se le chiavi vengono cancellate o lasciate nel KV dopo la migrazione.
+
+### PA-6 — Precondizione Blocco 9: comportamento in assenza del seed categorie
+
+§10 identifica che la funzione `seed_default_categories(user_id)` del Blocco 9
+è una precondizione per il corretto funzionamento del Fronte A: le transazioni
+con `categoria_id` valorizzato referenziano categorie che devono già esistere in
+`categorie` su Supabase al momento dell'inserimento.
+
+§10 propone due alternative senza scegliere:
+1. Il Blocco 9 (Onboarding) è completato garantendo il seed prima che l'utente
+   possa accedere a `DataManagement.tsx`.
+2. Le transazioni con `categoria_id` non valido vengono gestite nel report di
+   errore come entità da migrare manualmente dopo il completamento del Blocco 9.
+
+Il coding plan del Blocco 7 deve scegliere una delle due alternative e
+documentarla come decisione vincolante. La scelta ha impatto sull'ordine di
+distribuzione dei blocchi: se si sceglie l'alternativa 1, il Blocco 9 deve
+essere distribuito prima o contestualmente al Blocco 7. Se si sceglie
+l'alternativa 2, il Fronte A può essere distribuito indipendentemente dal
+Blocco 9, a costo di un'esperienza utente degradata per le transazioni con
+categoria associata.
 
 ---
 
