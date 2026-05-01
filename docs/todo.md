@@ -13,7 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| P26 — Strato di accesso dati Supabase | `docs/3 - todo lists/P26-todo.md` | In corso — Plan ✓ | Alta (Blocco 2 — fondazione tecnica di tutti i blocchi React successivi) |
+| P26 — Strato di accesso dati Supabase | `docs/3 - todo lists/P26-todo.md` | In corso | Alta (Blocco 2 — fondazione tecnica layer dati) |
 
 ## TODO completati
 

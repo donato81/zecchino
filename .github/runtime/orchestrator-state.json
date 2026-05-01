@@ -1,10 +1,10 @@
 {
   "current_phase": "validate",
-  "current_agent": "Agent-Orchestrator",
-  "retry_count": 2,
-  "confidence": 0.72,
+  "current_agent": "Agent-Validate",
+  "retry_count": 1,
+  "confidence": 0.82,
   "execution_mode": "supervised",
-  "last_updated": "2026-04-30T17:24:28Z",
+  "last_updated": "2026-05-01T09:17:45Z",
   "phase_history": [
     "P01-step1-code-pass",
     "P06-code-pass",
@@ -32,7 +32,7 @@
   "project_name": "Zecchino",
   "stack": "React+TypeScript+Vite",
   "framework_version": "2.3.1",
-  "last_step_output": "P25 code pass: creati docs/5 - sql/P25-schema-impostazioni-utente.sql e docs/5 - sql/P25-trigger-cifrato.sql. P25 validate fail: build pass, lint exit 1 senza diagnostica utile, test 4 passed 1 failed in src/test/smoke/01-app-renders.test.tsx; perimetro repo confermato senza modifiche in src/ o .github/. Docs non eseguito per gate validate fallito.",
+  "last_step_output": "P26 code completato: creati 8 file sotto src/lib/supabase, aggiornati package.json, docs/todo.md e docs/3 - todo lists/P26-todo.md. Validate: build exit 0, lint exit 0, grep import Supabase OK, perimetro file OK; test:run fallisce su src/test/smoke/01-app-renders.test.tsx con assertion preesistente fuori perimetro P26.",
   "update_check_done": true,
   "last_update_check": "2026-04-30",
   "available_package_updates": 2,
@@ -41,5 +41,5 @@
     "P05",
     "P06"
   ],
-  "current_package": "P25"
+  "current_package": "P26"
 }

@@ -4,7 +4,7 @@
 > Piano di riferimento: `docs/2 - coding plans/P26-coding-plan.md`
 > Design di riferimento: `docs/1 - projects/P26-strato-accesso-dati-supabase.md`
 > Branch: `refactoring-architettura`
-> Data inizio: —
+> Data inizio: 2026-05-01
 > Data completamento: —
 
 ---
