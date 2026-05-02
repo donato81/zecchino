@@ -5,7 +5,13 @@
 > Design di riferimento: `docs/1 - projects/P26-strato-accesso-dati-supabase.md`
 > Branch: `refactoring-architettura`
 > Data inizio: 2026-05-01
-> Data completamento: —
+> Data completamento: 2026-05-01
+
+---
+
+## Stato finale
+
+P26 è stato implementato il 2026-05-01. Il layer Supabase `src/lib/supabase/` è stato creato con `client.ts`, `types.ts` e tutti i repository previsti; `@supabase/supabase-js` è stato aggiunto a `package.json` e il build/test sono stati verificati sul branch `refactoring-architettura`.
 
 ---
 

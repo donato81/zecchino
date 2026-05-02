@@ -13,13 +13,13 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| P26 — Strato di accesso dati Supabase | `docs/3 - todo lists/P26-todo.md` | In corso | Alta (Blocco 2 — fondazione tecnica layer dati) |
 
 ## TODO completati
 
 | Feature / Sprint | File specifico | Completato il |
 |---|---|---|
 | P25 — Schema impostazioni_utente e campo cifrato | `docs/3 - todo lists/P25-todo.md` | 2026-05-01 |
+| P26 — Strato di accesso dati Supabase | `docs/3 - todo lists/P26-todo.md` | 2026-05-01 |
 | P24 — Architettura migrazione Spark→Supabase (documento di architettura, nessun file sorgente modificato) | — | 2026-04-28 |
 | P23 — Bugfix BUG-01: bootstrap asincrono AuthContext + mock KV allineato | `docs/3 - todo lists/P23-todo.md` | 2026-04-28 |
 | P22 — Bugfix BUG-04: loop infinito campo importo TransactionDialog | `docs/3 - todo lists/P22-todo.md` | 2026-04-27 |

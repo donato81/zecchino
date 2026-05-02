@@ -7,15 +7,16 @@
 
 ## Panoramica
 
-Zecchino è una **SPA (Single Page Application) React** completamente client-side.
-Non ha backend, non esegue chiamate di rete: tutti i dati sono locali (localStorage).
+Zecchino è una **SPA (Single Page Application) React** che gira nel browser ma usa una persistenza remota tramite **Supabase**.
+Il layer di accesso dati dedicato in `src/lib/supabase/` è l'unica parte dell'app che comunica direttamente con il backend Supabase.
 
 ```
 Browser
   └── React SPA (Vite)
         ├── UI Components (shadcn/ui + Radix UI)
-        ├── State (AppState in localStorage)
-        ├── Security (PIN hash + AES-256)
+        ├── Data Layer (Supabase via src/lib/supabase/)
+        ├── State (React Context: AppDataContext, AuthContext, VisibleData)
+        ├── Security (PIN hash + RLS + AES-256)
         ├── Accessibility (TalkBack / VoiceView / NVDA)
         └── Audio + Haptic feedback
 ```
@@ -32,6 +33,7 @@ Browser
 | Styling | TailwindCSS v4 | `@tailwindcss/vite` |
 | Componenti | shadcn/ui (`@radix-ui/*`) | varie |
 | Data fetching | TanStack Query | v5 |
+| Data persistence | Supabase | Postgres + Auth + RLS |
 | Grafici | D3 + Recharts | v7 / v2 |
 | Animazioni | Framer Motion | v12 |
 | Icone | Lucide React + Phosphor Icons | latest |
@@ -96,7 +98,11 @@ src/
 │   ├── budget-alerts.ts     # Alert soglia budget
 │   ├── budget-forecasting.ts
 │   ├── budget-history.ts
-│   └── budget-templates.ts
+│   ├── budget-templates.ts
+│   └── supabase/            # Layer di accesso dati Supabase
+│       ├── client.ts
+│       ├── types.ts
+│       └── repositories/
 └── styles/
     └── theme.css            # Variabili CSS tema
 ```
@@ -131,48 +137,36 @@ docs/
 
 ## Gestione stato
 
-Nessun state manager esterno. Lo stato applicazione (`AppState`) è:
+Nessun state manager esterno. Lo stato applicazione è gestito con React Context e funzioni esplicite di sincronizzazione: `AppDataContext`, `AuthContext` e `VisibleDataProvider`.
 
 A partire da P01–P13, parte dello stato è migrata in Context dedicati:
-- `AppDataContext` — dati applicazione (conti, movimenti, budget, obiettivi,
-  stato dialog transazioni ed eliminazioni)
-- `AuthContext` — autenticazione (PIN globale e privato)
-- `AuthContext` — bugfix BUG-01 definitivo (P23 rev. 2026-04-28): bootstrap
-      one-shot tramite IIFE async in `useEffect(() => {…}, [])`. Usa
-      `window.spark.kv.get('global-pin-hash')` (API asincrona contrattuale) per
-      decidere setup vs login; flag `cancelled` per cleanup sicuro. `useKV<string>`
-      con default `''` (rimosso `undefined` come sentinella). `useRef`/`hasInitialized`
-      eliminati. `isAuthReady` stato interno privato, mai esposto nel context value.
-      Mock `sparkKvMock.get/set/keys` allineato al `kvStore` reale (P19). Gate:
-      5/5 smoke test PASS.
-- `useVisibleData` — valori derivati calcolati dai due context
+- `AppDataContext` — dati applicazione di dominio (conti, movimenti, budget,
+  obiettivi, stato dialog transazioni ed eliminazioni). I dati provengono da
+  `src/lib/supabase/` e sono caricati da repository Supabase.
+- `AuthContext` — autenticazione (PIN globale e privato); gestisce il login
+  e l'accesso al record `impostazioni_utente`.
+- `useVisibleData` — valori derivati calcolati da `AppDataContext` e `AuthContext`.
 - `AppHeader` — header applicazione estratto come componente autonomo;
-      `showKeyboardHelp` migrato da `useState` locale in `App.tsx` a `AppDataContext`;
-      nessuna prop, nessun `useState` locale
+  `showKeyboardHelp` migrato da `useState` locale in `App.tsx` a `AppDataContext`.
 - `AuthScreen` — schermata di autenticazione estratta come componente autonomo;
-      nessuna prop, nessun `useState` locale; dipende solo da `useAuth()`;
-      il guard `if (!isAuthenticated)` rimane in `App.tsx`
+  dipende solo da `useAuth()`; il guard `if (!isAuthenticated)` rimane in `App.tsx`.
 - `DashboardTab` — tab Dashboard estratto come componente autonomo; gestisce filtri categoria,
-  griglia conti e movimenti recenti; istanzia localmente `recentTransactionsNav`
+  griglia conti e movimenti recenti.
 - `ReportsTab` — tab Report estratto come componente autonomo; gestisce budget,
-  obiettivi di risparmio, grafici e impostazioni; `chartPeriod` rimane `useState` locale
-- `DialogsOverlay` — tutti e sette i dialog modali estratti in un unico
-  componente autonomo; nessuna prop, nessun useState locale; dipende da
-  useAppData(), useAuth(), useVisibleData(); debito tecnico dichiarato:
-  undici stati UI dialog in AppDataContext, candidati a UIContext separato
-  in fase futura
-- `TransactionDialog` — bugfix BUG-04 (P22): l'hook `useScreenReader`
-      ora restituisce un oggetto stabile tramite `useMemo`; i dep array dei
-      4 `useEffect` del componente referenziano le singole funzioni estratte
-      per destructuring invece dell'oggetto contenitore.
-- `App.tsx` — file di pura composizione (~140 righe); provider, guard
-      autenticazione, layout strutturale, navigazione tab; nessun useMemo,
-      nessun handler, nessun calcolo derivato; tutti i dati arrivano da
-      AppDataContext, AuthContext e useVisibleData()
+  obiettivi di risparmio, grafici e impostazioni.
+- `DialogsOverlay` — tutti i dialog modali estratti in un unico componente autonomo;
+  dipende da `useAppData()`, `useAuth()`, `useVisibleData()`.
+- `TransactionDialog` — bugfix BUG-04 (P22): l'hook `useScreenReader` ora restituisce
+  un oggetto stabile tramite `useMemo`.
+- `App.tsx` — file di pura composizione; provider, guard autenticazione, layout
+  strutturale e navigazione tab. Tutti i dati arrivano dai context.
 
-1. Mantenuto in React (`useState` / `useReducer` in `App.tsx`)
-2. Persistito in **localStorage** ad ogni cambiamento
-3. Caricato all'avvio con idratazione iniziale
+Principi di persistenza:
+1. I dati di dominio sono caricati e salvati su Supabase tramite il layer
+   `src/lib/supabase/`.
+2. `localStorage` non è usato per la persistenza dei dati principali.
+3. `localStorage` è impiegato solo per configurazioni locali secondarie come
+   le impostazioni `haptic` in `src/lib/haptic-system.ts`.
 
 ```
 AppState

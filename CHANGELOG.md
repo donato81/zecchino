@@ -1,5 +1,14 @@
 # Changelog
 
+## [P26] — 2026-05-01
+
+### Data layer / Supabase
+- Aggiunta dipendenza `@supabase/supabase-js` in `package.json`.
+- Creato il layer di accesso dati in `src/lib/supabase/` con `client.ts`, `types.ts` e repository per `conti`, `transazioni`, `categorie`, `budget`, `obiettivi-risparmio` e `impostazioni-utente`.
+- Mappatura camelCase ↔ snake_case gestita nei repository; `user_id` non è esposto nei tipi client.
+- `transazioni.create()` e `transazioni.update()` escludono `cifrato` dal payload; il trigger DB `trg_sync_cifrato` popola il campo.
+- Tipi `UserPreferences` e `UserSettings` aggiornati per il record `impostazioni_utente`.
+
 ## [P19] — 2026-04-24
 
 ### Testing

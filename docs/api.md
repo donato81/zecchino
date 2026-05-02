@@ -147,10 +147,26 @@ interface AppState {
 
 ---
 
+## Data layer
+
+| Modulo | File | Scopo |
+|---|---|---|
+| Supabase client | `src/lib/supabase/client.ts` | Singleton Supabase con `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` |
+| Supabase types | `src/lib/supabase/types.ts` | Tipi interni del layer dati: `RepositoryError`, `UserPreferences`, `UserSettings`, DB row-level in snake_case |
+| Repository conti | `src/lib/supabase/repositories/conti.ts` | Accesso ai conti dell'utente |
+| Repository transazioni | `src/lib/supabase/repositories/transazioni.ts` | Accesso alle transazioni; scrittura senza `cifrato` |
+| Repository categorie | `src/lib/supabase/repositories/categorie.ts` | Accesso alle categorie utente e template |
+| Repository budget | `src/lib/supabase/repositories/budget.ts` | Accesso ai budget |
+| Repository obiettivi risparmio | `src/lib/supabase/repositories/obiettivi-risparmio.ts` | Accesso agli obiettivi di risparmio |
+| Repository impostazioni utente | `src/lib/supabase/repositories/impostazioni-utente.ts` | Accesso a impostazioni e preferenze utente |
+
+---
+
 ## Storage
 
-I dati sono persistiti in **localStorage** come JSON cifrato (per account privato) o in chiaro.
-Nessuna chiamata di rete: l'app è completamente offline-first.
+I dati di dominio sono persistiti su **Supabase** tramite il layer `src/lib/supabase/`. Il layer è l'unica fonte di chiamate `@supabase/supabase-js` nell'app: nessun componente React chiama Supabase direttamente.
+
+`localStorage` è usato soltanto per dati di configurazione locale secondaria, come le impostazioni di feedback tattile in `src/lib/haptic-system.ts`.
 
 ---
 

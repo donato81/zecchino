@@ -11,7 +11,7 @@
 | Autore | Agent-Design |
 | File modificati | Nessuno (solo creazione di questo documento di design) |
 | Documenti di riferimento | [P24 — Architettura generale migrazione Spark→Supabase](./P24-architettura-migrazione-supabase.md), [P25 — Schema `impostazioni_utente` e campo `cifrato`](./P25-schema-impostazioni-utente-cifrato.md), [src/lib/types.ts](../../src/lib/types.ts) |
-| Stato | Bozza — in attesa di validazione |
+| Stato | Implementazione completata — verificata il 2026-05-01 |
 
 Questo documento è **vincolante** per tutti i design operativi successivi
 (P27 in poi). Le decisioni qui contenute sono già state validate e non
