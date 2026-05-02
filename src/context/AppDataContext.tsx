@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Account, Transaction, Category, Budget, SavingsGoal } from '@/lib/types'
+import { Account, Transaction, TransactionInput, Category, Budget, SavingsGoal } from '@/lib/types'
 import { ACCOUNT_CATEGORIES } from '@/lib/constants'
 import { formatCurrency, exportToCSV, downloadFile, getActiveBudgets, getBudgetProgress } from '@/lib/helpers'
 import { shouldShowBudgetNotification, getBudgetNotificationTitle } from '@/lib/budget-alerts'
@@ -72,7 +72,7 @@ type AppDataContextValue = {
   refreshAll: () => void
   // Legacy handlers used by DialogsOverlay and other existing consumers
   handleSaveAccount: (account: Account) => void
-  handleSaveTransaction: (transaction: Transaction) => void
+  handleSaveTransaction: (transaction: TransactionInput) => void
   handleSaveBudget: (budget: Budget) => void
   handleSaveSavingsGoal: (goal: SavingsGoal) => void
   handleDeleteConfirm: () => void
@@ -316,8 +316,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setCategories(prev => prev.filter(c => c.id !== id))
     } catch (err) {
       if (err instanceof RepositoryError && err.code === '23503') {
-        setError("Impossibile eliminare la categoria: è usata da movimenti esistenti. Riassegna prima i movimenti a un'altra categoria.")
-        return
+        const message = "Impossibile eliminare la categoria: è usata da movimenti esistenti. Riassegna prima i movimenti a un'altra categoria."
+        setError(message)
+        throw new Error(message)
       }
       throw err
     }
@@ -430,10 +431,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const handleSaveTransaction = async (transaction: Transaction) => {
+  const handleSaveTransaction = async (transaction: TransactionInput) => {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { cifrato: _cifrato, ...transactionData } = transaction
+      const transactionData = transaction
       const existing = transactions.find(t => t.id === transaction.id)
       if (existing) {
         const { id, ...updateData } = transactionData

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useAppData } from '@/context/AppDataContext'
 import { Category, CategoryType } from '@/lib/types'
-import { generateId } from '@/lib/helpers'
 import { soundSystem } from '@/lib/sound-system'
 import { useScreenReader } from '@/hooks/use-screen-reader'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -35,7 +34,7 @@ import {
 
 export function CategoryManagement() {
   const screenReader = useScreenReader()
-  const [categories, setCategories] = useKV<Category[]>('categories', [])
+  const { safeCategories, addCategory, updateCategory, removeCategory } = useAppData()
   
   const [showCategoryDialog, setShowCategoryDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -47,7 +46,6 @@ export function CategoryManagement() {
   const [error, setError] = useState('')
   const categoryNameRef = useRef<HTMLInputElement>(null)
 
-  const safeCategories = categories || []
   const incomeCategories = safeCategories.filter(c => c.tipo === 'entrata')
   const expenseCategories = safeCategories.filter(c => c.tipo === 'uscita')
 
@@ -104,35 +102,36 @@ export function CategoryManagement() {
     return true
   }
 
-  const handleSaveCategory = () => {
+  const handleSaveCategory = async () => {
     if (!validateCategory()) return
 
-    const categoryData: Category = {
-      id: editingCategory?.id || generateId(),
+    const categoryData: Omit<Category, 'id'> = {
       nome: categoryName.trim(),
       tipo: categoryType,
       predefinita: editingCategory?.predefinita || false
     }
 
-    setCategories((current) => {
-      const currentCategories = current || []
+    try {
       if (editingCategory) {
-        const updated = currentCategories.map(c =>
-          c.id === editingCategory.id ? categoryData : c
-        )
+        await updateCategory(editingCategory.id, categoryData)
         soundSystem.play('save')
         toast.success('Categoria modificata')
         screenReader.announceSuccess(`Categoria ${categoryData.nome} di tipo ${categoryData.tipo} modificata`)
-        return updated
       } else {
+        await addCategory(categoryData)
         soundSystem.play('category-created')
         toast.success(`Categoria "${categoryData.nome}" creata`)
         screenReader.announceSuccess(`Nuova categoria ${categoryData.nome} di tipo ${categoryData.tipo} creata`)
-        return [...currentCategories, categoryData]
       }
-    })
 
-    handleCloseCategoryDialog()
+      handleCloseCategoryDialog()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Errore durante il salvataggio della categoria'
+      setError(message)
+      soundSystem.play('error')
+      toast.error(message)
+      screenReader.announceError(message)
+    }
   }
 
   const handleOpenDeleteDialog = (category: Category) => {
@@ -142,19 +141,25 @@ export function CategoryManagement() {
     screenReader.announce(`Conferma eliminazione categoria ${category.nome}`, 'assertive')
   }
 
-  const handleDeleteCategory = () => {
+  const handleDeleteCategory = async () => {
     if (!deletingCategory) return
 
-    setCategories((current) => {
-      const updated = (current || []).filter(c => c.id !== deletingCategory.id)
+    try {
+      await removeCategory(deletingCategory.id)
       soundSystem.play('delete')
       toast.success('Categoria eliminata')
       screenReader.announceSuccess(`Categoria ${deletingCategory.nome} eliminata`)
-      return updated
-    })
-
-    setShowDeleteDialog(false)
-    setDeletingCategory(null)
+      setShowDeleteDialog(false)
+      setDeletingCategory(null)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Errore durante l\'eliminazione della categoria'
+      setError(message)
+      soundSystem.play('error')
+      toast.error(message)
+      screenReader.announceError(message)
+      setShowDeleteDialog(false)
+      setDeletingCategory(null)
+    }
   }
 
   return (
@@ -419,7 +424,7 @@ export function CategoryManagement() {
             </Button>
             <Button
               type="submit"
-              onClick={handleSaveCategory}
+              onClick={() => { void handleSaveCategory() }}
               disabled={!categoryName.trim()}
               className="gap-2"
             >
@@ -446,7 +451,7 @@ export function CategoryManagement() {
               Annulla
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeleteCategory}
+              onClick={() => { void handleDeleteCategory() }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Elimina

@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Transaction, TransactionType, Account, Category, RecurrenceFrequency } from '@/lib/types'
+import { Transaction, TransactionInput, TransactionType, Account, Category, RecurrenceFrequency } from '@/lib/types'
 import { TRANSACTION_TYPE_LABELS, RECURRENCE_LABELS } from '@/lib/constants'
 import { generateId } from '@/lib/helpers'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -16,7 +16,7 @@ import { useScreenReader } from '@/hooks/use-screen-reader'
 interface TransactionDialogProps {
   open: boolean
   onClose: () => void
-  onSave: (transaction: Transaction) => void
+  onSave: (transaction: TransactionInput) => void
   transaction?: Transaction
   accounts: Account[]
   categories: Category[]
@@ -168,7 +168,7 @@ export function TransactionDialog({
       return
     }
 
-    const newTransaction = {
+    const newTransaction: TransactionInput = {
       id: transaction?.id || generateId(),
       data,
       importo: amount,
@@ -179,7 +179,7 @@ export function TransactionDialog({
       descrizione: descrizione.trim(),
       ricorrente,
       frequenzaRicorrenza: ricorrente ? (frequenzaRicorrenza as RecurrenceFrequency) : undefined,
-    } as Transaction
+    }
 
     onSave(newTransaction)
     handleClose()
