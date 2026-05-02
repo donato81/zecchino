@@ -130,6 +130,42 @@ type AuthFlowState = {
 }
 ```
 
+### `AppDataContextValue` (`src/context/AppDataContext.tsx`)
+
+Superficie pubblica esposta da `useAppData()` dopo la migrazione P28.
+Tutti i dati di dominio sono caricati da Supabase tramite i repository P26.
+
+| Nome | Tipo (descrittivo) | Descrizione |
+|---|---|---|
+| `accounts` | `Account[]` | Conti dell'utente, caricati da `conti.getAll()` |
+| `transactions` | `Transaction[]` | Transazioni, caricate da `transazioni.getAll()` |
+| `categories` | `Category[]` | Categorie (proprie + template `predefinita: true`), da `categorie.getAll()` |
+| `budgets` | `Budget[]` | Budget, caricati da `budget.getAll()` |
+| `savingsGoals` | `SavingsGoal[]` | Obiettivi risparmio, da `obiettivi-risparmio.getAll()` |
+| `isLoading` | `boolean` | `true` durante il caricamento iniziale o `refreshAll()`. Spinner globale (Decisione B P28). |
+| `error` | `string \| null` | Messaggio di errore se almeno una `getAll()` o un'azione ha fallito. `null` se tutto OK. |
+| `isDataReady` | `boolean` | `true` dopo che tutti e 5 i `getAll()` hanno completato con successo. Resta `true` durante i refresh successivi. |
+| `addAccount(data)` | `Promise<void>` | Crea conto su Supabase e aggiunge a `accounts`. |
+| `updateAccount(id, data)` | `Promise<void>` | Aggiorna conto su Supabase e sostituisce in `accounts`. |
+| `removeAccount(id)` | `Promise<void>` | Rimuove conto e le transazioni collegate (CASCADE). |
+| `addTransaction(data)` | `Promise<void>` | Crea transazione **senza `cifrato`** (calcolato dal trigger DB `trg_sync_cifrato`). |
+| `updateTransaction(id, data)` | `Promise<void>` | Aggiorna transazione **senza `cifrato``. |
+| `removeTransaction(id)` | `Promise<void>` | Rimuove transazione da Supabase e da `transactions`. |
+| `addCategory(data)` | `Promise<void>` | Crea categoria personalizzata (RLS blocca template). |
+| `updateCategory(id, data)` | `Promise<void>` | Aggiorna categoria; lancia `RepositoryError` su template. |
+| `removeCategory(id)` | `Promise<void>` | Rimuove categoria; se usata da transazioni imposta `error` con messaggio FK. |
+| `addBudget(data)` | `Promise<void>` | Crea budget su Supabase. |
+| `updateBudget(id, data)` | `Promise<void>` | Aggiorna budget. |
+| `removeBudget(id)` | `Promise<void>` | Rimuove budget. |
+| `addSavingsGoal(data)` | `Promise<void>` | Crea obiettivo risparmio. |
+| `updateSavingsGoal(id, data)` | `Promise<void>` | Aggiorna metadati obiettivo risparmio. |
+| `updateSavingsGoalProgress(id, importoCorrente)` | `Promise<void>` | Aggiorna `importoCorrente`, `completato`, `dataCompletamento` atomicamente. |
+| `removeSavingsGoal(id)` | `Promise<void>` | Rimuove obiettivo risparmio. |
+| `refreshAll()` | `void` | Rilancia le 5 `getAll()` in parallelo. Idempotente (no-op se `isLoading`). Non resetta `isDataReady`. |
+
+> Gli stati UI dei dialog (`editingTransaction`, `showTransactionDialog`, ecc.) rimangono
+> nella superficie pubblica come `useState` locali inalterati — non sono legati a storage.
+
 ---
 
 ## Hooks (`src/hooks/`)

@@ -37,7 +37,7 @@ Browser
 | Grafici | D3 + Recharts | v7 / v2 |
 | Animazioni | Framer Motion | v12 |
 | Icone | Lucide React + Phosphor Icons | latest |
-| Piattaforma | GitHub Spark | `@github/spark` |
+| Piattaforma | GitHub Spark | `@github/spark` — `@github/spark/hooks` (`useKV`) non più usato in produzione dopo P33; rimane solo nel mock `src/test/setup.ts` |
 
 ---
 
@@ -145,10 +145,12 @@ Nessun state manager esterno. Lo stato applicazione è gestito con React Context
 A partire da P01–P13, parte dello stato è migrata in Context dedicati:
 - `AppDataContext` — dati applicazione di dominio (conti, movimenti, budget,
   obiettivi, stato dialog transazioni ed eliminazioni). A partire da P28 il provider
-  carica queste entità da Supabase tramite i repository in `src/lib/supabase/`.
+  carica queste entità da Supabase tramite i repository in `src/lib/supabase/`
+  con strategia di caricamento parallelo (`Promise.all`) e spinner globale unico.
   P33 ha eliminato l'ultima dipendenza di produzione da `useKV` in
   `CategoryManagement.tsx`, che ora consuma le categorie direttamente da
-  `useAppData()`.
+  `useAppData()`. Rimangono in `useKV` transitoriamente: `visibleCategories`
+  (migrazione al Blocco 5 — P29) e `budgetPercentages` (migrazione al Blocco 6 — P30).
 - `AuthContext` — autenticazione Supabase email/password, bootstrap sessione,
   logout, recovery password, timeout inattività e gestione transitoria del PIN privato.
 - `useVisibleData` — valori derivati calcolati da `AppDataContext` e `AuthContext`.
@@ -180,6 +182,22 @@ A partire da P28, `AppDataContext` è la fonte unica per caricare i dati di domi
 da Supabase. P33 ha completato la migrazione eliminando l'ultima dipendenza di
 produzione da `useKV` in `CategoryManagement.tsx`, che ora legge le categorie da
 `useAppData()`.
+
+#### Strategie di caricamento dati (P28)
+
+| Decisione | Scelta | Motivazione |
+|---|---|---|
+| **A — Strategia di caricamento** | Parallelo (`Promise.all` su 5 `getAll()`) | Tempo totale = chiamata più lenta; nessuna race condition tra entità correlate |
+| **B — Loading state** | Spinner globale unico (`isLoading`) | Coerente con il parallelo; zero modifiche ai componenti consumatori |
+| **C — Errori parziali** | Blocco totale su qualsiasi errore | Le 5 entità sono interdipendenti; uno stato parziale produce dati orfani in UI |
+
+#### Migrazione one-shot categorie personalizzate (P33 Decisione B)
+
+Al primo login post-distribuzione P33, se `categorie.getAll()` restituisce zero categorie
+personalizzate, `AppDataContext` legge le categorie dal KV Spark (`window.spark.kv`), filtra
+quelle con `predefinita: false` e le scrive su Supabase. Il flag
+`preferences.legacy_categories_migrated` (tabella `impostazioni_utente`) previene la
+riesecuzione al login successivo.
 
 ### Gate applicativi in `App.tsx`
 

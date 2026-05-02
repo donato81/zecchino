@@ -13,8 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-
-Nessun TODO attivo al momento.
+| P29 — Migrazione useUserSettings e Preferenze UI | `docs/3 - todo lists/P29-todo.md` | In lavorazione | Alta |
 
 ## TODO completati
 

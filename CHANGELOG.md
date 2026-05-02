@@ -1,5 +1,34 @@
 # Changelog
 
+## [Unreleased]
+
+Questa sezione aggrega le modifiche rilasciate sul branch `refactoring-architettura`
+ma non ancora su `main`.
+
+### Blocco 4 — Migrazione dati di dominio a Supabase (P28 + P33)
+
+#### Changed
+- `AppDataContext` carica i 5 array di dominio (`accounts`, `transactions`,
+  `categories`, `budgets`, `savingsGoals`) da Supabase in parallelo tramite
+  i repository P26; espone `isLoading`, `error`, `isDataReady` e le azioni
+  tipizzate `add*/update*/remove*` + `refreshAll()`.
+- `App.tsx` aggiunge il quarto gate `!isDataReady → LoadingSpinner`, dopo
+  `!isAuthReady`, `!isAuthenticated` e `needsOnboarding`.
+- `TransactionDialog.tsx` rimuove il campo `cifrato` dai payload di creazione e
+  aggiornamento: il trigger DB `trg_sync_cifrato` lo calcola automaticamente.
+- `CategoryManagement.tsx` rimuove l'ultima `useKV('categories', [])` di
+  produzione e consuma le categorie direttamente da `useAppData()`; i pulsanti
+  "Modifica" ed "Elimina" sono disabilitati per le righe con `predefinita: true`.
+- `AppDataContext` include la logica di migrazione one-shot delle categorie
+  personalizzate dal KV Spark a Supabase, protetta dal flag
+  `preferences.legacy_categories_migrated`.
+
+#### Rimosso
+- Tutte le dipendenze da `@github/spark/hooks` (`useKV`) nei file di produzione.
+  Rimane solo il mock in `src/test/setup.ts`.
+
+---
+
 ## [P33] — 2026-05-02
 
 ### Changed

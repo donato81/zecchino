@@ -28,10 +28,10 @@
 
 ## Prima di iniziare
 
-- [ ] Leggere integralmente il coding plan `docs/2 - coding plans/P28-coding-plan.md`
-- [ ] Verificare di essere sul branch `refactoring-architettura` (`git branch --show-current`)
-- [ ] Verificare che `npm run build` sia exit 0 (baseline pre-P28)
-- [ ] Verificare che `npm run test:run` → tutti i test passed (baseline pre-P28)
+- [x] Leggere integralmente il coding plan `docs/2 - coding plans/P28-coding-plan.md`
+- [x] Verificare di essere sul branch `refactoring-architettura` (`git branch --show-current`)
+- [x] Verificare che `npm run build` sia exit 0 (baseline pre-P28)
+- [x] Verificare che `npm run test:run` → tutti i test passed (baseline pre-P28)
 
 ---
 
@@ -39,16 +39,16 @@
 
 > Non iniziare il Passo A finché questi prerequisiti non sono verificati.
 
-- [ ] **PR0** — Verificare `@supabase/supabase-js` in `package.json`:
+- [x] **PR0** — Verificare `@supabase/supabase-js` in `package.json`:
   ```bash
   cat package.json | grep supabase
   ```
-  > Esito PR0: ___________
+  > Esito PR0: verificato ✓
 
-- [ ] **PR1** — Verificare `.env.local` con `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`:
-  > Esito PR1: ___________
+- [x] **PR1** — Verificare `.env.local` con `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`:
+  > Esito PR1: verificato ✓
 
-- [ ] **PR2** — Verificare che i 5 repository P26 esistano ed espongano `getAll`:
+- [x] **PR2** — Verificare che i 5 repository P26 esistano ed espongano `getAll`:
   ```bash
   grep -rn "export" src/lib/supabase/repositories/conti.ts
   grep -rn "export" src/lib/supabase/repositories/transazioni.ts
@@ -56,13 +56,13 @@
   grep -rn "export" src/lib/supabase/repositories/budget.ts
   grep -rn "export" src/lib/supabase/repositories/obiettivi-risparmio.ts
   ```
-  > Esito PR2: ___________
+  > Esito PR2: verificato ✓
 
-- [ ] **PR3** — Verificare che `useAuth()` da P27 esponga `isAuthenticated`, `user`, `session`:
+- [x] **PR3** — Verificare che `useAuth()` da P27 esponga `isAuthenticated`, `user`, `session`:
   ```bash
   grep -n "isAuthenticated\|user\|session" src/context/AuthContext.tsx | head -20
   ```
-  > Esito PR3: ___________
+  > Esito PR3: verificato ✓
 
 ---
 
@@ -73,80 +73,80 @@
 
 ### A1 — Rimozioni
 
-- [ ] Rimuovere `const [accounts, setAccounts] = useKV<Account[]>('accounts', [])` e setter raw `setAccounts` da interfaccia
-- [ ] Rimuovere `const [transactions, setTransactions] = useKV<Transaction[]>('transactions', [])` e setter raw `setTransactions`
-- [ ] Rimuovere `const [categories, setCategories] = useKV<Category[]>('categories', [])` e setter raw `setCategories`
-- [ ] Rimuovere `const [budgets, setBudgets] = useKV<Budget[]>('budgets', [])` e setter raw `setBudgets`
-- [ ] Rimuovere `const [savingsGoals, setSavingsGoals] = useKV<SavingsGoal[]>('savings-goals', [])` e setter raw `setSavingsGoals`
-- [ ] Rimuovere import di `DEFAULT_CATEGORIES` da `constants`
-- [ ] Rimuovere `useEffect` di bootstrap con `DEFAULT_CATEGORIES` (rilevamento `safeCategories.length === 0`)
-- [ ] Rimuovere la firma `ReturnType<typeof useKV<T>>[1]` dal tipo `AppDataContextValue`
-- [ ] Verificare che `import { useKV } from '@github/spark/hooks'` rimanga (usato da `visibleCategories`, `dismissedAlerts`, `budgetPercentages`)
+- [x] Rimuovere `const [accounts, setAccounts] = useKV<Account[]>('accounts', [])` e setter raw `setAccounts` da interfaccia
+- [x] Rimuovere `const [transactions, setTransactions] = useKV<Transaction[]>('transactions', [])` e setter raw `setTransactions`
+- [x] Rimuovere `const [categories, setCategories] = useKV<Category[]>('categories', [])` e setter raw `setCategories`
+- [x] Rimuovere `const [budgets, setBudgets] = useKV<Budget[]>('budgets', [])` e setter raw `setBudgets`
+- [x] Rimuovere `const [savingsGoals, setSavingsGoals] = useKV<SavingsGoal[]>('savings-goals', [])` e setter raw `setSavingsGoals`
+- [x] Rimuovere import di `DEFAULT_CATEGORIES` da `constants`
+- [x] Rimuovere `useEffect` di bootstrap con `DEFAULT_CATEGORIES` (rilevamento `safeCategories.length === 0`)
+- [x] Rimuovere la firma `ReturnType<typeof useKV<T>>[1]` dal tipo `AppDataContextValue`
+- [x] Verificare che `import { useKV } from '@github/spark/hooks'` rimanga (usato da `visibleCategories`, `dismissedAlerts`, `budgetPercentages`)
 
 ### A2 — Nuovi import repository P26
 
-- [ ] Aggiungere import dei 5 repository P26 con alias semantici (`getAllConti`, `createConto`, `updateConto`, `removeConto`, ecc.)
-- [ ] Aggiungere import di `updateProgress` da `obiettivi-risparmio`
-- [ ] Aggiungere `import { useAuth } from '@/context/AuthContext'`
+- [x] Aggiungere import dei 5 repository P26 con alias semantici (`getAllConti`, `createConto`, `updateConto`, `removeConto`, ecc.)
+- [x] Aggiungere import di `updateProgress` da `obiettivi-risparmio`
+- [x] Aggiungere `import { useAuth } from '@/context/AuthContext'`
 
 ### A3 — Nuova interfaccia e stati
 
-- [ ] Aggiungere a `AppDataContextValue`: `isLoading: boolean`, `error: string | null`, `isDataReady: boolean`
-- [ ] Aggiungere a `AppDataContextValue`: 15 azioni `add*/update*/remove*` per le 5 entità
-- [ ] Aggiungere a `AppDataContextValue`: `updateSavingsGoalProgress(id, importoCorrente): Promise<void>`
-- [ ] Aggiungere a `AppDataContextValue`: `refreshAll(): void`
-- [ ] Rimuovere da `AppDataContextValue`: setter raw `setAccounts`, `setTransactions`, `setCategories`, `setBudgets`, `setSavingsGoals`
-- [ ] Aggiungere `useState`: `isLoading = false`, `error = null`, `isDataReady = false`
-- [ ] Aggiungere `const { isAuthenticated } = useAuth()`
+- [x] Aggiungere a `AppDataContextValue`: `isLoading: boolean`, `error: string | null`, `isDataReady: boolean`
+- [x] Aggiungere a `AppDataContextValue`: 15 azioni `add*/update*/remove*` per le 5 entità
+- [x] Aggiungere a `AppDataContextValue`: `updateSavingsGoalProgress(id, importoCorrente): Promise<void>`
+- [x] Aggiungere a `AppDataContextValue`: `refreshAll(): void`
+- [x] Rimuovere da `AppDataContextValue`: setter raw `setAccounts`, `setTransactions`, `setCategories`, `setBudgets`, `setSavingsGoals`
+- [x] Aggiungere `useState`: `isLoading = false`, `error = null`, `isDataReady = false`
+- [x] Aggiungere `const { isAuthenticated } = useAuth()`
 
 ### A4 — Bootstrap `loadAll()` (Decisione A — parallelo)
 
-- [ ] Creare `useEffect` con dipendenza `[isAuthenticated]`
-- [ ] Branch `isAuthenticated = false`: reset tutti gli array a `[]`, `isLoading = false`, `error = null`, `isDataReady = false`
-- [ ] Branch `isAuthenticated = true`: impostare `isLoading = true`, `error = null`
-- [ ] Implementare flag stale: `let cancelled = false` nel `useEffect` con `return () => { cancelled = true }` nel cleanup
-- [ ] Lanciare `Promise.all([ getAllConti(), getAllTransazioni(), getAllCategorie(), getAllBudget(), getAllObiettivi() ])`
-- [ ] Se successo e `!cancelled`: popolare i 5 array, `isLoading = false`, `isDataReady = true`
-- [ ] Se errore (catch) e `!cancelled`: `error = messaggio descrittivo`, `isLoading = false`
+- [x] Creare `useEffect` con dipendenza `[isAuthenticated]`
+- [x] Branch `isAuthenticated = false`: reset tutti gli array a `[]`, `isLoading = false`, `error = null`, `isDataReady = false`
+- [x] Branch `isAuthenticated = true`: impostare `isLoading = true`, `error = null`
+- [x] Implementare flag stale: `let cancelled = false` nel `useEffect` con `return () => { cancelled = true }` nel cleanup
+- [x] Lanciare `Promise.all([ getAllConti(), getAllTransazioni(), getAllCategorie(), getAllBudget(), getAllObiettivi() ])`
+- [x] Se successo e `!cancelled`: popolare i 5 array, `isLoading = false`, `isDataReady = true`
+- [x] Se errore (catch) e `!cancelled`: `error = messaggio descrittivo`, `isLoading = false`
 
 ### A5 — `refreshAll()`
 
-- [ ] Implementare `refreshAll()`: guardia idempotente `if (isLoading) return`
-- [ ] Se non in corso: avvia nuovo ciclo parallelo senza resettare `isDataReady` (i dati precedenti rimangono visibili)
+- [x] Implementare `refreshAll()`: guardia idempotente `if (isLoading) return`
+- [x] Se non in corso: avvia nuovo ciclo parallelo senza resettare `isDataReady` (i dati precedenti rimangono visibili)
 
 ### A6 — Setter `add*`, `update*`, `remove*` — Conti
 
-- [ ] Implementare `addAccount(data)`: `createConto(data)` → aggiunge record restituito a `accounts`
-- [ ] Implementare `updateAccount(id, data)`: `updateConto(id, data)` → sostituisce in `accounts`
-- [ ] Implementare `removeAccount(id)`: `removeConto(id)` → rimuove da `accounts` + filtra `transactions` (contoId / contoDestinazioneId = id) atomicamente
+- [x] Implementare `addAccount(data)`: `createConto(data)` → aggiunge record restituito a `accounts`
+- [x] Implementare `updateAccount(id, data)`: `updateConto(id, data)` → sostituisce in `accounts`
+- [x] Implementare `removeAccount(id)`: `removeConto(id)` → rimuove da `accounts` + filtra `transactions` (contoId / contoDestinazioneId = id) atomicamente
 
 ### A7 — Setter `add*`, `update*`, `remove*` — Transazioni
 
-- [ ] Implementare `addTransaction(data)`: `createTransazione(data)` **senza `cifrato`** → aggiunge il record restituito (con `cifrato` calcolato dal trigger) a `transactions`
-- [ ] Implementare `updateTransaction(id, data)`: `updateTransazione(id, data)` **senza `cifrato`** → sostituisce in `transactions`
-- [ ] Implementare `removeTransaction(id)`: `removeTransazione(id)` → rimuove da `transactions`
+- [x] Implementare `addTransaction(data)`: `createTransazione(data)` **senza `cifrato`** → aggiunge il record restituito (con `cifrato` calcolato dal trigger) a `transactions`
+- [x] Implementare `updateTransaction(id, data)`: `updateTransazione(id, data)` **senza `cifrato`** → sostituisce in `transactions`
+- [x] Implementare `removeTransaction(id)`: `removeTransazione(id)` → rimuove da `transactions`
 
 ### A8 — Setter `add*`, `update*`, `remove*` — Categorie
 
-- [ ] Implementare `addCategory(data)`: `createCategoria(data)` → aggiunge a `categories`
-- [ ] Implementare `updateCategory(id, data)`: `updateCategoria(id, data)` → sostituisce in `categories`
-- [ ] Implementare `removeCategory(id)`: `removeCategoria(id)` → caso speciale FK: intercettare errore `23503`, impostare `error` con messaggio «Impossibile eliminare la categoria: è usata da movimenti esistenti. Riassegna prima i movimenti a un'altra categoria.», nessuna modifica locale
+- [x] Implementare `addCategory(data)`: `createCategoria(data)` → aggiunge a `categories`
+- [x] Implementare `updateCategory(id, data)`: `updateCategoria(id, data)` → sostituisce in `categories`
+- [x] Implementare `removeCategory(id)`: `removeCategoria(id)` → caso speciale FK: intercettare errore `23503`, impostare `error` con messaggio «Impossibile eliminare la categoria: è usata da movimenti esistenti. Riassegna prima i movimenti a un'altra categoria.», nessuna modifica locale
 
 ### A9 — Setter `add*`, `update*`, `remove*` — Budget e Obiettivi
 
-- [ ] Implementare `addBudget(data)`: `createBudgetItem(data)` → aggiunge a `budgets`
-- [ ] Implementare `updateBudget(id, data)`: `updateBudgetItem(id, data)` → sostituisce in `budgets`
-- [ ] Implementare `removeBudget(id)`: `removeBudgetItem(id)` → rimuove da `budgets`
-- [ ] Implementare `addSavingsGoal(data)`: `createObiettivo(data)` → aggiunge a `savingsGoals`
-- [ ] Implementare `updateSavingsGoal(id, data)`: `updateObiettivo(id, data)` → sostituisce (metadati)
-- [ ] Implementare `updateSavingsGoalProgress(id, importoCorrente)`: `updateObiettivoProgress(id, importoCorrente)` → sostituisce il record aggiornato (inclusi `completato`, `dataCompletamento`)
-- [ ] Implementare `removeSavingsGoal(id)`: `removeObiettivo(id)` → rimuove da `savingsGoals`
+- [x] Implementare `addBudget(data)`: `createBudgetItem(data)` → aggiunge a `budgets`
+- [x] Implementare `updateBudget(id, data)`: `updateBudgetItem(id, data)` → sostituisce in `budgets`
+- [x] Implementare `removeBudget(id)`: `removeBudgetItem(id)` → rimuove da `budgets`
+- [x] Implementare `addSavingsGoal(data)`: `createObiettivo(data)` → aggiunge a `savingsGoals`
+- [x] Implementare `updateSavingsGoal(id, data)`: `updateObiettivo(id, data)` → sostituisce (metadati)
+- [x] Implementare `updateSavingsGoalProgress(id, importoCorrente)`: `updateObiettivoProgress(id, importoCorrente)` → sostituisce il record aggiornato (inclusi `completato`, `dataCompletamento`)
+- [x] Implementare `removeSavingsGoal(id)`: `removeObiettivo(id)` → rimuove da `savingsGoals`
 
 ### A10 — Gate intermedio A
 
-- [ ] `npm run build` exit 0
-- [ ] `npm run test:run` → tutti i test passed (stessa baseline pre-P28)
-- [ ] `npx tsc --noEmit` → 0 errori TypeScript
+- [x] `npm run build` exit 0
+- [x] `npm run test:run` → tutti i test passed (stessa baseline pre-P28)
+- [x] `npx tsc --noEmit` → 0 errori TypeScript
 
 ---
 
@@ -157,14 +157,14 @@
 
 ### B1 — Aggiunta gate
 
-- [ ] Aggiungere `isDataReady` alla destrutturazione di `useAppData()`
-- [ ] Aggiungere gate `if (!isDataReady) return <LoadingSpinner />` dopo il gate `needsOnboarding` e prima della dashboard
-- [ ] Verificare ordine dei 4 gate: `!isAuthReady` → `!isAuthenticated` → `needsOnboarding` → `!isDataReady`
+- [x] Aggiungere `isDataReady` alla destrutturazione di `useAppData()`
+- [x] Aggiungere gate `if (!isDataReady) return <LoadingSpinner />` dopo il gate `needsOnboarding` e prima della dashboard
+- [x] Verificare ordine dei 4 gate: `!isAuthReady` → `!isAuthenticated` → `needsOnboarding` → `!isDataReady`
 
 ### B2 — Gate intermedio B
 
-- [ ] `npm run build` exit 0
-- [ ] `npm run test:run` → tutti i test passed (stessa baseline pre-P28)
+- [x] `npm run build` exit 0
+- [x] `npm run test:run` → tutti i test passed (stessa baseline pre-P28)
 
 ---
 
@@ -175,29 +175,29 @@
 
 ### C1 — Rimozione dal payload
 
-- [ ] Identificare la riga con `cifrato: isPrivateTransaction` (o formula analoga) nel payload di `addTransaction(...)`
-- [ ] Rimuovere `cifrato` dal payload di `addTransaction(...)` nel handler di submit
-- [ ] Rimuovere `cifrato` dal payload di `updateTransaction(...)` nel handler di submit, se presente
-- [ ] Verificare che `cifrato` non sia costruito come dato di input in nessun altro punto del file
-- [ ] Verificare che la lettura di `cifrato` dai dati esistenti (pre-popolamento form edit) non sia rimossa — solo l'invio nel payload va eliminato
+- [x] Identificare la riga con `cifrato: isPrivateTransaction` (o formula analoga) nel payload di `addTransaction(...)`
+- [x] Rimuovere `cifrato` dal payload di `addTransaction(...)` nel handler di submit
+- [x] Rimuovere `cifrato` dal payload di `updateTransaction(...)` nel handler di submit, se presente
+- [x] Verificare che `cifrato` non sia costruito come dato di input in nessun altro punto del file
+- [x] Verificare che la lettura di `cifrato` dai dati esistenti (pre-popolamento form edit) non sia rimossa — solo l'invio nel payload va eliminato
 
 ### C2 — Gate intermedio C
 
-- [ ] `npm run build` exit 0
-- [ ] `npm run test:run` → tutti i test passed (stessa baseline pre-P28)
-- [ ] `npx tsc --noEmit` → 0 errori TypeScript
+- [x] `npm run build` exit 0
+- [x] `npm run test:run` → tutti i test passed (stessa baseline pre-P28)
+- [x] `npx tsc --noEmit` → 0 errori TypeScript
 
 ---
 
 ## Gate finale D (= gate P28)
 
-- [ ] `npm run build` exit 0
-- [ ] `npm run test:run` → tutti i test passed (stessa baseline pre-P28)
-- [ ] `npx tsc --noEmit` → 0 errori TypeScript
-- [ ] `grep useKV src/context/AppDataContext.tsx` → solo 3 occorrenze attese: `visibleCategories`, `dismissedAlerts`, `budgetPercentages`
-- [ ] Verifica a vista: `useAppData()` espone tutti gli elementi della superficie pubblica P28 §4 (5 array, 3 flag, 15 azioni + `updateSavingsGoalProgress` + `refreshAll()`)
-- [ ] Verifica a vista: `App.tsx` ha i 4 gate nell'ordine corretto
-- [ ] `git diff --name-only HEAD | grep ".github"` → output vuoto
+- [x] `npm run build` exit 0
+- [x] `npm run test:run` → tutti i test passed (stessa baseline pre-P28)
+- [x] `npx tsc --noEmit` → 0 errori TypeScript
+- [x] `grep useKV src/context/AppDataContext.tsx` → solo 3 occorrenze attese: `visibleCategories`, `dismissedAlerts`, `budgetPercentages`
+- [x] Verifica a vista: `useAppData()` espone tutti gli elementi della superficie pubblica P28 §4 (5 array, 3 flag, 15 azioni + `updateSavingsGoalProgress` + `refreshAll()`)
+- [x] Verifica a vista: `App.tsx` ha i 4 gate nell'ordine corretto
+- [x] `git diff --name-only HEAD | grep ".github"` → output vuoto
 
 ---
 
