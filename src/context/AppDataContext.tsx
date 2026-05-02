@@ -1,7 +1,6 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { createContext, useContext, useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
+import * as sparkHooks from '@github/spark/hooks'
 import { Account, Transaction, TransactionInput, Category, Budget, SavingsGoal } from '@/lib/types'
-import { ACCOUNT_CATEGORIES } from '@/lib/constants'
 import { formatCurrency, exportToCSV, downloadFile, getActiveBudgets, getBudgetProgress } from '@/lib/helpers'
 import { shouldShowBudgetNotification, getBudgetNotificationTitle } from '@/lib/budget-alerts'
 import { soundSystem } from '@/lib/sound-system'
@@ -41,12 +40,8 @@ type AppDataContextValue = {
   isLoading: boolean
   error: string | null
   isDataReady: boolean
-  visibleCategories: string[]
-  setVisibleCategories: ReturnType<typeof useKV<string[]>>[1]
-  dismissedAlerts: string[]
-  setDismissedAlerts: ReturnType<typeof useKV<string[]>>[1]
   budgetPercentages: Record<string, number>
-  setBudgetPercentages: ReturnType<typeof useKV<Record<string, number>>>[1]
+  setBudgetPercentages: Dispatch<SetStateAction<Record<string, number>>>
   safeAccounts: Account[]
   safeTransactions: Transaction[]
   safeCategories: Category[]
@@ -77,9 +72,6 @@ type AppDataContextValue = {
   handleSaveSavingsGoal: (goal: SavingsGoal) => void
   handleDeleteConfirm: () => void
   handleExportCSV: (visibleTransactions: Transaction[], visibleAccounts: Account[]) => void
-  toggleCategoryVisibility: (categoryId: string) => void
-  toggleAllCategories: () => void
-  handleDismissBudgetAlert: (budgetId: string) => void
   handleViewBudget: (budgetId: string, onNavigate: (budget: Budget) => void) => void
   // Dialog transaction
   editingTransaction: Transaction | undefined
@@ -177,12 +169,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const [isDataReady, setIsDataReady] = useState(false)
 
-  const [visibleCategories, setVisibleCategories] = useKV<string[]>(
-    'visible-categories',
-    ACCOUNT_CATEGORIES.map(category => category.id)
-  )
-  const [dismissedAlerts, setDismissedAlerts] = useKV<string[]>('dismissed-budget-alerts', [])
-  const [budgetPercentages, setBudgetPercentages] = useKV<Record<string, number>>('budget-percentages', {})
+  const [budgetPercentages, setBudgetPercentages] = sparkHooks.useKV<Record<string, number>>('budget-percentages', {})
 
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined)
   const [showTransactionDialog, setShowTransactionDialog] = useState(false)
@@ -581,51 +568,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     screenReader.announceSuccess(`Dati esportati. ${visibleTransactions.length} movimenti salvati in formato CSV.`)
   }
 
-  const toggleCategoryVisibility = (categoryId: string) => {
-    setVisibleCategories((current) => {
-      const currentCategories = current || []
-      const category = ACCOUNT_CATEGORIES.find(c => c.id === categoryId)
-      const categoryName = category?.label || 'Categoria'
-
-      if (currentCategories.includes(categoryId)) {
-        soundSystem.play('filter-toggle')
-        hapticSystem.filterToggle()
-        screenReader.announceFilter(categoryName, false)
-        return currentCategories.filter(id => id !== categoryId)
-      } else {
-        soundSystem.play('category-toggle')
-        hapticSystem.categoryToggle()
-        screenReader.announceFilter(categoryName, true)
-        return [...currentCategories, categoryId]
-      }
-    })
-  }
-
-  const toggleAllCategories = () => {
-    setVisibleCategories((current) => {
-      const currentCategories = current || []
-      const allCategoryIds = ACCOUNT_CATEGORIES.map(c => c.id)
-      if (currentCategories.length === allCategoryIds.length) {
-        soundSystem.play('filter-toggle')
-        hapticSystem.filterToggle()
-        return []
-      } else {
-        soundSystem.play('category-toggle')
-        hapticSystem.categoryToggle()
-        return allCategoryIds
-      }
-    })
-  }
-
-  const handleDismissBudgetAlert = (budgetId: string) => {
-    setDismissedAlerts((current) => {
-      const currentDismissed = current || []
-      soundSystem.play('alert-dismissed')
-      hapticSystem.alertDismissed()
-      return [...currentDismissed, budgetId]
-    })
-  }
-
   const handleViewBudget = (budgetId: string, onNavigate: (budget: Budget) => void) => {
     soundSystem.play('dialog-open')
     hapticSystem.dialogOpen()
@@ -646,10 +588,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         isLoading,
         error,
         isDataReady,
-        visibleCategories: visibleCategories || [],
-        setVisibleCategories,
-        dismissedAlerts: dismissedAlerts || [],
-        setDismissedAlerts,
         budgetPercentages: budgetPercentages || {},
         setBudgetPercentages,
         safeAccounts,
@@ -680,9 +618,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         handleSaveSavingsGoal,
         handleDeleteConfirm,
         handleExportCSV,
-        toggleCategoryVisibility,
-        toggleAllCategories,
-        handleDismissBudgetAlert,
         handleViewBudget,
         editingTransaction,
         setEditingTransaction,

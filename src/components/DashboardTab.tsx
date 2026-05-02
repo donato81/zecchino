@@ -3,6 +3,7 @@ import type { ComponentProps } from 'react'
 import { useAppData } from '@/context/AppDataContext'
 import { useAuth } from '@/context/AuthContext'
 import { useVisibleData } from '@/context/VisibleDataContext'
+import { useUserSettings } from '@/context/UserSettingsContext'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useListNavigation } from '@/hooks/use-list-navigation'
 import { calculateAccountBalance, formatCurrency } from '@/lib/helpers'
@@ -29,11 +30,22 @@ export function DashboardTab() {
     setShowDeleteDialog,
     setEditingAccount,
     setShowAccountDialog,
-    toggleCategoryVisibility,
-    toggleAllCategories,
-    setVisibleCategories,
-    visibleCategories,
   } = useAppData()
+
+  const { visibleCategories, setVisibleCategories } = useUserSettings()
+
+  const handleToggleCategory = useCallback((categoryId: string) => {
+    const newIds = visibleCategories.includes(categoryId)
+      ? visibleCategories.filter(id => id !== categoryId)
+      : [...visibleCategories, categoryId]
+    setVisibleCategories(newIds).catch(console.error)
+  }, [visibleCategories, setVisibleCategories])
+
+  const handleToggleAll = useCallback(() => {
+    const allIds = ACCOUNT_CATEGORIES.map(c => c.id)
+    const newIds = visibleCategories.length === allIds.length ? [] : allIds
+    setVisibleCategories(newIds).catch(console.error)
+  }, [visibleCategories, setVisibleCategories])
 
   const {
     isAuthenticated,
@@ -204,7 +216,7 @@ export function DashboardTab() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    onClick={toggleAllCategories}
+                    onClick={handleToggleAll}
                     variant={allCategoriesVisible ? 'default' : 'outline'}
                     size="sm"
                     className="gap-2"
@@ -231,7 +243,7 @@ export function DashboardTab() {
                   <Tooltip key={category.id}>
                     <TooltipTrigger asChild>
                       <Button
-                        onClick={() => toggleCategoryVisibility(category.id)}
+                        onClick={() => handleToggleCategory(category.id)}
                         variant={isActive ? category.badgeVariant : 'outline'}
                         size="sm"
                         className="gap-2"
@@ -262,7 +274,7 @@ export function DashboardTab() {
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <p className="text-muted-foreground mb-4">Nessun conto da visualizzare con i filtri selezionati</p>
                 <Button
-                  onClick={() => setVisibleCategories(ACCOUNT_CATEGORIES.map(c => c.id))}
+                  onClick={() => setVisibleCategories(ACCOUNT_CATEGORIES.map(c => c.id)).catch(console.error)}
                   variant="outline"
                 >
                   Mostra Tutti i Conti

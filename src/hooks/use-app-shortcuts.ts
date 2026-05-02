@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 import { useAppData } from '@/context/AppDataContext'
 import { useAuth } from '@/context/AuthContext'
 import { useVisibleData } from '@/context/VisibleDataContext'
+import { useUserSettings } from '@/context/UserSettingsContext'
+import { ACCOUNT_CATEGORIES } from '@/lib/constants'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { soundSystem } from '@/lib/sound-system'
 import { toast } from 'sonner'
@@ -29,10 +31,10 @@ export function useAppShortcuts(options: AppShortcutsOptions): void {
   } = options
 
   const {
-    toggleCategoryVisibility,
-    toggleAllCategories,
     handleExportCSV,
   } = useAppData()
+
+  const { visibleCategories, setVisibleCategories } = useUserSettings()
 
   const {
     isAuthenticated,
@@ -52,7 +54,10 @@ export function useAppShortcuts(options: AppShortcutsOptions): void {
       key: '1',
       callback: () => {
         if (isAuthenticated && activeTab === 'dashboard') {
-          toggleCategoryVisibility('banking')
+          const newIds = visibleCategories.includes('banking')
+            ? visibleCategories.filter(id => id !== 'banking')
+            : [...visibleCategories, 'banking']
+          setVisibleCategories(newIds).catch(console.error)
           soundSystem.play('click')
           toast.success('Filtro Bancari attivato/disattivato')
         }
@@ -63,7 +68,10 @@ export function useAppShortcuts(options: AppShortcutsOptions): void {
       key: '2',
       callback: () => {
         if (isAuthenticated && activeTab === 'dashboard') {
-          toggleCategoryVisibility('digital')
+          const newIds = visibleCategories.includes('digital')
+            ? visibleCategories.filter(id => id !== 'digital')
+            : [...visibleCategories, 'digital']
+          setVisibleCategories(newIds).catch(console.error)
           soundSystem.play('click')
           toast.success('Filtro Digitali attivato/disattivato')
         }
@@ -74,7 +82,10 @@ export function useAppShortcuts(options: AppShortcutsOptions): void {
       key: '3',
       callback: () => {
         if (isAuthenticated && activeTab === 'dashboard') {
-          toggleCategoryVisibility('savings')
+          const newIds = visibleCategories.includes('savings')
+            ? visibleCategories.filter(id => id !== 'savings')
+            : [...visibleCategories, 'savings']
+          setVisibleCategories(newIds).catch(console.error)
           soundSystem.play('click')
           toast.success('Filtro Risparmio attivato/disattivato')
         }
@@ -85,7 +96,10 @@ export function useAppShortcuts(options: AppShortcutsOptions): void {
       key: '4',
       callback: () => {
         if (isAuthenticated && activeTab === 'dashboard') {
-          toggleCategoryVisibility('investments')
+          const newIds = visibleCategories.includes('investments')
+            ? visibleCategories.filter(id => id !== 'investments')
+            : [...visibleCategories, 'investments']
+          setVisibleCategories(newIds).catch(console.error)
           soundSystem.play('click')
           toast.success('Filtro Investimenti attivato/disattivato')
         }
@@ -96,7 +110,10 @@ export function useAppShortcuts(options: AppShortcutsOptions): void {
       key: '5',
       callback: () => {
         if (isAuthenticated && activeTab === 'dashboard') {
-          toggleCategoryVisibility('private')
+          const newIds = visibleCategories.includes('private')
+            ? visibleCategories.filter(id => id !== 'private')
+            : [...visibleCategories, 'private']
+          setVisibleCategories(newIds).catch(console.error)
           soundSystem.play('click')
           toast.success('Filtro Privato attivato/disattivato')
         }
@@ -108,7 +125,9 @@ export function useAppShortcuts(options: AppShortcutsOptions): void {
       ctrl: true,
       callback: () => {
         if (isAuthenticated && activeTab === 'dashboard') {
-          toggleAllCategories()
+          const allIds = ACCOUNT_CATEGORIES.map(c => c.id)
+          const newIds = visibleCategories.length === allIds.length ? [] : allIds
+          setVisibleCategories(newIds).catch(console.error)
           soundSystem.play('click')
           toast.success(allCategoriesVisible ? 'Tutti i filtri nascosti' : 'Tutti i filtri attivati')
         }
@@ -216,10 +235,10 @@ export function useAppShortcuts(options: AppShortcutsOptions): void {
     allCategoriesVisible,
     hasPrivateAccount,
     isPrivateUnlocked,
+    visibleCategories,
     visibleTransactions,
     visibleAccounts,
-    toggleCategoryVisibility,
-    toggleAllCategories,
+    setVisibleCategories,
     handleExportCSV,
     setShowPrivatePinDialog,
     setActiveTab,

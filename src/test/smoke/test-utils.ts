@@ -96,7 +96,6 @@ const authStore = vi.hoisted(() => {
 const appDataStore = vi.hoisted(() => {
   let state: Record<string, unknown>
   const listeners = new Set<() => void>()
-  const visibleCategoryIds = ['banking', 'digital', 'savings', 'investments', 'private']
 
   const createState = (initialKv: Record<string, unknown> = {}) => ({
     accounts: Array.isArray(initialKv.accounts) ? structuredClone(initialKv.accounts) : [],
@@ -112,10 +111,6 @@ const appDataStore = vi.hoisted(() => {
     isLoading: false,
     error: null,
     isDataReady: true,
-    visibleCategories: visibleCategoryIds,
-    setVisibleCategories: vi.fn(),
-    dismissedAlerts: [],
-    setDismissedAlerts: vi.fn(),
     budgetPercentages: {},
     setBudgetPercentages: vi.fn(),
     addAccount: vi.fn(),
@@ -141,9 +136,6 @@ const appDataStore = vi.hoisted(() => {
     handleSaveSavingsGoal: vi.fn(),
     handleDeleteConfirm: vi.fn(),
     handleExportCSV: vi.fn(),
-    toggleCategoryVisibility: vi.fn(),
-    toggleAllCategories: vi.fn(),
-    handleDismissBudgetAlert: vi.fn(),
     handleViewBudget: vi.fn(),
     editingTransaction: undefined,
     setEditingTransaction: vi.fn(),
@@ -170,9 +162,7 @@ const appDataStore = vi.hoisted(() => {
     setShowKeyboardHelp: vi.fn(),
   })
 
-  state = createState()
-
-  return {
+  const store = {
     subscribe(listener: () => void) {
       listeners.add(listener)
       return () => listeners.delete(listener)
@@ -185,6 +175,10 @@ const appDataStore = vi.hoisted(() => {
       listeners.forEach((listener) => listener())
     },
   }
+
+  state = createState()
+
+  return store
 })
 
 vi.mock('@/context/AuthContext', () => ({
@@ -201,6 +195,20 @@ vi.mock('@/context/AppDataContext', () => ({
     return appDataStore.getState()
   },
   AppDataProvider: ({ children }: { children: React.ReactNode }) => children,
+}))
+
+vi.mock('@/context/UserSettingsContext', () => ({
+  useUserSettings: () => ({
+    visibleCategories: ['banking', 'digital', 'savings', 'investments', 'private'],
+    dismissedBudgetAlerts: [],
+    setVisibleCategories: vi.fn().mockResolvedValue(undefined),
+    dismissBudgetAlert: vi.fn().mockResolvedValue(undefined),
+    resetDismissedAlerts: vi.fn().mockResolvedValue(undefined),
+    isSettingsReady: true,
+    isSettingsLoading: false,
+    settingsError: null,
+  }),
+  UserSettingsProvider: ({ children }: { children: React.ReactNode }) => children,
 }))
 
 type RenderAppOptions = {

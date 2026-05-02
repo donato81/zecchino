@@ -7,6 +7,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { AppDataProvider, useAppData } from '@/context/AppDataContext'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import { VisibleDataProvider, useVisibleData } from '@/context/VisibleDataContext'
+import { UserSettingsProvider, useUserSettings } from '@/context/UserSettingsContext'
 import { SkipLink } from '@/components/SkipLink'
 import { BudgetAlertBanner } from '@/components/BudgetAlertBanner'
 import { FocusIndicator } from '@/components/FocusIndicator'
@@ -28,11 +29,12 @@ function AppContent() {
   const screenReader = useScreenReader()
   const isMobile = useIsMobile()
   const {
-    handleDismissBudgetAlert, handleViewBudget, setShowTransactionDialog, setEditingAccount,
+    handleViewBudget, setShowTransactionDialog, setEditingAccount,
     setShowAccountDialog, setShowBudgetDialog, setEditingBudget, setShowKeyboardHelp, setEditingTransaction,
     isDataReady,
   } = useAppData()
   const { isAuthenticated, isAuthReady, needsOnboarding } = useAuth()
+  const { dismissBudgetAlert } = useUserSettings()
   const { budgetAlerts, totalBalance, visibleAccounts, visibleTransactions } = useVisibleData()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [previousTab, setPreviousTab] = useState('dashboard')
@@ -89,7 +91,7 @@ function AppContent() {
           <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-20 sm:pb-6" id="main-content" role="main" aria-label="Contenuto principale dell'applicazione Zecchino">
             {budgetAlerts.length > 0 && (
               <div className="mb-4 sm:mb-6" role="region" aria-label="Avvisi budget" aria-live="polite">
-                <BudgetAlertBanner alerts={budgetAlerts} onDismiss={handleDismissBudgetAlert} onViewBudget={(id) => handleViewBudget(id, (budget) => {
+                <BudgetAlertBanner alerts={budgetAlerts} onDismiss={dismissBudgetAlert} onViewBudget={(id) => handleViewBudget(id, (budget) => {
                   setActiveTab('reports')
                   setTimeout(() => {
                     setEditingBudget(budget)
@@ -132,7 +134,7 @@ function AppContent() {
 }
 
 function App() {
-  return <AuthProvider><AppDataProvider><VisibleDataProvider><AppContent /></VisibleDataProvider></AppDataProvider></AuthProvider>
+  return <AuthProvider><AppDataProvider><UserSettingsProvider><VisibleDataProvider><AppContent /></VisibleDataProvider></UserSettingsProvider></AppDataProvider></AuthProvider>
 }
 
 export default App

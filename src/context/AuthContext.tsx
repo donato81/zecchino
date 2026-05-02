@@ -3,6 +3,7 @@ import type { Session, User } from '@supabase/supabase-js'
 import { hashPin, verifyPin } from '@/lib/crypto'
 import { supabase } from '@/lib/supabase/client'
 import { getOrCreate, updatePinHash, updatePreference } from '@/lib/supabase/repositories/impostazioni-utente'
+import type { UserSettings } from '@/lib/supabase/types'
 import { soundSystem } from '@/lib/sound-system'
 import { hapticSystem } from '@/lib/haptic-system'
 import { Button } from '@/components/ui/button'
@@ -17,6 +18,7 @@ interface AuthContextValue {
   isAuthenticated: boolean
   needsOnboarding: boolean
   inactivityTimeout: number
+  userSettings: UserSettings | null
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
@@ -47,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [showPrivatePinDialog, setShowPrivatePinDialog] = useState(false)
   const [isAuthReady, setIsAuthReady] = useState(false)
   const [privatePinHashCache, setPrivatePinHashCache] = useState<string | null | undefined>(undefined)
+  const [userSettings, setUserSettings] = useState<UserSettings | null>(null)
   const screenReader = useScreenReader()
 
   const loadUserSettings = useCallback(async () => {
@@ -55,10 +58,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setNeedsOnboarding(!settings.nomeVisualizzato)
       setInactivityTimeoutState((settings.preferences as Record<string, unknown>)?.session_timeout_minutes as number ?? 5)
       setPrivatePinHashCache(settings.pinPrivatoHash ?? null)
+      setUserSettings(settings)
     } catch {
       setNeedsOnboarding(false)
       setInactivityTimeoutState(5)
       setPrivatePinHashCache(null)
+      setUserSettings(null)
     }
   }, [])
 
@@ -103,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsPrivateUnlocked(false)
         setNeedsOnboarding(false)
         setPrivatePinHashCache(undefined)
+        setUserSettings(null)
       }
     })
 
@@ -186,6 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated,
     needsOnboarding,
     inactivityTimeout: inactivityTimeoutState,
+    userSettings,
     signIn,
     signUp,
     signOut,
@@ -211,6 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut,
     signUp,
     user,
+    userSettings,
   ])
 
   return (

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useAppData } from '@/context/AppDataContext'
 import { useAuth } from '@/context/AuthContext'
+import { useUserSettings } from '@/context/UserSettingsContext'
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from '@/lib/constants'
 import { generateBudgetAlerts, type BudgetAlert } from '@/lib/budget-alerts'
 import { getTotalBalance } from '@/lib/helpers'
@@ -24,9 +25,8 @@ export function useVisibleData(): VisibleDataResult {
     safeAccounts,
     safeTransactions,
     safeBudgets,
-    visibleCategories,
-    dismissedAlerts,
   } = useAppData()
+  const { visibleCategories, dismissedBudgetAlerts } = useUserSettings()
   const { isPrivateUnlocked } = useAuth()
 
   const visibleAccounts = useMemo(() => {
@@ -94,9 +94,9 @@ export function useVisibleData(): VisibleDataResult {
 
   const budgetAlerts = useMemo(() => {
     const alerts = generateBudgetAlerts(safeBudgets, visibleTransactions)
-    const dismissedIds = dismissedAlerts || []
+    const dismissedIds = dismissedBudgetAlerts || []
     return alerts.filter(alert => !dismissedIds.includes(alert.budgetId))
-  }, [safeBudgets, visibleTransactions, dismissedAlerts])
+  }, [safeBudgets, visibleTransactions, dismissedBudgetAlerts])
 
   return {
     visibleAccounts,
