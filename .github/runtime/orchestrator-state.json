@@ -1,10 +1,10 @@
 {
-  "current_phase": "complete",
+  "current_phase": "validate",
   "current_agent": "Agent-Orchestrator",
   "retry_count": 0,
-  "confidence": 0.92,
+  "confidence": 0.96,
   "execution_mode": "supervised",
-  "last_updated": "2026-05-01T10:00:00Z",
+  "last_updated": "2026-05-02T08:38:21Z",
   "phase_history": [
     "P01-step1-code-pass",
     "P06-code-pass",
@@ -35,8 +35,8 @@
   "project_name": "Zecchino",
   "stack": "React+TypeScript+Vite",
   "framework_version": "2.3.1",
-  "last_step_output": "P26 validate PASS: build exit 0, lint exit 0, test 4/5 (01-app-renders preesistente), 8 file src/lib/supabase/ creati, @supabase/supabase-js@^2.105.1 in package.json, import check clean, perimetro OK, docs aggiornati. Azioni esterne pendenti: creare RPC update_impostazioni_preference e update_obiettivo_progress su Supabase.",
-  "last_update_check": "2026-05-01",
+  "last_step_output": "P27 test-adaptation PASS: smoke tests 5/5 verdi con mock AuthContext parziale in test-utils; build exit 0; modificati solo i file test smoke autorizzati.",
+  "last_update_check": "2026-05-02",
   "update_check_done": true,
   "available_package_updates": 2,
   "completed_packages": [
@@ -44,5 +44,5 @@
     "P05",
     "P06"
   ],
-  "current_package": "P26"
+  "current_package": "P27"
 }

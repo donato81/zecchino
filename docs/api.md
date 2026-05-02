@@ -98,18 +98,35 @@ interface SavingsGoal {
 }
 ```
 
-### `AppState`
+### `AuthContextValue` (`src/context/AuthContext.tsx`)
 ```ts
-interface AppState {
+interface AuthContextValue {
+  user: User | null
+  session: Session | null
+  isAuthReady: boolean
   isAuthenticated: boolean
+  needsOnboarding: boolean
+  inactivityTimeout: number
+  signIn: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string) => Promise<void>
+  signOut: () => Promise<void>
+  resetPassword: (email: string) => Promise<void>
   isPrivateUnlocked: boolean
-  accounts: Account[]
-  transactions: Transaction[]
-  categories: Category[]
-  budgets: Budget[]
-  savingsGoals: SavingsGoal[]
-  globalPinHash: string
-  privatePinHash: string
+  setIsPrivateUnlocked: (value: boolean) => void
+  showPrivatePinDialog: boolean
+  setShowPrivatePinDialog: (value: boolean) => void
+  setInactivityTimeout: (minutes: number) => Promise<void>
+  handlePrivatePinSubmit: (pin: string, onUnlocked?: () => void) => Promise<void>
+}
+```
+
+### `AuthFlowState`
+```ts
+type AuthFlowState = {
+  isAuthReady: boolean
+  isAuthenticated: boolean
+  needsOnboarding: boolean
+  isPrivateUnlocked: boolean
 }
 ```
 
@@ -119,6 +136,7 @@ interface AppState {
 
 | Hook | File | Scopo |
 |---|---|---|
+| `useInactivityTimer` | `use-inactivity-timer.ts` | Timeout sessione con warning a 1 minuto e reset su attività utente |
 | `useHaptic` | `use-haptic.ts` | Feedback tattile per azioni |
 | `useKeyboardShortcuts` | `use-keyboard-shortcuts.ts` | Scorciatoie tastiera globali |
 | `useListNavigation` | `use-list-navigation.ts` | Navigazione liste con tastiera/screen reader |
@@ -166,13 +184,22 @@ interface AppState {
 
 I dati di dominio sono persistiti su **Supabase** tramite il layer `src/lib/supabase/`. Il layer è l'unica fonte di chiamate `@supabase/supabase-js` nell'app: nessun componente React chiama Supabase direttamente.
 
+Fa eccezione il bootstrap autenticazione in `src/context/AuthContext.tsx`, che usa direttamente `supabase.auth.getSession()`, `supabase.auth.onAuthStateChange()`, `signInWithPassword()`, `signUp()`, `signOut()` e `resetPasswordForEmail()` per governare il ciclo di sessione.
+
 `localStorage` è usato soltanto per dati di configurazione locale secondaria, come le impostazioni di feedback tattile in `src/lib/haptic-system.ts`.
 
 ---
 
-## Sicurezza
+## Autenticazione e sicurezza
 
-- **PIN globale**: hash SHA-256, blocca l'intera applicazione
-- **PIN privato**: hash SHA-256 separato, sblocca solo l'account privato
-- **Cifratura**: AES-256 per transazioni cifrate (`cifrato: true`)
-- L'account `tipo: 'privato'` è invisibile finché `isPrivateUnlocked: false`
+- **Autenticazione primaria**: Supabase Auth con email/password e conferma email obbligatoria.
+- **Bootstrap sessione**: `AuthContext` parte da `isAuthReady: false`, legge la sessione corrente e poi apre uno di tre gate: login, onboarding, area autenticata.
+- **Recupero password**: `resetPassword(email)` usa il flusso email di Supabase senza esporre user enumeration lato UI.
+- **Timeout inattività**: `useInactivityTimer` mostra un warning un minuto prima della scadenza e forza `signOut()` allo scadere del timer.
+- **PIN privato**: rimane separato e sblocca solo l'account privato; la logica in P27 è transitoria e non usa più `useKV`.
+- **Cifratura**: AES-256 per transazioni cifrate (`cifrato: true`).
+- L'account `tipo: 'privato'` è invisibile finché `isPrivateUnlocked: false`.
+
+## Testing smoke
+
+- I test smoke usano `src/test/smoke/test-utils.ts` con un mock parziale del contesto auth per verificare il comportamento dell'area autenticata senza dipendere dal form reale di login.

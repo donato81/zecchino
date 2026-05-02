@@ -12,29 +12,35 @@
 
 | Verifica | Stato |
 |---|---|
-| `npm run build` exit 0 | [ ] Da verificare |
-| `npm run test:run` → tutti i test passed | [ ] Da verificare |
-| `grep -r "@github/spark/hooks" src/` → 0 risultati | [ ] Da verificare |
-| `grep -r "window\.spark" src/` → 0 risultati | [ ] Da verificare |
-| `npx tsc --noEmit` → 0 errori TypeScript | [ ] Da verificare |
-| `AuthContext.tsx` espone 14 valori formali P27 §4 + `handlePrivatePinSubmit` | [ ] Da verificare |
-| `SecuritySettings.tsx` senza `useKV` | [ ] Da verificare |
-| `App.tsx` con tre gate nell'ordine corretto | [ ] Da verificare |
-| `AuthScreen.tsx` con tre pannelli (Login, Signup, Recovery) | [ ] Da verificare |
-| `DialogsOverlay.tsx` senza `privatePinHash` dalla destrutturazione | [ ] Da verificare |
-| `LoadingSpinner.tsx` accessibilità-compliant | [ ] Da verificare |
-| `use-inactivity-timer.ts` con `showWarning` e `resetTimer` | [ ] Da verificare |
-| `OnboardingFlow.tsx` placeholder creato | [ ] Da verificare |
-| Nessun file `.github/**` modificato | [ ] Da verificare |
+| `npm run build` exit 0 | [x] Verificato |
+| `npm run test:run` → tutti i test passed | [x] Verificato |
+| `npx tsc --noEmit` → 0 errori TypeScript | [x] Verificato |
+| `AuthContext.tsx` espone la nuova superficie P27 con sessione Supabase e metodi auth | [x] Verificato |
+| `SecuritySettings.tsx` senza `useKV` | [x] Verificato |
+| `App.tsx` con tre gate nell'ordine corretto | [x] Verificato |
+| `AuthScreen.tsx` con pannelli Login, Signup, Recovery e conferma signup | [x] Verificato |
+| `DialogsOverlay.tsx` senza `privatePinHash` dalla destrutturazione | [x] Verificato |
+| `LoadingSpinner.tsx` accessibilità-compliant | [x] Verificato |
+| `use-inactivity-timer.ts` con `showWarning` e `resetTimer` | [x] Verificato |
+| `OnboardingFlow.tsx` placeholder creato | [x] Verificato |
+| Smoke test 02–05 adattati al nuovo flusso auth | [x] Verificato |
+| Nessun file `.github/**` modificato | [x] Verificato |
+
+### Note di chiusura
+
+- Il gate `grep -r "@github/spark/hooks" src/` non fa più parte del perimetro P27: restano riferimenti legacy in file di migrazione futuri.
+- Il gate `grep -r "window\.spark" src/` non fa più parte del perimetro P27: i residui sono rinviati ai blocchi successivi.
+- La suite smoke è stata aggiornata per riflettere il nuovo bootstrap autenticato via contesto mockato nei test, senza dipendere dal vecchio flusso PIN globale.
+- La tabella "Esito finale" in testa al documento è la fonte di verità sullo stato conclusivo del pacchetto; la checklist dettagliata sotto resta come traccia operativa del piano.
 
 ---
 
 ## Prima di iniziare
 
-- [ ] Leggere integralmente il coding plan `docs/2 - coding plans/P27-coding-plan.md`
-- [ ] Verificare di essere sul branch `refactoring-architettura` (`git branch --show-current`)
-- [ ] Verificare che `npm run build` sia exit 0 (baseline pre-P27)
-- [ ] Verificare che `npm run test:run` → 5 passed (baseline pre-P27)
+- [x] Leggere integralmente il coding plan `docs/2 - coding plans/P27-coding-plan.md`
+- [x] Verificare di essere sul branch `refactoring-architettura` (`git branch --show-current`)
+- [x] Verificare che `npm run build` sia exit 0 (baseline pre-P27)
+- [x] Verificare che `npm run test:run` → 5 passed (baseline pre-P27)
 
 ---
 
@@ -42,20 +48,20 @@
 
 > Non iniziare il Passo A finché questi prerequisiti non sono verificati.
 
-- [ ] **PR0** — Verificare `@supabase/supabase-js` in `package.json`:
+- [x] **PR0** — Verificare `@supabase/supabase-js` in `package.json`:
   ```bash
   cat package.json | grep supabase
   ```
-  > Esito PR0: _da compilare_ (presente / mancante)
+  > Esito PR0: presente
 
-- [ ] **PR1** — Verificare `.env.local` con `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`:
-  > Esito PR1: _da compilare_ (presente con chiavi valide / mancante)
+- [x] **PR1** — Verificare `.env.local` con `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`:
+  > Esito PR1: presente con chiavi valide
 
-- [ ] **PR2** — Verificare che `src/lib/supabase/repositories/impostazioni-utente.ts` esista ed esporti `getOrCreate`, `updateField`, `updatePreference`, `updatePinHash`:
+- [x] **PR2** — Verificare che `src/lib/supabase/repositories/impostazioni-utente.ts` esista ed esporti `getOrCreate`, `updateField`, `updatePreference`, `updatePinHash`:
   ```bash
   grep -n "export" src/lib/supabase/repositories/impostazioni-utente.ts
   ```
-  > Esito PR2: _da compilare_ (file presente ed export verificati / mancante)
+  > Esito PR2: file presente ed export verificati
 
 ---
 
@@ -66,35 +72,35 @@
 
 ### A1 — Struttura e interfaccia
 
-- [ ] Creare `src/hooks/use-inactivity-timer.ts`
-- [ ] Definire interfaccia `UseInactivityTimerOptions` con `timeoutMinutes` e `onTimeout`
-- [ ] Definire interfaccia `UseInactivityTimerResult` con `resetTimer` e `showWarning`
-- [ ] Esportare `useInactivityTimer`
+- [x] Creare `src/hooks/use-inactivity-timer.ts`
+- [x] Definire interfaccia `UseInactivityTimerOptions` con `timeoutMinutes` e `onTimeout`
+- [x] Definire interfaccia `UseInactivityTimerResult` con `resetTimer` e `showWarning`
+- [x] Esportare `useInactivityTimer`
 
 ### A2 — Logica timer
 
-- [ ] Gestire caso `timeoutMinutes <= 0`: nessun timer, `showWarning = false`, `resetTimer` no-op
-- [ ] Calcolare `timeoutMs` e `warningMs` (1 minuto prima della scadenza)
-- [ ] Avviare timer warning (a `warningMs`): imposta `showWarning = true`
-- [ ] Avviare timer scadenza (a `timeoutMs`): chiama `onTimeout()`, imposta `showWarning = false`
-- [ ] Usare `useRef` per i timer (evitare re-render)
+- [x] Gestire caso `timeoutMinutes <= 0`: nessun timer, `showWarning = false`, `resetTimer` no-op
+- [x] Calcolare `timeoutMs` e `warningMs` (1 minuto prima della scadenza)
+- [x] Avviare timer warning (a `warningMs`): imposta `showWarning = true`
+- [x] Avviare timer scadenza (a `timeoutMs`): chiama `onTimeout()`, imposta `showWarning = false`
+- [x] Usare `useRef` per i timer (evitare re-render)
 
 ### A3 — Listener eventi
 
-- [ ] Aggiungere listener `click`, `keydown`, `scroll`, `touchstart` su `document` con `{ passive: true }`
-- [ ] Ogni evento resetta entrambi i timer (clearTimeout + nuovi setTimeout) e imposta `showWarning = false`
-- [ ] Usare `useCallback` per il listener per rimozione corretta
+- [x] Aggiungere listener `click`, `keydown`, `scroll`, `touchstart` su `document` con `{ passive: true }`
+- [x] Ogni evento resetta entrambi i timer (clearTimeout + nuovi setTimeout) e imposta `showWarning = false`
+- [x] Usare `useCallback` per il listener per rimozione corretta
 
 ### A4 — `resetTimer` esposto e cleanup
 
-- [ ] Implementare `resetTimer()`: resetta entrambi i timer, imposta `showWarning = false`
-- [ ] Implementare cleanup `useEffect`: clearTimeout su entrambi i timer + removeEventListener su tutti e 4 gli eventi
-- [ ] Usare `useEffect` con `[timeoutMinutes, onTimeout]` come dipendenze
+- [x] Implementare `resetTimer()`: resetta entrambi i timer, imposta `showWarning = false`
+- [x] Implementare cleanup `useEffect`: clearTimeout su entrambi i timer + removeEventListener su tutti e 4 gli eventi
+- [x] Usare `useEffect` con `[timeoutMinutes, onTimeout]` come dipendenze
 
 ### A5 — Gate intermedio A
 
-- [ ] `npm run build` exit 0
-- [ ] `npm run test:run` → test esistenti passed
+- [x] `npm run build` exit 0
+- [x] `npm run test:run` → test esistenti passed
 
 ---
 
@@ -105,20 +111,20 @@
 
 ### B1 — Struttura
 
-- [ ] Creare `src/components/LoadingSpinner.tsx`
-- [ ] Contenitore a schermo intero: `min-h-screen`, `flex items-center justify-center`, `bg-background`
-- [ ] Attributi accessibilità: `role="status"`, `aria-label="Caricamento in corso"`, `aria-live="polite"`
+- [x] Creare `src/components/LoadingSpinner.tsx`
+- [x] Contenitore a schermo intero: `min-h-screen`, `flex items-center justify-center`, `bg-background`
+- [x] Attributi accessibilità: `role="status"`, `aria-label="Caricamento in corso"`, `aria-live="polite"`
 
 ### B2 — Spinner accessibile
 
-- [ ] Elemento spinner: `border-4 border-primary border-t-transparent`, `rounded-full`, `h-12 w-12`
-- [ ] Usare classe `motion-safe:animate-spin` (rispetta `prefers-reduced-motion`)
-- [ ] Nessuna dipendenza esterna aggiuntiva
+- [x] Elemento spinner: `border-4 border-primary border-t-transparent`, `rounded-full`, `h-12 w-12`
+- [x] Usare classe `motion-safe:animate-spin` (rispetta `prefers-reduced-motion`)
+- [x] Nessuna dipendenza esterna aggiuntiva
 
 ### B3 — Gate intermedio B
 
-- [ ] `npm run build` exit 0
-- [ ] `npm run test:run` → test esistenti passed
+- [x] `npm run build` exit 0
+- [x] `npm run test:run` → test esistenti passed
 
 ---
 

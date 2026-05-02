@@ -1,5 +1,23 @@
 # Changelog
 
+## [P27] — 2026-05-02
+
+### Added
+- Aggiunti `src/hooks/use-inactivity-timer.ts`, `src/components/LoadingSpinner.tsx` e `src/components/OnboardingFlow.tsx` per gestire timeout sessione, bootstrap auth e gate onboarding.
+
+### Changed
+- `AuthContext` migra da autenticazione PIN globale a Supabase Auth con session bootstrap, `signIn`, `signUp`, `signOut`, `resetPassword` e timeout inattività.
+- `AuthScreen` passa da dialog PIN a schermata email/password con pannelli Login, Signup, Recovery e conferma signup.
+- `App.tsx` introduce i gate sequenziali `isAuthReady`, `isAuthenticated` e `needsOnboarding` prima del rendering dell'area applicativa.
+- `SecuritySettings` rimuove il PIN globale da `useKV` e mostra la nuova sezione sicurezza account con reset password e gestione PIN privato.
+- `DialogsOverlay` usa il contratto auth aggiornato e mantiene solo il flusso PIN privato.
+
+### Fixed
+- Aggiornati gli smoke test 02–05 al nuovo flusso auth tramite mock parziale del contesto, eliminando la dipendenza dal vecchio helper PIN globale.
+
+### Notes
+- I residui `@github/spark/hooks` e `window.spark` fuori dai file P27 restano esplicitamente fuori scope e saranno rimossi nei blocchi successivi.
+
 ## [P26] — 2026-05-01
 
 ### Data layer / Supabase

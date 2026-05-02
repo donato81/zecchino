@@ -26,10 +26,9 @@ describe('05 — Private account', () => {
 
     await user.click(screen.getByRole('button', { name: /Sblocca conto privato/i }))
 
-    screen.getByText(/Crea PIN Conto Privato/i)
+    screen.getByText(/PIN Conto Privato/i)
 
-    await user.type(screen.getByLabelText(/Nuovo PIN/i), '5678')
-    await user.type(screen.getByLabelText(/Conferma PIN/i), '5678')
+    await user.type(screen.getByLabelText(/^PIN$/i), '5678')
     await user.click(screen.getByRole('button', { name: /Conferma/i }))
 
     await screen.findByText(/Cassetta Segreta/i)

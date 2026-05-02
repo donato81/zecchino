@@ -15,8 +15,8 @@ Browser
   └── React SPA (Vite)
         ├── UI Components (shadcn/ui + Radix UI)
         ├── Data Layer (Supabase via src/lib/supabase/)
-        ├── State (React Context: AppDataContext, AuthContext, VisibleData)
-        ├── Security (PIN hash + RLS + AES-256)
+  ├── State (React Context: AppDataContext, AuthContext, VisibleData)
+  ├── Security (Supabase Auth + PIN privato + RLS + AES-256)
         ├── Accessibility (TalkBack / VoiceView / NVDA)
         └── Audio + Haptic feedback
 ```
@@ -70,6 +70,8 @@ src/
 │   ├── AppHeader.tsx
 │   ├── AuthScreen.tsx
 │   ├── DialogsOverlay.tsx
+│   ├── LoadingSpinner.tsx
+│   ├── OnboardingFlow.tsx
 │   ├── TransactionDialog.tsx
 │   ├── TransactionsTab.tsx
 │   ├── [Accessibility components]  # FocusIndicator, LiveRegion, SkipLink
@@ -80,6 +82,7 @@ src/
 │   ├── use-display-preferences.ts
 │   ├── use-haptic.ts
 │   ├── use-app-shortcuts.ts      # Configura le 14 shortcut da tastiera globali. Legge da AppDataContext, AuthContext e useVisibleData. Delegato da App.tsx.
+│   ├── use-inactivity-timer.ts   # Timer inattività con warning pre-scadenza e callback di logout
 │   ├── use-visible-data.ts       # Fornisce valori derivati da AppDataContext e AuthContext
 │   ├── use-keyboard-shortcuts.ts
 │   ├── use-list-navigation.ts
@@ -143,13 +146,15 @@ A partire da P01–P13, parte dello stato è migrata in Context dedicati:
 - `AppDataContext` — dati applicazione di dominio (conti, movimenti, budget,
   obiettivi, stato dialog transazioni ed eliminazioni). I dati provengono da
   `src/lib/supabase/` e sono caricati da repository Supabase.
-- `AuthContext` — autenticazione (PIN globale e privato); gestisce il login
-  e l'accesso al record `impostazioni_utente`.
+- `AuthContext` — autenticazione Supabase email/password, bootstrap sessione,
+  logout, recovery password, timeout inattività e gestione transitoria del PIN privato.
 - `useVisibleData` — valori derivati calcolati da `AppDataContext` e `AuthContext`.
 - `AppHeader` — header applicazione estratto come componente autonomo;
   `showKeyboardHelp` migrato da `useState` locale in `App.tsx` a `AppDataContext`.
 - `AuthScreen` — schermata di autenticazione estratta come componente autonomo;
-  dipende solo da `useAuth()`; il guard `if (!isAuthenticated)` rimane in `App.tsx`.
+  espone pannelli Login, Signup, Recovery e conferma signup; dipende solo da `useAuth()`.
+- `LoadingSpinner` — schermata neutra mostrata durante il bootstrap auth quando `isAuthReady` è `false`.
+- `OnboardingFlow` — placeholder introdotto per il gate `needsOnboarding`; l'implementazione completa è rinviata a un blocco successivo.
 - `DashboardTab` — tab Dashboard estratto come componente autonomo; gestisce filtri categoria,
   griglia conti e movimenti recenti.
 - `ReportsTab` — tab Report estratto come componente autonomo; gestisce budget,
@@ -164,22 +169,19 @@ A partire da P01–P13, parte dello stato è migrata in Context dedicati:
 Principi di persistenza:
 1. I dati di dominio sono caricati e salvati su Supabase tramite il layer
    `src/lib/supabase/`.
-2. `localStorage` non è usato per la persistenza dei dati principali.
+2. La sessione utente è gestita da Supabase Auth; `AuthContext` usa il client Supabase per bootstrap e cambi stato auth.
 3. `localStorage` è impiegato solo per configurazioni locali secondarie come
    le impostazioni `haptic` in `src/lib/haptic-system.ts`.
 
-```
-AppState
-├── isAuthenticated       (boolean)
-├── isPrivateUnlocked     (boolean)
-├── accounts[]            (Account)
-├── transactions[]        (Transaction)
-├── categories[]          (Category)
-├── budgets[]             (Budget)
-├── savingsGoals[]        (SavingsGoal)
-├── globalPinHash         (string — SHA-256)
-└── privatePinHash        (string — SHA-256)
-```
+### Gate applicativi in `App.tsx`
+
+Il rendering principale passa ora attraverso tre gate sequenziali:
+
+1. `!isAuthReady` → `LoadingSpinner`
+2. `!isAuthenticated` → `AuthScreen`
+3. `needsOnboarding` → `OnboardingFlow`
+
+Solo dopo questi tre passaggi viene montata l'area applicativa completa.
 
 ---
 
@@ -187,10 +189,11 @@ AppState
 
 | Meccanismo | Implementazione |
 |---|---|
-| Autenticazione | PIN globale hashato SHA-256 |
-| Account privato | PIN separato, visibilità condizionale |
+| Autenticazione | Supabase Auth email/password con conferma email |
+| Timeout sessione | Hook `use-inactivity-timer` + `signOut()` automatico |
+| Account privato | PIN separato, visibilità condizionale, logica transitoria in `AuthContext` |
 | Cifratura dati | AES-256 (`src/lib/crypto.ts`) per `Transaction.cifrato: true` |
-| Nessun server | Zero superfici di attacco network-side |
+| Backend | Supabase con RLS e sessione utente |
 
 ---
 
@@ -210,7 +213,10 @@ AppState
 
 ```
 App start
-  └── PinDialog (autenticazione globale)
+  └── Bootstrap sessione AuthContext
+        ├── LoadingSpinner se la sessione non è ancora risolta
+        ├── AuthScreen se l'utente non è autenticato
+        ├── OnboardingFlow se l'utente è autenticato ma non configurato
         └── Dashboard principale
               ├── Lista conti (AccountCard)
               ├── Transazioni filtrabili
@@ -248,3 +254,4 @@ npm run lint      # ESLint
 - La baseline warning del progetto post-P20 è: **0 warning, 0 errori**.
 - Questa baseline è il gate di ingresso per la futura CI pipeline (P21).
 - **GitHub Actions CI** (`.github/workflows/ci.yml`) — attivo su ogni PR verso `refactoring-architettura`. Pipeline: lint → build → test. Step: `actions/checkout@v4`, `actions/setup-node@v4` (Node.js 20 LTS, cache npm), `npm ci`, `npm run lint`, `npm run build`, `npm run test:run`. Esito atteso: 0 problems lint, build exit 0, 5 test passed.
+- Dopo P27, la suite smoke valida l'area autenticata tramite mock parziale di `AuthContext` nei test, così il gate resta stabile anche con il nuovo login Supabase.

@@ -13,12 +13,13 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| P27 — Migrazione AuthContext a Supabase Auth | `docs/3 - todo lists/P27-todo.md` | In corso | Alta |
+
 
 ## TODO completati
 
 | Feature / Sprint | File specifico | Completato il |
 |---|---|---|
+| P27 — Migrazione AuthContext a Supabase Auth | `docs/3 - todo lists/P27-todo.md` | 2026-05-02 |
 | P25 — Schema impostazioni_utente e campo cifrato | `docs/3 - todo lists/P25-todo.md` | 2026-05-01 |
 | P26 — Strato di accesso dati Supabase | `docs/3 - todo lists/P26-todo.md` | 2026-05-01 |
 | P24 — Architettura migrazione Spark→Supabase (documento di architettura, nessun file sorgente modificato) | — | 2026-04-28 |
