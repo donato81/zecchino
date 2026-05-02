@@ -1,5 +1,23 @@
 # Changelog
 
+## [P33] — 2026-05-02
+
+### Changed
+- `CategoryManagement.tsx` rimuove `useKV` in produzione e legge le categorie da `useAppData()`; i pulsanti di modifica ed eliminazione sono disabilitati per le categorie template `predefinita`.
+- `AppDataContext` aggiunge la migrazione one-shot delle categorie legacy da `window.spark.kv` a Supabase, protetta dal flag `preferences.legacy_categories_migrated`.
+- La suite di produzione non contiene più import diretti da `@github/spark/hooks` per la gestione delle categorie.
+
+## [P28] — 2026-05-02
+
+### Added
+- `src/context/AppDataContext.tsx` carica i dati di dominio da Supabase tramite i repository `conti`, `transazioni`, `categorie`, `budget`, `obiettivi-risparmio`.
+- `AppDataContext` espone i flag `isLoading`, `error`, `isDataReady`, le azioni `add*/update*/remove*` e `refreshAll()`.
+
+### Changed
+- `App.tsx` aggiunge il gate `!isDataReady` dopo `needsOnboarding` con `LoadingSpinner` globale.
+- `TransactionDialog.tsx` rimuove il campo `cifrato` dai payload di creazione e aggiornamento delle transazioni; il DB calcola `cifrato` tramite trigger.
+- `AppDataContext` conserva solo `visibleCategories`, `dismissedAlerts` e `budgetPercentages` in `useKV`; tutti gli altri dati di dominio sono migrati a Supabase.
+
 ## [P27] — 2026-05-02
 
 ### Added

@@ -5,6 +5,7 @@
 > Design di riferimento: `docs/1 - projects/P33-migrazione-categorymanagement-useappdata.md`
 > Branch: `refactoring-architettura`
 > Data inizio: 2026-05-02
+> Completato: 2026-05-02
 
 ---
 
@@ -12,16 +13,16 @@
 
 | Verifica | Stato |
 |---|---|
-| `npm run build` exit 0 | [ ] |
-| `npm run test:run` → tutti i test passed | [ ] |
-| `npx tsc --noEmit` → 0 errori TypeScript | [ ] |
-| `CategoryManagement.tsx` senza `useKV` e senza import da `@github/spark/hooks` | [ ] |
-| `CategoryManagement.tsx` usa `useAppData()` per lettura e scrittura categorie | [ ] |
-| Bottone "Modifica" disabilitato per categorie template (`disabled={category.predefinita}`) | [ ] |
-| Gestione errore FK via `toast.error` in `handleDeleteCategory` | [ ] |
-| `AppDataContext.tsx` con logica migrazione one-shot categorie personalizzate (Decisione B) | [ ] |
-| `grep -r "@github/spark/hooks" src/` → 0 risultati in file di produzione | [ ] |
-| Nessun file `.github/**` modificato | [ ] |
+| `npm run build` exit 0 | [x] |
+| `npm run test:run` → tutti i test passed | [x] |
+| `npx tsc --noEmit` → 0 errori TypeScript | [x] |
+| `CategoryManagement.tsx` senza `useKV` e senza import da `@github/spark/hooks` | [x] |
+| `CategoryManagement.tsx` usa `useAppData()` per lettura e scrittura categorie | [x] |
+| Bottone "Modifica" disabilitato per categorie template (`disabled={category.predefinita}`) | [x] |
+| Gestione errore FK via `toast.error` in `handleDeleteCategory` | [x] |
+| `AppDataContext.tsx` con logica migrazione one-shot categorie personalizzate (Decisione B) | [x] |
+| `grep -r "@github/spark/hooks" src/` → 0 risultati in file di produzione | [x] |
+| Nessun file `.github/**` modificato | [x] |
 
 ---
 

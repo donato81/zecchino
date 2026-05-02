@@ -177,12 +177,14 @@ type AuthFlowState = {
 | Repository budget | `src/lib/supabase/repositories/budget.ts` | Accesso ai budget |
 | Repository obiettivi risparmio | `src/lib/supabase/repositories/obiettivi-risparmio.ts` | Accesso agli obiettivi di risparmio |
 | Repository impostazioni utente | `src/lib/supabase/repositories/impostazioni-utente.ts` | Accesso a impostazioni e preferenze utente |
+| AppDataContext | `src/context/AppDataContext.tsx` | Orchestrazione del bootstrap dati di dominio Supabase e superficie `useAppData()` con `isDataReady`, azioni CRUD e `refreshAll()` |
+| CategoryManagement | `src/components/CategoryManagement.tsx` | Consuma `useAppData()` per categorie e non usa più `useKV` in produzione |
 
 ---
 
 ## Storage
 
-I dati di dominio sono persistiti su **Supabase** tramite il layer `src/lib/supabase/`. Il layer è l'unica fonte di chiamate `@supabase/supabase-js` nell'app: nessun componente React chiama Supabase direttamente.
+I dati di dominio sono persistiti su **Supabase** tramite il layer `src/lib/supabase/`. Il layer è l'unica fonte di chiamate `@supabase/supabase-js` nell'app: nessun componente React chiama Supabase direttamente. A partire da P28/P33, tutte le entità di dominio principali (`conti`, `transazioni`, `categorie`, `budget`, `obiettivi-risparmio`) vengono caricate tramite `src/context/AppDataContext.tsx` e i repository Supabase, mentre `CategoryManagement.tsx` consuma le categorie direttamente da `useAppData()`.
 
 Fa eccezione il bootstrap autenticazione in `src/context/AuthContext.tsx`, che usa direttamente `supabase.auth.getSession()`, `supabase.auth.onAuthStateChange()`, `signInWithPassword()`, `signUp()`, `signOut()` e `resetPasswordForEmail()` per governare il ciclo di sessione.
 

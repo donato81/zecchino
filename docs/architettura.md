@@ -144,8 +144,11 @@ Nessun state manager esterno. Lo stato applicazione è gestito con React Context
 
 A partire da P01–P13, parte dello stato è migrata in Context dedicati:
 - `AppDataContext` — dati applicazione di dominio (conti, movimenti, budget,
-  obiettivi, stato dialog transazioni ed eliminazioni). I dati provengono da
-  `src/lib/supabase/` e sono caricati da repository Supabase.
+  obiettivi, stato dialog transazioni ed eliminazioni). A partire da P28 il provider
+  carica queste entità da Supabase tramite i repository in `src/lib/supabase/`.
+  P33 ha eliminato l'ultima dipendenza di produzione da `useKV` in
+  `CategoryManagement.tsx`, che ora consuma le categorie direttamente da
+  `useAppData()`.
 - `AuthContext` — autenticazione Supabase email/password, bootstrap sessione,
   logout, recovery password, timeout inattività e gestione transitoria del PIN privato.
 - `useVisibleData` — valori derivati calcolati da `AppDataContext` e `AuthContext`.
@@ -173,6 +176,11 @@ Principi di persistenza:
 3. `localStorage` è impiegato solo per configurazioni locali secondarie come
    le impostazioni `haptic` in `src/lib/haptic-system.ts`.
 
+A partire da P28, `AppDataContext` è la fonte unica per caricare i dati di dominio
+da Supabase. P33 ha completato la migrazione eliminando l'ultima dipendenza di
+produzione da `useKV` in `CategoryManagement.tsx`, che ora legge le categorie da
+`useAppData()`.
+
 ### Gate applicativi in `App.tsx`
 
 Il rendering principale passa ora attraverso tre gate sequenziali:
@@ -180,8 +188,9 @@ Il rendering principale passa ora attraverso tre gate sequenziali:
 1. `!isAuthReady` → `LoadingSpinner`
 2. `!isAuthenticated` → `AuthScreen`
 3. `needsOnboarding` → `OnboardingFlow`
+4. `!isDataReady` → `LoadingSpinner`
 
-Solo dopo questi tre passaggi viene montata l'area applicativa completa.
+Solo dopo questi quattro passaggi viene montata l'area applicativa completa.
 
 ---
 

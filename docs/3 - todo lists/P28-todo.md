@@ -5,6 +5,7 @@
 > Design di riferimento: `docs/1 - projects/P28-migrazione-appdatacontext-supabase.md`
 > Branch: `refactoring-architettura`
 > Data inizio: 2026-05-02
+> Completato: 2026-05-02
 
 ---
 
@@ -12,16 +13,16 @@
 
 | Verifica | Stato |
 |---|---|
-| `npm run build` exit 0 | [ ] |
-| `npm run test:run` → tutti i test passed | [ ] |
-| `npx tsc --noEmit` → 0 errori TypeScript | [ ] |
-| `AppDataContext.tsx` espone la superficie pubblica P28 §4 completa | [ ] |
-| `AppDataContext.tsx` senza le 5 `useKV` di dominio | [ ] |
-| `visibleCategories`, `dismissedAlerts`, `budgetPercentages` rimangono `useKV` (Blocchi 5–6) | [ ] |
-| `App.tsx` con 4 gate nell'ordine corretto | [ ] |
-| `TransactionDialog.tsx` senza il campo `cifrato` nel payload | [ ] |
-| `grep useKV src/context/AppDataContext.tsx` → solo 3 voci attese | [ ] |
-| Nessun file `.github/**` modificato | [ ] |
+| `npm run build` exit 0 | [x] |
+| `npm run test:run` → tutti i test passed | [x] |
+| `npx tsc --noEmit` → 0 errori TypeScript | [x] |
+| `AppDataContext.tsx` espone la superficie pubblica P28 §4 completa | [x] |
+| `AppDataContext.tsx` senza le 5 `useKV` di dominio | [x] |
+| `visibleCategories`, `dismissedAlerts`, `budgetPercentages` rimangono `useKV` (Blocchi 5–6) | [x] |
+| `App.tsx` con 4 gate nell'ordine corretto | [x] |
+| `TransactionDialog.tsx` senza il campo `cifrato` nel payload | [x] |
+| `grep useKV src/context/AppDataContext.tsx` → solo 3 voci attese | [x] |
+| Nessun file `.github/**` modificato | [x] |
 
 ---
 
