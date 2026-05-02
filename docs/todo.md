@@ -13,6 +13,8 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| P28 — Migrazione AppDataContext a Supabase | `docs/3 - todo lists/P28-todo.md` | TODO | Alta |
+| P33 — Migrazione CategoryManagement a useAppData() | `docs/3 - todo lists/P33-todo.md` | BLOCCATO — dipende da P28 | Alta |
 
 
 ## TODO completati
