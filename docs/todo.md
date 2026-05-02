@@ -14,6 +14,7 @@
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
 | P29 — Migrazione useUserSettings e Preferenze UI | `docs/3 - todo lists/P29-todo.md` | In lavorazione | Alta |
+| P31 — Migrazione UserPreferences SettingsTab (Display / Audio / Accessibilità) a Supabase | `docs/3 - todo lists/P31-todo.md` | 🔄 In corso | Alta |
 
 ## TODO completati
 
