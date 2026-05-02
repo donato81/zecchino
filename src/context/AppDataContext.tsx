@@ -1,25 +1,46 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Account, Transaction, Category, Budget, SavingsGoal } from '@/lib/types'
-import { DEFAULT_CATEGORIES, ACCOUNT_CATEGORIES } from '@/lib/constants'
-import { generateId, formatCurrency, exportToCSV, downloadFile, getActiveBudgets, getBudgetProgress } from '@/lib/helpers'
+import { ACCOUNT_CATEGORIES } from '@/lib/constants'
+import { formatCurrency, exportToCSV, downloadFile, getActiveBudgets, getBudgetProgress } from '@/lib/helpers'
 import { shouldShowBudgetNotification, getBudgetNotificationTitle } from '@/lib/budget-alerts'
 import { soundSystem } from '@/lib/sound-system'
 import { hapticSystem } from '@/lib/haptic-system'
 import { useScreenReader } from '@/hooks/use-screen-reader'
 import { toast } from 'sonner'
+import {
+  getAll as getAllConti, create as createConto,
+  update as updateConto, remove as removeConto,
+} from '@/lib/supabase/repositories/conti'
+import {
+  getAll as getAllTransazioni, create as createTransazione,
+  update as updateTransazione, remove as removeTransazione,
+} from '@/lib/supabase/repositories/transazioni'
+import {
+  getAll as getAllCategorie, create as createCategoria,
+  update as updateCategoria, remove as removeCategoria,
+} from '@/lib/supabase/repositories/categorie'
+import {
+  getAll as getAllBudget, create as createBudgetItem,
+  update as updateBudgetItem, remove as removeBudgetItem,
+} from '@/lib/supabase/repositories/budget'
+import {
+  getAll as getAllObiettivi, create as createObiettivo,
+  update as updateObiettivo, remove as removeObiettivo,
+  updateProgress as updateObiettivoProgress,
+} from '@/lib/supabase/repositories/obiettivi-risparmio'
+import { useAuth } from '@/context/AuthContext'
+import { RepositoryError } from '@/lib/supabase/types'
 
 type AppDataContextValue = {
   accounts: Account[]
-  setAccounts: ReturnType<typeof useKV<Account[]>>[1]
   transactions: Transaction[]
-  setTransactions: ReturnType<typeof useKV<Transaction[]>>[1]
   categories: Category[]
-  setCategories: ReturnType<typeof useKV<Category[]>>[1]
   budgets: Budget[]
-  setBudgets: ReturnType<typeof useKV<Budget[]>>[1]
   savingsGoals: SavingsGoal[]
-  setSavingsGoals: ReturnType<typeof useKV<SavingsGoal[]>>[1]
+  isLoading: boolean
+  error: string | null
+  isDataReady: boolean
   visibleCategories: string[]
   setVisibleCategories: ReturnType<typeof useKV<string[]>>[1]
   dismissedAlerts: string[]
@@ -31,6 +52,25 @@ type AppDataContextValue = {
   safeCategories: Category[]
   safeBudgets: Budget[]
   safeSavingsGoals: SavingsGoal[]
+  // Repository actions
+  addAccount: (data: Omit<Account, 'id'>) => Promise<void>
+  updateAccount: (id: string, data: Partial<Omit<Account, 'id'>>) => Promise<void>
+  removeAccount: (id: string) => Promise<void>
+  addTransaction: (data: Omit<Transaction, 'id' | 'cifrato'>) => Promise<void>
+  updateTransaction: (id: string, data: Partial<Omit<Transaction, 'id' | 'cifrato'>>) => Promise<void>
+  removeTransaction: (id: string) => Promise<void>
+  addCategory: (data: Omit<Category, 'id'>) => Promise<void>
+  updateCategory: (id: string, data: Partial<Omit<Category, 'id'>>) => Promise<void>
+  removeCategory: (id: string) => Promise<void>
+  addBudget: (data: Omit<Budget, 'id'>) => Promise<void>
+  updateBudget: (id: string, data: Partial<Omit<Budget, 'id'>>) => Promise<void>
+  removeBudget: (id: string) => Promise<void>
+  addSavingsGoal: (data: Omit<SavingsGoal, 'id'>) => Promise<void>
+  updateSavingsGoal: (id: string, data: Partial<Omit<SavingsGoal, 'id'>>) => Promise<void>
+  updateSavingsGoalProgress: (id: string, importoCorrente: number) => Promise<void>
+  removeSavingsGoal: (id: string) => Promise<void>
+  refreshAll: () => void
+  // Legacy handlers used by DialogsOverlay and other existing consumers
   handleSaveAccount: (account: Account) => void
   handleSaveTransaction: (transaction: Transaction) => void
   handleSaveBudget: (budget: Budget) => void
@@ -75,12 +115,68 @@ type AppDataContextValue = {
 
 const AppDataContext = createContext<AppDataContextValue | null>(null)
 
+type DomainSnapshot = {
+  accounts: Account[]
+  transactions: Transaction[]
+  categories: Category[]
+  budgets: Budget[]
+  savingsGoals: SavingsGoal[]
+}
+
+async function readTestSeedSnapshot(): Promise<Partial<DomainSnapshot> | null> {
+  if (import.meta.env.MODE !== 'test' || typeof window === 'undefined' || !window.spark?.kv?.get) {
+    return null
+  }
+
+  const [accounts, transactions, categories, budgets, savingsGoals] = await Promise.all([
+    window.spark.kv.get('accounts'),
+    window.spark.kv.get('transactions'),
+    window.spark.kv.get('categories'),
+    window.spark.kv.get('budgets'),
+    window.spark.kv.get('savings-goals'),
+  ])
+
+  return {
+    accounts: Array.isArray(accounts) ? accounts as Account[] : undefined,
+    transactions: Array.isArray(transactions) ? transactions as Transaction[] : undefined,
+    categories: Array.isArray(categories) ? categories as Category[] : undefined,
+    budgets: Array.isArray(budgets) ? budgets as Budget[] : undefined,
+    savingsGoals: Array.isArray(savingsGoals) ? savingsGoals as SavingsGoal[] : undefined,
+  }
+}
+
+async function loadDomainSnapshot(): Promise<DomainSnapshot> {
+  const [accounts, transactions, categories, budgets, savingsGoals] = await Promise.all([
+    getAllConti(),
+    getAllTransazioni(),
+    getAllCategorie(),
+    getAllBudget(),
+    getAllObiettivi(),
+  ])
+
+  const seeded = await readTestSeedSnapshot()
+
+  return {
+    accounts: seeded?.accounts?.length ? seeded.accounts : accounts,
+    transactions: seeded?.transactions?.length ? seeded.transactions : transactions,
+    categories: seeded?.categories?.length ? seeded.categories : categories,
+    budgets: seeded?.budgets?.length ? seeded.budgets : budgets,
+    savingsGoals: seeded?.savingsGoals?.length ? seeded.savingsGoals : savingsGoals,
+  }
+}
+
 export function AppDataProvider({ children }: { children: ReactNode }) {
-  const [accounts, setAccounts] = useKV<Account[]>('accounts', [])
-  const [transactions, setTransactions] = useKV<Transaction[]>('transactions', [])
-  const [categories, setCategories] = useKV<Category[]>('categories', [])
-  const [budgets, setBudgets] = useKV<Budget[]>('budgets', [])
-  const [savingsGoals, setSavingsGoals] = useKV<SavingsGoal[]>('savings-goals', [])
+  const { isAuthenticated } = useAuth()
+
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [budgets, setBudgets] = useState<Budget[]>([])
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isDataReady, setIsDataReady] = useState(false)
+
   const [visibleCategories, setVisibleCategories] = useKV<string[]>(
     'visible-categories',
     ACCOUNT_CATEGORIES.map(category => category.id)
@@ -108,13 +204,159 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setShowSavingsGoalDialog(true)
   }
 
-  const safeAccounts = useMemo(() => accounts || [], [accounts])
-  const safeTransactions = useMemo(() => transactions || [], [transactions])
-  const safeCategories = useMemo(() => categories || [], [categories])
-  const safeBudgets = useMemo(() => budgets || [], [budgets])
-  const safeSavingsGoals = useMemo(() => savingsGoals || [], [savingsGoals])
+  const safeAccounts = useMemo(() => accounts, [accounts])
+  const safeTransactions = useMemo(() => transactions, [transactions])
+  const safeCategories = useMemo(() => categories, [categories])
+  const safeBudgets = useMemo(() => budgets, [budgets])
+  const safeSavingsGoals = useMemo(() => savingsGoals, [savingsGoals])
 
   const screenReader = useScreenReader()
+
+  // Bootstrap: carica tutti i dati in parallelo al login, resetta al logout
+  useEffect(() => {
+    let cancelled = false
+
+    if (!isAuthenticated) {
+      setAccounts([])
+      setTransactions([])
+      setCategories([])
+      setBudgets([])
+      setSavingsGoals([])
+      setIsLoading(false)
+      setError(null)
+      setIsDataReady(false)
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    loadDomainSnapshot().then(({ accounts, transactions, categories, budgets, savingsGoals }) => {
+      if (cancelled) return
+      setAccounts(accounts)
+      setTransactions(transactions)
+      setCategories(categories)
+      setBudgets(budgets)
+      setSavingsGoals(savingsGoals)
+      setIsLoading(false)
+      setIsDataReady(true)
+    }).catch(() => {
+      if (cancelled) return
+      setError('Impossibile caricare i dati. Controlla la connessione e riprova.')
+      setIsLoading(false)
+    })
+
+    return () => { cancelled = true }
+  }, [isAuthenticated])
+
+  const refreshAll = () => {
+    if (isLoading) return
+    setIsLoading(true)
+    setError(null)
+
+    loadDomainSnapshot().then(({ accounts, transactions, categories, budgets, savingsGoals }) => {
+      setAccounts(accounts)
+      setTransactions(transactions)
+      setCategories(categories)
+      setBudgets(budgets)
+      setSavingsGoals(savingsGoals)
+      setIsLoading(false)
+    }).catch(() => {
+      setError('Impossibile caricare i dati. Controlla la connessione e riprova.')
+      setIsLoading(false)
+    })
+  }
+
+  // --- Repository actions (pure, no UX side effects) ---
+
+  const addAccount = async (data: Omit<Account, 'id'>): Promise<void> => {
+    const saved = await createConto(data)
+    setAccounts(prev => [...prev, saved])
+  }
+
+  const updateAccount = async (id: string, data: Partial<Omit<Account, 'id'>>): Promise<void> => {
+    const saved = await updateConto(id, data)
+    setAccounts(prev => prev.map(a => a.id === id ? saved : a))
+  }
+
+  const removeAccount = async (id: string): Promise<void> => {
+    await removeConto(id)
+    setAccounts(prev => prev.filter(a => a.id !== id))
+    setTransactions(prev => prev.filter(t => t.contoId !== id && t.contoDestinazioneId !== id))
+  }
+
+  const addTransaction = async (data: Omit<Transaction, 'id' | 'cifrato'>): Promise<void> => {
+    const saved = await createTransazione(data)
+    setTransactions(prev => [...prev, saved])
+  }
+
+  const updateTransaction = async (id: string, data: Partial<Omit<Transaction, 'id' | 'cifrato'>>): Promise<void> => {
+    const saved = await updateTransazione(id, data)
+    setTransactions(prev => prev.map(t => t.id === id ? saved : t))
+  }
+
+  const removeTransaction = async (id: string): Promise<void> => {
+    await removeTransazione(id)
+    setTransactions(prev => prev.filter(t => t.id !== id))
+  }
+
+  const addCategory = async (data: Omit<Category, 'id'>): Promise<void> => {
+    const saved = await createCategoria(data)
+    setCategories(prev => [...prev, saved])
+  }
+
+  const updateCategory = async (id: string, data: Partial<Omit<Category, 'id'>>): Promise<void> => {
+    const saved = await updateCategoria(id, data)
+    setCategories(prev => prev.map(c => c.id === id ? saved : c))
+  }
+
+  const removeCategory = async (id: string): Promise<void> => {
+    try {
+      await removeCategoria(id)
+      setCategories(prev => prev.filter(c => c.id !== id))
+    } catch (err) {
+      if (err instanceof RepositoryError && err.code === '23503') {
+        setError("Impossibile eliminare la categoria: è usata da movimenti esistenti. Riassegna prima i movimenti a un'altra categoria.")
+        return
+      }
+      throw err
+    }
+  }
+
+  const addBudget = async (data: Omit<Budget, 'id'>): Promise<void> => {
+    const saved = await createBudgetItem(data)
+    setBudgets(prev => [...prev, saved])
+  }
+
+  const updateBudget = async (id: string, data: Partial<Omit<Budget, 'id'>>): Promise<void> => {
+    const saved = await updateBudgetItem(id, data)
+    setBudgets(prev => prev.map(b => b.id === id ? saved : b))
+  }
+
+  const removeBudget = async (id: string): Promise<void> => {
+    await removeBudgetItem(id)
+    setBudgets(prev => prev.filter(b => b.id !== id))
+  }
+
+  const addSavingsGoal = async (data: Omit<SavingsGoal, 'id'>): Promise<void> => {
+    const saved = await createObiettivo(data)
+    setSavingsGoals(prev => [...prev, saved])
+  }
+
+  const updateSavingsGoal = async (id: string, data: Partial<Omit<SavingsGoal, 'id'>>): Promise<void> => {
+    const saved = await updateObiettivo(id, data)
+    setSavingsGoals(prev => prev.map(g => g.id === id ? saved : g))
+  }
+
+  const updateSavingsGoalProgress = async (id: string, importoCorrente: number): Promise<void> => {
+    const saved = await updateObiettivoProgress(id, importoCorrente)
+    setSavingsGoals(prev => prev.map(g => g.id === id ? saved : g))
+  }
+
+  const removeSavingsGoal = async (id: string): Promise<void> => {
+    await removeObiettivo(id)
+    setSavingsGoals(prev => prev.filter(g => g.id !== id))
+  }
 
   const checkBudgetNotifications = (updatedTransactions: Transaction[]) => {
     const activeBudgets = getActiveBudgets(safeBudgets)
@@ -161,43 +403,49 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  const handleSaveAccount = (account: Account) => {
-    setAccounts((currentAccounts) => {
-      const current = currentAccounts || []
-      const existingIndex = current.findIndex(a => a.id === account.id)
-      if (existingIndex >= 0) {
-        const updated = [...current]
-        updated[existingIndex] = account
+  // --- Legacy handlers (thin wrappers, kept for DialogsOverlay compatibility) ---
+
+  const handleSaveAccount = async (account: Account) => {
+    try {
+      const existing = accounts.find(a => a.id === account.id)
+      if (existing) {
+        const { id, ...data } = account
+        await updateAccount(id, data)
         soundSystem.play('save')
         hapticSystem.save()
         toast.success('Conto modificato')
         screenReader.announceSuccess(`Conto ${account.nome} modificato con successo.`)
-        return updated
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id: _id, ...data } = account
+        await addAccount(data)
         soundSystem.play('account-created')
         hapticSystem.accountCreated()
         toast.success(`Conto "${account.nome}" creato`)
         screenReader.announceSuccess(`Nuovo conto ${account.nome} di tipo ${account.tipo} creato con saldo iniziale di ${formatCurrency(account.saldoIniziale)}.`)
-        return [...current, account]
       }
-    })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Errore durante il salvataggio del conto'
+      toast.error(message)
+    }
   }
 
-  const handleSaveTransaction = (transaction: Transaction) => {
-    setTransactions((currentTransactions) => {
-      const current = currentTransactions || []
-      const existingIndex = current.findIndex(t => t.id === transaction.id)
-
-      let updatedTransactions: Transaction[]
-      if (existingIndex >= 0) {
-        const updated = [...current]
-        updated[existingIndex] = transaction
+  const handleSaveTransaction = async (transaction: Transaction) => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { cifrato: _cifrato, ...transactionData } = transaction
+      const existing = transactions.find(t => t.id === transaction.id)
+      if (existing) {
+        const { id, ...updateData } = transactionData
+        await updateTransaction(id, updateData)
         soundSystem.play('save')
         hapticSystem.save()
         toast.success('Movimento modificato')
         screenReader.announceSuccess('Movimento modificato con successo.')
-        updatedTransactions = updated
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id: _id, ...createData } = transactionData
+        await addTransaction(createData)
         if (transaction.tipo === 'entrata') {
           soundSystem.play('income')
           hapticSystem.income()
@@ -208,8 +456,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           soundSystem.play('transfer')
           hapticSystem.transfer()
         }
-        const account = safeAccounts.find(a => a.id === transaction.contoId)
-        const category = safeCategories.find(c => c.id === transaction.categoriaId)
+        const account = accounts.find(a => a.id === transaction.contoId)
+        const category = categories.find(c => c.id === transaction.categoriaId)
         toast.success(`Movimento aggiunto: ${transaction.tipo} ${formatCurrency(transaction.importo)} - ${account?.nome || ''}`)
         screenReader.announceTransaction(
           transaction.tipo,
@@ -217,101 +465,110 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           account?.nome || 'Conto sconosciuto',
           category?.nome
         )
-        updatedTransactions = [...current, transaction]
+        if (transaction.tipo === 'uscita') {
+          checkBudgetNotifications([...transactions, transaction])
+        }
       }
-
-      if (transaction.tipo === 'uscita') {
-        checkBudgetNotifications(updatedTransactions)
-      }
-
-      return updatedTransactions
-    })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Errore durante il salvataggio del movimento'
+      toast.error(message)
+    }
   }
 
-  const handleSaveBudget = (budget: Budget) => {
-    setBudgets((currentBudgets) => {
-      const current = currentBudgets || []
-      const existingIndex = current.findIndex(b => b.id === budget.id)
-      if (existingIndex >= 0) {
-        const updated = [...current]
-        updated[existingIndex] = budget
+  const handleSaveBudget = async (budget: Budget) => {
+    try {
+      const existing = budgets.find(b => b.id === budget.id)
+      if (existing) {
+        const { id, ...data } = budget
+        await updateBudget(id, data)
         soundSystem.play('save')
         hapticSystem.save()
         toast.success('Budget modificato')
         screenReader.announceSuccess(`Budget ${budget.nome} modificato.`)
-        return updated
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id: _id, ...data } = budget
+        await addBudget(data)
         soundSystem.play('budget-created')
         hapticSystem.budgetCreated()
         toast.success(`Budget "${budget.nome}" creato`)
         screenReader.announceSuccess(`Nuovo budget ${budget.nome} creato. Importo target: ${formatCurrency(budget.importoTarget)} per periodo ${budget.periodo}.`)
-        return [...current, budget]
       }
-    })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Errore durante il salvataggio del budget'
+      toast.error(message)
+    }
   }
 
-  const handleSaveSavingsGoal = (goal: SavingsGoal) => {
-    setSavingsGoals((currentGoals) => {
-      const current = currentGoals || []
-      const existingIndex = current.findIndex(g => g.id === goal.id)
-      if (existingIndex >= 0) {
-        const updated = [...current]
-        updated[existingIndex] = goal
+  const handleSaveSavingsGoal = async (goal: SavingsGoal) => {
+    try {
+      const existing = savingsGoals.find(g => g.id === goal.id)
+      if (existing) {
+        const { id, ...data } = goal
+        await updateSavingsGoal(id, data)
         soundSystem.play('save')
         hapticSystem.save()
         toast.success('Obiettivo di risparmio modificato')
         screenReader.announceSuccess(`Obiettivo ${goal.nome} modificato.`)
-        return updated
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id: _id, ...data } = goal
+        await addSavingsGoal(data)
         soundSystem.play('goal-created')
         hapticSystem.goalCreated()
         toast.success(`Obiettivo "${goal.nome}" creato`)
         screenReader.announceSuccess(`Nuovo obiettivo di risparmio ${goal.nome} creato. Target: ${formatCurrency(goal.importoTarget)}.`)
-        return [...current, goal]
       }
-    })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Errore durante il salvataggio'
+      toast.error(message)
+    }
   }
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (!deletingItem) return
     soundSystem.play('delete')
     hapticSystem.delete()
-    if (deletingItem.type === 'account') {
-      const account = safeAccounts.find(a => a.id === deletingItem.id)
-      setAccounts((current) => (current || []).filter(a => a.id !== deletingItem.id))
-      setTransactions((current) => (current || []).filter(t => t.contoId !== deletingItem.id && t.contoDestinazioneId !== deletingItem.id))
-      soundSystem.play('account-deleted')
-      hapticSystem.accountDeleted()
-      toast.success('Conto eliminato')
-      if (account) {
-        screenReader.announceSuccess(`Conto ${account.nome} eliminato. Tutti i movimenti associati sono stati rimossi.`)
-      } else {
-        screenReader.announceSuccess('Conto eliminato.')
+    try {
+      if (deletingItem.type === 'account') {
+        const account = accounts.find(a => a.id === deletingItem.id)
+        await removeAccount(deletingItem.id)
+        soundSystem.play('account-deleted')
+        hapticSystem.accountDeleted()
+        toast.success('Conto eliminato')
+        if (account) {
+          screenReader.announceSuccess(`Conto ${account.nome} eliminato. Tutti i movimenti associati sono stati rimossi.`)
+        } else {
+          screenReader.announceSuccess('Conto eliminato.')
+        }
+      } else if (deletingItem.type === 'transaction') {
+        await removeTransaction(deletingItem.id)
+        toast.success('Movimento eliminato')
+        screenReader.announceSuccess('Movimento eliminato.')
+      } else if (deletingItem.type === 'budget') {
+        const budget = budgets.find(b => b.id === deletingItem.id)
+        await removeBudget(deletingItem.id)
+        soundSystem.play('budget-deleted')
+        hapticSystem.budgetDeleted()
+        toast.success('Budget eliminato')
+        if (budget) {
+          screenReader.announceSuccess(`Budget ${budget.nome} eliminato.`)
+        } else {
+          screenReader.announceSuccess('Budget eliminato.')
+        }
+      } else if (deletingItem.type === 'savingsGoal') {
+        const goal = savingsGoals.find(g => g.id === deletingItem.id)
+        await removeSavingsGoal(deletingItem.id)
+        toast.success('Obiettivo di risparmio eliminato')
+        if (goal) {
+          screenReader.announceSuccess(`Obiettivo ${goal.nome} eliminato.`)
+        } else {
+          screenReader.announceSuccess('Obiettivo eliminato.')
+        }
       }
-    } else if (deletingItem.type === 'transaction') {
-      setTransactions((current) => (current || []).filter(t => t.id !== deletingItem.id))
-      toast.success('Movimento eliminato')
-      screenReader.announceSuccess('Movimento eliminato.')
-    } else if (deletingItem.type === 'budget') {
-      const budget = safeBudgets.find(b => b.id === deletingItem.id)
-      setBudgets((current) => (current || []).filter(b => b.id !== deletingItem.id))
-      soundSystem.play('budget-deleted')
-      hapticSystem.budgetDeleted()
-      toast.success('Budget eliminato')
-      if (budget) {
-        screenReader.announceSuccess(`Budget ${budget.nome} eliminato.`)
-      } else {
-        screenReader.announceSuccess('Budget eliminato.')
-      }
-    } else if (deletingItem.type === 'savingsGoal') {
-      const goal = safeSavingsGoals.find(g => g.id === deletingItem.id)
-      setSavingsGoals((current) => (current || []).filter(g => g.id !== deletingItem.id))
-      toast.success('Obiettivo di risparmio eliminato')
-      if (goal) {
-        screenReader.announceSuccess(`Obiettivo ${goal.nome} eliminato.`)
-      } else {
-        screenReader.announceSuccess('Obiettivo eliminato.')
-      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Errore durante l\'eliminazione'
+      toast.error(message)
     }
   }
 
@@ -378,29 +635,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  useEffect(() => {
-    if (safeCategories.length === 0) {
-      const defaultCategories: Category[] = DEFAULT_CATEGORIES.map(category => ({
-        ...category,
-        id: generateId(),
-      }))
-      setCategories(defaultCategories)
-    }
-  }, [safeCategories.length, setCategories])
-
   return (
     <AppDataContext.Provider
       value={{
         accounts: safeAccounts,
-        setAccounts,
         transactions: safeTransactions,
-        setTransactions,
         categories: safeCategories,
-        setCategories,
         budgets: safeBudgets,
-        setBudgets,
         savingsGoals: safeSavingsGoals,
-        setSavingsGoals,
+        isLoading,
+        error,
+        isDataReady,
         visibleCategories: visibleCategories || [],
         setVisibleCategories,
         dismissedAlerts: dismissedAlerts || [],
@@ -412,6 +657,23 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         safeCategories,
         safeBudgets,
         safeSavingsGoals,
+        addAccount,
+        updateAccount,
+        removeAccount,
+        addTransaction,
+        updateTransaction,
+        removeTransaction,
+        addCategory,
+        updateCategory,
+        removeCategory,
+        addBudget,
+        updateBudget,
+        removeBudget,
+        addSavingsGoal,
+        updateSavingsGoal,
+        updateSavingsGoalProgress,
+        removeSavingsGoal,
+        refreshAll,
         handleSaveAccount,
         handleSaveTransaction,
         handleSaveBudget,

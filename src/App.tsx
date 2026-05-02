@@ -30,6 +30,7 @@ function AppContent() {
   const {
     handleDismissBudgetAlert, handleViewBudget, setShowTransactionDialog, setEditingAccount,
     setShowAccountDialog, setShowBudgetDialog, setEditingBudget, setShowKeyboardHelp, setEditingTransaction,
+    isDataReady,
   } = useAppData()
   const { isAuthenticated, isAuthReady, needsOnboarding } = useAuth()
   const { budgetAlerts, totalBalance, visibleAccounts, visibleTransactions } = useVisibleData()
@@ -72,6 +73,7 @@ function AppContent() {
   if (!isAuthReady) return <LoadingSpinner />
   if (!isAuthenticated) return <AuthScreen />
   if (needsOnboarding) return <OnboardingFlow />
+  if (!isDataReady) return <LoadingSpinner />
 
   return (
     <>

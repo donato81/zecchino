@@ -168,10 +168,7 @@ export function TransactionDialog({
       return
     }
 
-    const account = accounts.find(a => a.id === contoId)
-    const isPrivateTransaction = account?.isPrivato || false
-
-    const newTransaction: Transaction = {
+    const newTransaction = {
       id: transaction?.id || generateId(),
       data,
       importo: amount,
@@ -182,8 +179,7 @@ export function TransactionDialog({
       descrizione: descrizione.trim(),
       ricorrente,
       frequenzaRicorrenza: ricorrente ? (frequenzaRicorrenza as RecurrenceFrequency) : undefined,
-      cifrato: isPrivateTransaction
-    }
+    } as Transaction
 
     onSave(newTransaction)
     handleClose()
