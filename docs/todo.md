@@ -13,6 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| P27 — Migrazione AuthContext a Supabase Auth | `docs/3 - todo lists/P27-todo.md` | In corso | Alta |
 
 ## TODO completati
 
