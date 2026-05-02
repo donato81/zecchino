@@ -1,16 +1,16 @@
 {
   "schema_version": "2.0",
-  "updated_at": "2026-04-26T00:00:00Z",
+  "updated_at": "2026-04-28T00:00:00Z",
   "packages": [
     {
       "id": "spark-base",
       "display_name": "SPARK Base Layer",
       "description": "Layer fondazionale SCF con agenti base, skill condivise, instruction comuni e prompt framework general-purpose.",
-      "latest_version": "1.5.0",
+      "latest_version": "1.6.1",
       "version_source": "package-manifest",
       "status": "stable",
       "repo_url": "https://github.com/Nemex81/spark-base",
-      "min_engine_version": "2.4.0",
+      "min_engine_version": "3.1.0",
       "engine_managed_resources": true,
       "tags": [
         "base",
@@ -25,11 +25,11 @@
       "id": "scf-master-codecrafter",
       "display_name": "SCF Master CodeCrafter",
       "description": "Plugin CORE-CRAFT sopra spark-base per design, code routing, code UI e contesto MCP.",
-      "latest_version": "2.3.0",
+      "latest_version": "2.4.1",
       "version_source": "package-manifest",
       "status": "stable",
       "repo_url": "https://github.com/Nemex81/scf-master-codecrafter",
-      "min_engine_version": "2.4.0",
+      "min_engine_version": "3.1.0",
       "engine_managed_resources": true,
       "tags": [
         "master",
@@ -43,10 +43,10 @@
       "id": "scf-pycode-crafter",
       "display_name": "SCF Python CodeCrafter",
       "repo_url": "https://github.com/Nemex81/scf-pycode-crafter",
-      "latest_version": "2.1.0",
+      "latest_version": "2.2.1",
       "version_source": "package-manifest",
       "description": "Pacchetto SCF per progetti Python — agenti, skill e instruction per Copilot Agent mode",
-      "min_engine_version": "2.4.0",
+      "min_engine_version": "3.1.0",
       "status": "stable",
       "tags": [
         "python",

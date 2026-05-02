@@ -55,7 +55,6 @@ export function DialogsOverlay() {
   } = useAppData()
 
   const {
-    privatePinHash,
     showPrivatePinDialog,
     setShowPrivatePinDialog,
     handlePrivatePinSubmit,
@@ -74,8 +73,8 @@ export function DialogsOverlay() {
     <>
       <PinDialog
         open={showPrivatePinDialog}
-        title={privatePinHash ? 'Sblocca Conto Privato' : 'Crea PIN Conto Privato'}
-        description={privatePinHash ? 'Inserisci il PIN del conto privato' : 'Crea un PIN per il conto privato'}
+        title="PIN Conto Privato"
+        description="Inserisci il PIN del conto privato. Se non è ancora configurato, verrà creato al primo utilizzo."
         onSubmit={(pin) => handlePrivatePinSubmit(pin, () => {
           if (privateAccount) {
             const balance = calculateAccountBalance(privateAccount, visibleTransactions)
@@ -86,7 +85,6 @@ export function DialogsOverlay() {
           }
         })}
         onCancel={() => setShowPrivatePinDialog(false)}
-        confirmMode={!privatePinHash}
       />
 
       <AccountDialog

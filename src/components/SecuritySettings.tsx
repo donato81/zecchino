@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
-import { useKV } from '@github/spark/hooks'
-import { hashPin, verifyPin } from '@/lib/crypto'
+import { useEffect, useRef, useState } from 'react'
+import { hashPin } from '@/lib/crypto'
 import { soundSystem } from '@/lib/sound-system'
+import { useAuth } from '@/context/AuthContext'
 import { useScreenReader } from '@/hooks/use-screen-reader'
+import { getOrCreate, updatePinHash } from '@/lib/supabase/repositories/impostazioni-utente'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,58 +21,56 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 
-type PinChangeMode = 'global' | 'private' | null
+type PinChangeMode = 'private' | null
 
 export function SecuritySettings() {
   const screenReader = useScreenReader()
-  const [globalPinHash, setGlobalPinHash] = useKV<string>('global-pin-hash', '')
-  const [privatePinHash, setPrivatePinHash] = useKV<string>('private-pin-hash', '')
-  
+  const { user, resetPassword } = useAuth()
   const [showPinDialog, setShowPinDialog] = useState(false)
   const [pinChangeMode, setPinChangeMode] = useState<PinChangeMode>(null)
-  const [currentPin, setCurrentPin] = useState('')
   const [newPin, setNewPin] = useState('')
   const [confirmPin, setConfirmPin] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
+  const [hasPrivatePin, setHasPrivatePin] = useState(false)
+  const [passwordResetMessage, setPasswordResetMessage] = useState('')
   const [error, setError] = useState('')
-  const currentPinRef = useRef<HTMLInputElement>(null)
+  const newPinRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (showPinDialog) {
-      const timer = setTimeout(() => currentPinRef.current?.focus(), 100)
-      return () => clearTimeout(timer)
-    }
+    void getOrCreate().then((settings) => {
+      setHasPrivatePin(!!settings.pinPrivatoHash)
+    }).catch(() => {
+      setHasPrivatePin(false)
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!showPinDialog) return
+    const timer = window.setTimeout(() => newPinRef.current?.focus(), 100)
+    return () => window.clearTimeout(timer)
   }, [showPinDialog])
 
   const handleOpenPinChange = (mode: PinChangeMode) => {
     setPinChangeMode(mode)
     setShowPinDialog(true)
-    setCurrentPin('')
     setNewPin('')
     setConfirmPin('')
     setError('')
     soundSystem.play('dialog-open')
-    screenReader.announce(`Apertura dialog per cambio PIN ${mode === 'global' ? 'globale' : 'privato'}`, 'assertive')
+    screenReader.announce('Apertura dialog per gestione PIN privato', 'assertive')
   }
 
   const handleClosePinDialog = () => {
     setShowPinDialog(false)
     setPinChangeMode(null)
-    setCurrentPin('')
     setNewPin('')
     setConfirmPin('')
     setError('')
     soundSystem.play('dialog-close')
   }
 
-  const validatePins = async (): Promise<boolean> => {
-    if (!currentPin) {
-      setError('Inserisci il PIN attuale')
-      soundSystem.play('error')
-      screenReader.announceError('Errore: PIN attuale richiesto')
-      return false
-    }
-
+  const validatePins = (): boolean => {
     if (!newPin) {
       setError('Inserisci il nuovo PIN')
       soundSystem.play('error')
@@ -93,22 +92,6 @@ export function SecuritySettings() {
       return false
     }
 
-    const hashToCheck = pinChangeMode === 'global' ? globalPinHash : privatePinHash
-    if (!hashToCheck) {
-      setError('Nessun PIN configurato')
-      soundSystem.play('error')
-      screenReader.announceError('Errore: nessun PIN da modificare')
-      return false
-    }
-
-    const isValid = await verifyPin(currentPin, hashToCheck)
-    if (!isValid) {
-      setError('PIN attuale non corretto')
-      soundSystem.play('pin-error')
-      screenReader.announceError('Errore: PIN attuale non corretto')
-      return false
-    }
-
     return true
   }
 
@@ -116,7 +99,7 @@ export function SecuritySettings() {
     setError('')
     setIsProcessing(true)
 
-    const isValid = await validatePins()
+    const isValid = validatePins()
     if (!isValid) {
       setIsProcessing(false)
       return
@@ -124,17 +107,14 @@ export function SecuritySettings() {
 
     try {
       const newHash = await hashPin(newPin)
-      
-      if (pinChangeMode === 'global') {
-        setGlobalPinHash(newHash)
-        soundSystem.play('pin-success')
-        toast.success('PIN globale modificato con successo')
-        screenReader.announceSuccess('PIN globale modificato. Il nuovo PIN sarà richiesto al prossimo accesso.')
-      } else if (pinChangeMode === 'private') {
-        setPrivatePinHash(newHash)
+
+      if (pinChangeMode === 'private') {
+        // TODO Blocco 8: aggiungere verifica PIN attuale con nuova primitiva crittografica
+        await updatePinHash(newHash)
+        setHasPrivatePin(true)
         soundSystem.play('private-unlock')
-        toast.success('PIN privato modificato con successo')
-        screenReader.announceSuccess('PIN privato modificato. Il nuovo PIN sarà richiesto per sbloccare il conto privato.')
+        toast.success(hasPrivatePin ? 'PIN privato modificato con successo' : 'PIN privato configurato con successo')
+        screenReader.announceSuccess(hasPrivatePin ? 'PIN privato modificato.' : 'PIN privato configurato.')
       }
 
       handleClosePinDialog()
@@ -144,6 +124,28 @@ export function SecuritySettings() {
       screenReader.announceError('Errore durante la modifica del PIN. Riprova.')
     } finally {
       setIsProcessing(false)
+    }
+  }
+
+  const handlePasswordReset = async () => {
+    if (!user?.email) {
+      return
+    }
+
+    setIsChangingPassword(true)
+    setPasswordResetMessage('')
+
+    try {
+      await resetPassword(user.email)
+      const message = 'Ti abbiamo inviato un link via email per reimpostare la password.'
+      setPasswordResetMessage(message)
+      screenReader.announceSuccess(message)
+    } catch {
+      const message = 'Impossibile inviare il link di reset password. Riprova.'
+      setPasswordResetMessage(message)
+      screenReader.announceError(message)
+    } finally {
+      setIsChangingPassword(false)
     }
   }
 
@@ -175,41 +177,40 @@ export function SecuritySettings() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Key size={20} weight="duotone" className="text-primary" />
-              <h4 className="text-sm font-semibold">Gestione PIN</h4>
+              <h4 className="text-sm font-semibold">Sicurezza account</h4>
             </div>
-            
+
             <div className="space-y-3 pl-7">
               <div className="p-4 rounded-lg border bg-card space-y-3">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <Password size={18} weight="duotone" className="text-primary" />
-                      <Label className="text-base font-medium">PIN Globale</Label>
+                      <Label className="text-base font-medium">Email account</Label>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Controlla l'accesso all'intera applicazione
+                      {user?.email ?? 'Email non disponibile'}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge variant="outline" className="text-xs">
                         <Lock size={12} weight="fill" className="mr-1" />
-                        Attivo
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        Richiesto all'avvio
+                        Accesso protetto da password
                       </Badge>
                     </div>
                   </div>
                   <Button
-                    onClick={() => handleOpenPinChange('global')}
+                    onClick={() => void handlePasswordReset()}
                     variant="outline"
                     size="sm"
                     className="gap-2"
-                    data-focus-info="Modifica PIN globale per l'accesso all'applicazione"
+                    disabled={!user?.email || isChangingPassword}
+                    data-focus-info="Invia email per cambiare la password dell'account"
                   >
                     <Key size={16} weight="duotone" />
-                    Modifica
+                    {isChangingPassword ? 'Invio...' : 'Cambia password'}
                   </Button>
                 </div>
+                {passwordResetMessage ? <p className="text-sm text-muted-foreground">{passwordResetMessage}</p> : null}
               </div>
 
               <div className="p-4 rounded-lg border bg-card space-y-3">
@@ -223,7 +224,7 @@ export function SecuritySettings() {
                       Protegge l'accesso al conto privato cifrato
                     </p>
                     <div className="flex items-center gap-2 mt-2">
-                      {privatePinHash ? (
+                      {hasPrivatePin ? (
                         <>
                           <Badge variant="outline" className="text-xs">
                             <CheckCircle size={12} weight="fill" className="mr-1" />
@@ -246,11 +247,10 @@ export function SecuritySettings() {
                     variant="outline"
                     size="sm"
                     className="gap-2"
-                    disabled={!privatePinHash}
                     data-focus-info="Modifica PIN privato per il conto cifrato"
                   >
                     <Lock size={16} weight="duotone" />
-                    Modifica
+                    {hasPrivatePin ? 'Modifica' : 'Configura'}
                   </Button>
                 </div>
               </div>
@@ -265,11 +265,11 @@ export function SecuritySettings() {
               <div className="space-y-1">
                 <p className="text-sm font-medium text-foreground">Consigli per la Sicurezza</p>
                 <ul className="text-xs text-muted-foreground space-y-1">
-                  <li>• Usa un PIN di almeno 6 cifre per maggiore sicurezza</li>
-                  <li>• Non utilizzare PIN sequenziali (1234, 0000) o date di nascita</li>
-                  <li>• Il PIN privato può essere diverso da quello globale</li>
-                  <li>• Cambia regolarmente i tuoi PIN per mantenere la sicurezza</li>
-                  <li>• I PIN sono protetti con crittografia avanzata (SHA-256)</li>
+                  <li>• Usa una password lunga e unica per il tuo account</li>
+                  <li>• Non riutilizzare la stessa password su altri servizi</li>
+                  <li>• Configura un PIN privato separato per il conto cifrato</li>
+                  <li>• Aggiorna regolarmente le credenziali sensibili</li>
+                  <li>• Il PIN privato viene salvato in forma hash per maggiore sicurezza</li>
                 </ul>
               </div>
             </div>
@@ -282,38 +282,18 @@ export function SecuritySettings() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Key size={20} weight="duotone" />
-              Modifica PIN {pinChangeMode === 'global' ? 'Globale' : 'Privato'}
+              {hasPrivatePin ? 'Modifica PIN Privato' : 'Configura PIN Privato'}
             </DialogTitle>
             <DialogDescription>
-              Inserisci il PIN attuale e il nuovo PIN per modificarlo
+              Imposta un PIN dedicato per proteggere il conto privato cifrato
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="current-pin">PIN Attuale</Label>
-              <Input
-                ref={currentPinRef}
-                id="current-pin"
-                type="password"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="Inserisci il PIN attuale"
-                value={currentPin}
-                onChange={(e) => {
-                  setCurrentPin(e.target.value)
-                  setError('')
-                }}
-                onKeyPress={handleKeyPress}
-                disabled={isProcessing}
-              />
-            </div>
-
-            <Separator />
-
-            <div className="space-y-2">
               <Label htmlFor="new-pin">Nuovo PIN</Label>
               <Input
+                ref={newPinRef}
                 id="new-pin"
                 type="password"
                 inputMode="numeric"
@@ -366,7 +346,7 @@ export function SecuritySettings() {
             <Button
               type="submit"
               onClick={handleChangePinSubmit}
-              disabled={isProcessing || !currentPin || !newPin || !confirmPin}
+              disabled={isProcessing || !newPin || !confirmPin}
               className="gap-2"
             >
               {isProcessing ? (

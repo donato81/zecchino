@@ -1,28 +1,31 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import type { Session, User } from '@supabase/supabase-js'
 import { hashPin, verifyPin } from '@/lib/crypto'
+import { supabase } from '@/lib/supabase/client'
+import { getOrCreate, updatePinHash, updatePreference } from '@/lib/supabase/repositories/impostazioni-utente'
 import { soundSystem } from '@/lib/sound-system'
 import { hapticSystem } from '@/lib/haptic-system'
+import { Button } from '@/components/ui/button'
+import { useInactivityTimer } from '@/hooks/use-inactivity-timer'
 import { useScreenReader } from '@/hooks/use-screen-reader'
 import { toast } from 'sonner'
 
 interface AuthContextValue {
+  user: User | null
+  session: Session | null
   isAuthReady: boolean
-  globalPinHash: string
-  setGlobalPinHash: (value: string | ((prev: string) => string)) => void
-  privatePinHash: string | undefined
-  setPrivatePinHash: (value: string | ((prev?: string) => string)) => void
   isAuthenticated: boolean
-  setIsAuthenticated: (v: boolean) => void
+  needsOnboarding: boolean
+  inactivityTimeout: number
+  signIn: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string) => Promise<void>
+  signOut: () => Promise<void>
+  resetPassword: (email: string) => Promise<void>
   isPrivateUnlocked: boolean
   setIsPrivateUnlocked: (v: boolean) => void
-  isSetupMode: boolean
-  setIsSetupMode: (v: boolean) => void
-  showPinDialog: boolean
-  setShowPinDialog: (v: boolean) => void
   showPrivatePinDialog: boolean
   setShowPrivatePinDialog: (v: boolean) => void
-  handleGlobalPinSubmit: (pin: string) => Promise<void>
+  setInactivityTimeout: (minutes: number) => Promise<void>
   handlePrivatePinSubmit: (pin: string, onUnlocked?: () => void) => Promise<void>
 }
 
@@ -35,65 +38,119 @@ export function useAuth(): AuthContextValue {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [globalPinHash, setGlobalPinHash] = useKV<string>('global-pin-hash', '')
-  const [privatePinHash, setPrivatePinHash] = useKV<string>('private-pin-hash', '')
-
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [needsOnboarding, setNeedsOnboarding] = useState(false)
+  const [inactivityTimeoutState, setInactivityTimeoutState] = useState(5)
   const [isPrivateUnlocked, setIsPrivateUnlocked] = useState(false)
-  const [isSetupMode, setIsSetupMode] = useState(false)
-  const [showPinDialog, setShowPinDialog] = useState(false)
   const [showPrivatePinDialog, setShowPrivatePinDialog] = useState(false)
   const [isAuthReady, setIsAuthReady] = useState(false)
+  const [privatePinHashCache, setPrivatePinHashCache] = useState<string | null | undefined>(undefined)
   const screenReader = useScreenReader()
 
-useEffect(() => {
-  let cancelled = false
-  ;(async () => {
-    const storedHash = (await window.spark.kv.get('global-pin-hash')) as string | undefined
-    if (cancelled) return
-    if (!storedHash) {
-      setIsSetupMode(true)
+  const loadUserSettings = useCallback(async () => {
+    try {
+      const settings = await getOrCreate()
+      setNeedsOnboarding(!settings.nomeVisualizzato)
+      setInactivityTimeoutState((settings.preferences as Record<string, unknown>)?.session_timeout_minutes as number ?? 5)
+      setPrivatePinHashCache(settings.pinPrivatoHash ?? null)
+    } catch {
+      setNeedsOnboarding(false)
+      setInactivityTimeoutState(5)
+      setPrivatePinHashCache(null)
     }
-    setShowPinDialog(true)
-    setIsAuthReady(true)
-  })()
-  return () => { cancelled = true }
-}, [])
+  }, [])
 
+  const signOut = useCallback(async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+    setIsPrivateUnlocked(false)
+    setShowPrivatePinDialog(false)
+  }, [])
 
-const handleGlobalPinSubmit = async (pin: string) => {
-    if (isSetupMode) {
-      const hash = await hashPin(pin)
-      setGlobalPinHash(hash)
-      setIsAuthenticated(true)
-      setShowPinDialog(false)
-      setIsSetupMode(false)
-      soundSystem.play('pin-success')
-      hapticSystem.pinSuccess()
-      toast.success('PIN globale creato con successo')
-      screenReader.announceSuccess('PIN globale creato. Accesso all\'applicazione consentito.')
-    } else {
-      const isValid = await verifyPin(pin, globalPinHash || '')
-      if (isValid) {
-        setIsAuthenticated(true)
-        setShowPinDialog(false)
-        soundSystem.play('unlock')
-        hapticSystem.unlock()
-        toast.success('Accesso consentito')
-        screenReader.announceSuccess('Accesso consentito. Benvenuto in Zecchino.')
-      } else {
-        soundSystem.play('pin-error')
-        hapticSystem.pinError()
-        toast.error('PIN non corretto')
-        screenReader.announceError('PIN non corretto. Riprova.')
+  const { resetTimer, showWarning } = useInactivityTimer({
+    timeoutMinutes: isAuthenticated ? inactivityTimeoutState : 0,
+    onTimeout: () => {
+      void signOut()
+    },
+  })
+
+  useEffect(() => {
+    let active = true
+
+    void supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      if (!active) return
+      setSession(currentSession)
+      setUser(currentSession?.user ?? null)
+      setIsAuthenticated(!!currentSession)
+      setIsAuthReady(true)
+
+      if (currentSession) {
+        await loadUserSettings()
       }
-    }
-  }
+    })
 
-  const handlePrivatePinSubmit = async (pin: string, onUnlocked?: () => void) => {
-    if (!privatePinHash) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      setSession(currentSession)
+      setUser(currentSession?.user ?? null)
+      setIsAuthenticated(!!currentSession)
+      setIsAuthReady(true)
+
+      if (currentSession) {
+        void loadUserSettings()
+      } else {
+        setIsPrivateUnlocked(false)
+        setNeedsOnboarding(false)
+        setPrivatePinHashCache(undefined)
+      }
+    })
+
+    return () => {
+      active = false
+      subscription.unsubscribe()
+    }
+  }, [loadUserSettings])
+
+  const signIn = useCallback(async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
+  }, [])
+
+  const signUp = useCallback(async (email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({ email, password })
+    if (error) throw error
+  }, [])
+
+  const resetPassword = useCallback(async (email: string) => {
+    if (!email) return
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email)
+    if (error) {
+      const message = error.message.toLowerCase()
+      if (message.includes('email') && message.includes('not')) {
+        return
+      }
+      throw error
+    }
+  }, [])
+
+  const setInactivityTimeout = useCallback(async (minutes: number) => {
+    setInactivityTimeoutState(minutes)
+    await updatePreference('session_timeout_minutes' as never, minutes)
+    resetTimer()
+  }, [resetTimer])
+
+  const handlePrivatePinSubmit = useCallback(async (pin: string, onUnlocked?: () => void) => {
+    if (privatePinHashCache === undefined) {
+      return
+    }
+
+    // TODO Blocco 8: sostituire con primitiva crittografica aggiornata
+    if (privatePinHashCache === null) {
       const hash = await hashPin(pin)
-      setPrivatePinHash(hash)
+      await updatePinHash(hash)
+      setPrivatePinHashCache(hash)
       setIsPrivateUnlocked(true)
       setShowPrivatePinDialog(false)
       soundSystem.play('private-unlock')
@@ -101,7 +158,7 @@ const handleGlobalPinSubmit = async (pin: string) => {
       toast.success('PIN privato creato e conto sbloccato')
       screenReader.announceSuccess('PIN privato creato. Conto privato ora sbloccato.')
     } else {
-      const isValid = await verifyPin(pin, privatePinHash)
+      const isValid = await verifyPin(pin, privatePinHashCache)
       if (isValid) {
         setIsPrivateUnlocked(true)
         setShowPrivatePinDialog(false)
@@ -117,25 +174,63 @@ const handleGlobalPinSubmit = async (pin: string) => {
         hapticSystem.pinError()
         toast.error('PIN privato non corretto')
         screenReader.announceError('PIN privato non corretto. Riprova.')
+        throw new Error('PIN non corretto')
       }
     }
-  }
+  }, [privatePinHashCache, screenReader])
+
+  const value = useMemo(() => ({
+    user,
+    session,
+    isAuthReady,
+    isAuthenticated,
+    needsOnboarding,
+    inactivityTimeout: inactivityTimeoutState,
+    signIn,
+    signUp,
+    signOut,
+    resetPassword,
+    isPrivateUnlocked,
+    setIsPrivateUnlocked,
+    showPrivatePinDialog,
+    setShowPrivatePinDialog,
+    setInactivityTimeout,
+    handlePrivatePinSubmit,
+  }), [
+    handlePrivatePinSubmit,
+    inactivityTimeoutState,
+    isAuthReady,
+    isAuthenticated,
+    isPrivateUnlocked,
+    needsOnboarding,
+    resetPassword,
+    session,
+    setInactivityTimeout,
+    showPrivatePinDialog,
+    signIn,
+    signOut,
+    signUp,
+    user,
+  ])
 
   return (
-    <AuthContext.Provider value={{
-      isAuthReady,
-      globalPinHash: globalPinHash ?? '',
-      setGlobalPinHash,
-      privatePinHash, setPrivatePinHash,
-      isAuthenticated, setIsAuthenticated,
-      isPrivateUnlocked, setIsPrivateUnlocked,
-      isSetupMode, setIsSetupMode,
-      showPinDialog, setShowPinDialog,
-      showPrivatePinDialog, setShowPrivatePinDialog,
-      handleGlobalPinSubmit,
-      handlePrivatePinSubmit,
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
+      {showWarning && isAuthenticated ? (
+        <div className="fixed bottom-4 left-4 right-4 z-50 rounded-lg border bg-background/95 p-4 shadow-lg backdrop-blur" role="alertdialog" aria-live="assertive" aria-label="Avviso scadenza sessione">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-foreground">La tua sessione scadrà tra 1 minuto. Vuoi rimanere connesso?</p>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => { resetTimer(); screenReader.announceSuccess('Sessione mantenuta attiva.') }}>
+                Rimani connesso
+              </Button>
+              <Button variant="destructive" onClick={() => { void signOut() }}>
+                Esci ora
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </AuthContext.Provider>
   )
 }

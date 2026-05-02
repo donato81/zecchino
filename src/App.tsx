@@ -16,6 +16,8 @@ import { ReportsTab } from '@/components/ReportsTab'
 import { AppHeader } from '@/components/AppHeader'
 import { AuthScreen } from '@/components/AuthScreen'
 import { DialogsOverlay } from '@/components/DialogsOverlay'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { OnboardingFlow } from '@/components/OnboardingFlow'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { ChartLine, List, ArrowsLeftRight } from '@phosphor-icons/react'
@@ -29,7 +31,7 @@ function AppContent() {
     handleDismissBudgetAlert, handleViewBudget, setShowTransactionDialog, setEditingAccount,
     setShowAccountDialog, setShowBudgetDialog, setEditingBudget, setShowKeyboardHelp, setEditingTransaction,
   } = useAppData()
-  const { isAuthenticated, isAuthReady } = useAuth()
+  const { isAuthenticated, isAuthReady, needsOnboarding } = useAuth()
   const { budgetAlerts, totalBalance, visibleAccounts, visibleTransactions } = useVisibleData()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [previousTab, setPreviousTab] = useState('dashboard')
@@ -67,8 +69,9 @@ function AppContent() {
   }, [activeTab, previousTab, isAuthenticated, visibleAccounts, visibleTransactions, totalBalance, screenReader])
 
   useAppShortcuts({ activeTab, setActiveTab, setShowTransactionDialog, setShowAccountDialog, setShowKeyboardHelp, setEditingTransaction, setEditingAccount })
-  if (!isAuthReady) return null
+  if (!isAuthReady) return <LoadingSpinner />
   if (!isAuthenticated) return <AuthScreen />
+  if (needsOnboarding) return <OnboardingFlow />
 
   return (
     <>
