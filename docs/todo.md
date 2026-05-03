@@ -13,6 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| P35 — Onboarding primo accesso Supabase (Blocco 9: OnboardingFlow completo, completeOnboarding() in AuthContext, seedDefaultCategories, flag onboarding_completed) | `docs/3 - todo lists/P35-todo.md` | ⏳ Da avviare | Alta |
 
 ## TODO completati
 
