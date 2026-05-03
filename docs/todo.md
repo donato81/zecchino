@@ -13,7 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| P30 — Migrazione `budgetPercentages` a Supabase | — | Prossimo step | Alta |
+| P30 — Migrazione `budgetPercentages` a `useState` | `docs/3 - todo lists/P30-todo.md` | In corso | Alta — Blocco 6, rimuove l'ultima chiamata `useKV` da `AppDataContext.tsx` |
 
 ## TODO completati
 
