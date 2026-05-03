@@ -23,12 +23,17 @@ interface AuthContextValue {
   signUp: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
+  isPrivateEnabled: boolean
   isPrivateUnlocked: boolean
   setIsPrivateUnlocked: (v: boolean) => void
   showPrivatePinDialog: boolean
   setShowPrivatePinDialog: (v: boolean) => void
   setInactivityTimeout: (minutes: number) => Promise<void>
-  handlePrivatePinSubmit: (pin: string, onUnlocked?: () => void) => Promise<void>
+  unlockPrivate: (pin: string) => Promise<void>
+  lockPrivate: () => void
+  setPin: (pin: string) => Promise<void>
+  changePin: (oldPin: string, newPin: string) => Promise<void>
+  removePin: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -147,43 +152,89 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     resetTimer()
   }, [resetTimer])
 
-  const handlePrivatePinSubmit = useCallback(async (pin: string, onUnlocked?: () => void) => {
-    if (privatePinHashCache === undefined) {
-      return
+  const isPrivateEnabled = privatePinHashCache !== null && privatePinHashCache !== undefined && privatePinHashCache !== ''
+
+  const unlockPrivate = useCallback(async (pin: string) => {
+    if (!isPrivateEnabled || !privatePinHashCache) {
+      soundSystem.play('pin-error')
+      hapticSystem.pinError()
+      toast.error('PIN privato non configurato')
+      screenReader.announceError('PIN privato non configurato.')
+      throw new Error('PIN privato non configurato')
     }
 
-    // TODO Blocco 8: sostituire con primitiva crittografica aggiornata
-    if (privatePinHashCache === null) {
-      const hash = await hashPin(pin)
-      await updatePinHash(hash)
-      setPrivatePinHashCache(hash)
-      setIsPrivateUnlocked(true)
-      setShowPrivatePinDialog(false)
-      soundSystem.play('private-unlock')
-      hapticSystem.privateUnlock()
-      toast.success('PIN privato creato e conto sbloccato')
-      screenReader.announceSuccess('PIN privato creato. Conto privato ora sbloccato.')
-    } else {
-      const isValid = await verifyPin(pin, privatePinHashCache)
-      if (isValid) {
-        setIsPrivateUnlocked(true)
-        setShowPrivatePinDialog(false)
-        soundSystem.play('private-unlock')
-        hapticSystem.privateUnlock()
-        toast.success('Conto privato sbloccato')
-        onUnlocked?.()
-        if (!onUnlocked) {
-          screenReader.announceSuccess('Conto privato sbloccato.')
-        }
-      } else {
-        soundSystem.play('pin-error')
-        hapticSystem.pinError()
-        toast.error('PIN privato non corretto')
-        screenReader.announceError('PIN privato non corretto. Riprova.')
-        throw new Error('PIN non corretto')
-      }
+    const isValid = await verifyPin(pin, privatePinHashCache)
+    if (!isValid) {
+      soundSystem.play('pin-error')
+      hapticSystem.pinError()
+      toast.error('PIN privato non corretto')
+      screenReader.announceError('PIN privato non corretto. Riprova.')
+      throw new Error('PIN non corretto')
     }
-  }, [privatePinHashCache, screenReader])
+
+    setIsPrivateUnlocked(true)
+    setShowPrivatePinDialog(false)
+    soundSystem.play('private-unlock')
+    hapticSystem.privateUnlock()
+    toast.success('Conto privato sbloccato')
+    screenReader.announceSuccess('Conto privato sbloccato.')
+  }, [isPrivateEnabled, privatePinHashCache, screenReader])
+
+  const lockPrivate = useCallback(() => {
+    setIsPrivateUnlocked(false)
+  }, [])
+
+  const setPin = useCallback(async (pin: string) => {
+    if (isPrivateEnabled) {
+      throw new Error('PIN privato già configurato')
+    }
+
+    const hash = await hashPin(pin)
+    await updatePinHash(hash)
+    setPrivatePinHashCache(hash)
+    setUserSettings(prev => prev ? { ...prev, pinPrivatoHash: hash } : prev)
+    setIsPrivateUnlocked(true)
+    soundSystem.play('private-unlock')
+    hapticSystem.privateUnlock()
+    toast.success('PIN privato configurato con successo')
+    screenReader.announceSuccess('PIN privato configurato.')
+  }, [isPrivateEnabled, screenReader])
+
+  const changePin = useCallback(async (oldPin: string, newPin: string) => {
+    if (!isPrivateEnabled || !privatePinHashCache) {
+      throw new Error('PIN privato non configurato')
+    }
+
+    const isValid = await verifyPin(oldPin, privatePinHashCache)
+    if (!isValid) {
+      soundSystem.play('pin-error')
+      hapticSystem.pinError()
+      throw new Error('PIN attuale non corretto')
+    }
+
+    const newHash = await hashPin(newPin)
+    await updatePinHash(newHash)
+    setPrivatePinHashCache(newHash)
+    setUserSettings(prev => prev ? { ...prev, pinPrivatoHash: newHash } : prev)
+    soundSystem.play('private-unlock')
+    hapticSystem.privateUnlock()
+    toast.success('PIN privato modificato con successo')
+    screenReader.announceSuccess('PIN privato modificato.')
+  }, [isPrivateEnabled, privatePinHashCache, screenReader])
+
+  const removePin = useCallback(async () => {
+    if (!isPrivateEnabled) {
+      throw new Error('PIN privato non configurato')
+    }
+
+    await updatePinHash(null)
+    setPrivatePinHashCache(null)
+    setUserSettings(prev => prev ? { ...prev, pinPrivatoHash: null } : prev)
+    setIsPrivateUnlocked(false)
+    soundSystem.play('dialog-close')
+    toast.success('PIN privato rimosso')
+    screenReader.announceSuccess('PIN privato rimosso.')
+  }, [isPrivateEnabled, screenReader])
 
   const value = useMemo(() => ({
     user,
@@ -197,26 +248,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signOut,
     resetPassword,
+    isPrivateEnabled,
     isPrivateUnlocked,
     setIsPrivateUnlocked,
     showPrivatePinDialog,
     setShowPrivatePinDialog,
     setInactivityTimeout,
-    handlePrivatePinSubmit,
+    unlockPrivate,
+    lockPrivate,
+    setPin,
+    changePin,
+    removePin,
   }), [
-    handlePrivatePinSubmit,
+    changePin,
     inactivityTimeoutState,
     isAuthReady,
     isAuthenticated,
+    isPrivateEnabled,
     isPrivateUnlocked,
+    lockPrivate,
     needsOnboarding,
+    removePin,
     resetPassword,
     session,
+    setPin,
     setInactivityTimeout,
     showPrivatePinDialog,
     signIn,
     signOut,
     signUp,
+    unlockPrivate,
     user,
     userSettings,
   ])

@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { hashPin } from '@/lib/crypto'
 import { soundSystem } from '@/lib/sound-system'
 import { useAuth } from '@/context/AuthContext'
 import { useScreenReader } from '@/hooks/use-screen-reader'
-import { getOrCreate, updatePinHash } from '@/lib/supabase/repositories/impostazioni-utente'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,7 +9,6 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { ShieldCheck, Key, Lock, Password, CheckCircle, X } from '@phosphor-icons/react'
-import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -25,25 +22,17 @@ type PinChangeMode = 'private' | null
 
 export function SecuritySettings() {
   const screenReader = useScreenReader()
-  const { user, resetPassword } = useAuth()
+  const { user, resetPassword, isPrivateEnabled, setPin, changePin } = useAuth()
   const [showPinDialog, setShowPinDialog] = useState(false)
   const [pinChangeMode, setPinChangeMode] = useState<PinChangeMode>(null)
+  const [currentPin, setCurrentPin] = useState('')
   const [newPin, setNewPin] = useState('')
   const [confirmPin, setConfirmPin] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
-  const [hasPrivatePin, setHasPrivatePin] = useState(false)
   const [passwordResetMessage, setPasswordResetMessage] = useState('')
   const [error, setError] = useState('')
   const newPinRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    void getOrCreate().then((settings) => {
-      setHasPrivatePin(!!settings.pinPrivatoHash)
-    }).catch(() => {
-      setHasPrivatePin(false)
-    })
-  }, [])
 
   useEffect(() => {
     if (!showPinDialog) return
@@ -54,6 +43,7 @@ export function SecuritySettings() {
   const handleOpenPinChange = (mode: PinChangeMode) => {
     setPinChangeMode(mode)
     setShowPinDialog(true)
+    setCurrentPin('')
     setNewPin('')
     setConfirmPin('')
     setError('')
@@ -64,6 +54,7 @@ export function SecuritySettings() {
   const handleClosePinDialog = () => {
     setShowPinDialog(false)
     setPinChangeMode(null)
+    setCurrentPin('')
     setNewPin('')
     setConfirmPin('')
     setError('')
@@ -71,6 +62,13 @@ export function SecuritySettings() {
   }
 
   const validatePins = (): boolean => {
+    if (isPrivateEnabled && !currentPin) {
+      setError('Inserisci il PIN attuale')
+      soundSystem.play('error')
+      screenReader.announceError('Errore: PIN attuale richiesto')
+      return false
+    }
+
     if (!newPin) {
       setError('Inserisci il nuovo PIN')
       soundSystem.play('error')
@@ -106,15 +104,12 @@ export function SecuritySettings() {
     }
 
     try {
-      const newHash = await hashPin(newPin)
-
       if (pinChangeMode === 'private') {
-        // TODO Blocco 8: aggiungere verifica PIN attuale con nuova primitiva crittografica
-        await updatePinHash(newHash)
-        setHasPrivatePin(true)
-        soundSystem.play('private-unlock')
-        toast.success(hasPrivatePin ? 'PIN privato modificato con successo' : 'PIN privato configurato con successo')
-        screenReader.announceSuccess(hasPrivatePin ? 'PIN privato modificato.' : 'PIN privato configurato.')
+        if (isPrivateEnabled) {
+          await changePin(currentPin, newPin)
+        } else {
+          await setPin(newPin)
+        }
       }
 
       handleClosePinDialog()
@@ -224,7 +219,7 @@ export function SecuritySettings() {
                       Protegge l'accesso al conto privato cifrato
                     </p>
                     <div className="flex items-center gap-2 mt-2">
-                      {hasPrivatePin ? (
+                      {isPrivateEnabled ? (
                         <>
                           <Badge variant="outline" className="text-xs">
                             <CheckCircle size={12} weight="fill" className="mr-1" />
@@ -250,7 +245,7 @@ export function SecuritySettings() {
                     data-focus-info="Modifica PIN privato per il conto cifrato"
                   >
                     <Lock size={16} weight="duotone" />
-                    {hasPrivatePin ? 'Modifica' : 'Configura'}
+                    {isPrivateEnabled ? 'Modifica' : 'Configura'}
                   </Button>
                 </div>
               </div>
@@ -282,7 +277,7 @@ export function SecuritySettings() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Key size={20} weight="duotone" />
-              {hasPrivatePin ? 'Modifica PIN Privato' : 'Configura PIN Privato'}
+              {isPrivateEnabled ? 'Modifica PIN Privato' : 'Configura PIN Privato'}
             </DialogTitle>
             <DialogDescription>
               Imposta un PIN dedicato per proteggere il conto privato cifrato
@@ -290,6 +285,26 @@ export function SecuritySettings() {
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            {isPrivateEnabled ? (
+              <div className="space-y-2">
+                <Label htmlFor="current-pin">PIN attuale</Label>
+                <Input
+                  id="current-pin"
+                  type="password"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="Inserisci il PIN attuale"
+                  value={currentPin}
+                  onChange={(e) => {
+                    setCurrentPin(e.target.value)
+                    setError('')
+                  }}
+                  onKeyPress={handleKeyPress}
+                  disabled={isProcessing}
+                />
+              </div>
+            ) : null}
+
             <div className="space-y-2">
               <Label htmlFor="new-pin">Nuovo PIN</Label>
               <Input
@@ -346,7 +361,7 @@ export function SecuritySettings() {
             <Button
               type="submit"
               onClick={handleChangePinSubmit}
-              disabled={isProcessing || !newPin || !confirmPin}
+              disabled={isProcessing || !newPin || !confirmPin || (isPrivateEnabled && !currentPin)}
               className="gap-2"
             >
               {isProcessing ? (

@@ -445,6 +445,8 @@ tipi `Account`, `Transaction`, ecc. invariati.
 I blocchi sono numerati in ordine di dipendenza tecnica. I numeri 1, 2, 3
 sono **bloccanti** per tutto ciò che segue.
 
+**Stato avanzamento al 2026-05-03:** **8/10 blocchi completati** (Blocco 1 → Blocco 8 completati; restano aperti Blocco 9 e Blocco 10).
+
 ### Blocco 1 — Decisioni di schema su `impostazioni_utente` e `cifrato`
 
 - **Obiettivo**: chiudere i punti aperti di schema (24 colonne vs JSONB,
@@ -567,27 +569,29 @@ sono **bloccanti** per tutto ciò che segue.
   - Gestione collisioni di `id` se l'utente ri-importa.
 - **Design operativo**: P34
 
-### Blocco 8 — PIN privato su Supabase
+### Blocco 8 — PIN privato su Supabase ✅ Completato
 
 - **Obiettivo**: implementare set/verify PIN privato con hashing
-  appropriato (bcrypt/argon2) e storage su `impostazioni_utente.pin_privato_hash`.
+  appropriato e storage su `impostazioni_utente.pin_privato_hash`.
   Aggiornare la sezione "Cambio PIN privato" di `SecuritySettings`.
   Garantire che `isPrivateUnlocked = false` ad ogni nuova sessione.
 - **File coinvolti**:
-  [src/lib/crypto.ts](../../src/lib/crypto.ts) (sostituzione SHA-256),
-  `AuthContext.tsx` (logica unlock), `SecuritySettings.tsx`,
-  [PinDialog.tsx](../../src/components/PinDialog.tsx),
-  [use-visible-data.ts](../../src/hooks/use-visible-data.ts) (resta
-  invariato a livello di logica),
-  [use-app-shortcuts.ts](../../src/hooks/use-app-shortcuts.ts).
+  `package.json`, [src/lib/crypto.ts](../../src/lib/crypto.ts),
+  [src/context/AuthContext.tsx](../../src/context/AuthContext.tsx),
+  [src/components/SecuritySettings.tsx](../../src/components/SecuritySettings.tsx),
+  [src/components/DialogsOverlay.tsx](../../src/components/DialogsOverlay.tsx).
 - **Tabelle Supabase**: `impostazioni_utente`.
 - **Dipendenze**: blocco 3, blocco 5.
 - **Complessità**: **Massima** — riguarda la sicurezza, richiede revisione
   crittografica.
+- **Esito implementativo**:
+  - Scelto **bcrypt client-side via `bcryptjs`** con salt factor **12**.
+  - Rimossa la primitiva SHA-256 in `src/lib/crypto.ts` per `hashPin()` e `verifyPin()`.
+  - `AuthContext` espone ora `isPrivateEnabled`, `unlockPrivate`, `lockPrivate`, `setPin`, `changePin`, `removePin`.
+  - `SecuritySettings` delega completamente a `useAuth()` senza dipendenze dirette al repository PIN.
+  - `DialogsOverlay` usa `unlockPrivate()` al posto di `handlePrivatePinSubmit()`.
 - **Punti aperti**:
-  - bcrypt/argon2 client-side (libreria, dimensione bundle) **vs**
-    Edge Function server-side.
-  - Politica di rate limiting su tentativi falliti.
+  - Politica di rate limiting su tentativi falliti come hardening successivo.
 - **Design operativo**: P32
 
 ### Blocco 9 — Onboarding primo accesso
@@ -638,7 +642,7 @@ sono **bloccanti** per tutto ciò che segue.
 | R7 | `DataManagement` export/import oggi cicla su `window.spark.kv.keys()`. Romperà il backup esistente. | Medio | Blocco 7 |
 | R8 | `budget-percentages` semantica per-sessione: migrarla su Supabase sarebbe sbagliato. | Basso | Blocco 6 |
 | R9 | `Transaction.ricorrente` + `frequenzaRicorrenza` inline vs futura tabella `ricorrenze`. Migrazione dati richiederà script futuro. | Basso (fuori scope) | Fuori scope |
-| R10 | Hashing PIN privato con SHA-256 puro inadeguato per dato che transita via rete. Da sostituire con bcrypt/argon2 client o Edge Function. | **Critico — sicurezza** | Blocco 8 |
+| R10 | Hashing PIN privato con SHA-256 puro inadeguato per dato che transita via rete. **Risolto il 2026-05-03** con bcrypt client-side via `bcryptjs` (salt factor 12) nel Blocco 8. | **Risolto** | Blocco 8 |
 | R11 | Schema esatto di `impostazioni_utente` per le 24 chiavi UI: 24 colonne vs JSONB. Decisione necessaria prima di cablare il blocco 5. | Alto (bloccante) | Blocco 1 |
 | R12 | Trigger / colonna generata per `cifrato`: scelta tecnica e scrittura SQL. | Medio | Blocco 1 |
 | R13 | Strategia cache offline (service worker vs client cache vs localStorage). | Medio | Blocco 10 |

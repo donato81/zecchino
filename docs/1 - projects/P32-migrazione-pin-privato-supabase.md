@@ -11,13 +11,20 @@
 | **Branch** | `refactoring-architettura` |
 | **Data** | 28 aprile 2026 |
 | **Autore** | Agent-Design |
-| **File modificati** | Nessuno |
+| **File modificati** | `package.json`, `src/lib/crypto.ts`, `src/context/AuthContext.tsx`, `src/components/SecuritySettings.tsx`, `src/components/DialogsOverlay.tsx` |
 | **Documenti di riferimento** | [P24](./P24-architettura-migrazione-supabase.md) · [P25](./P25-schema-impostazioni-utente-cifrato.md) · [P26](./P26-strato-accesso-dati-supabase.md) · [P27](./P27-migrazione-authcontext-supabase.md) · [P28](./P28-migrazione-appdatacontext-supabase.md) · [P29](./P29-migrazione-usersettings-preferenze-ui.md) · [P30](./P30-migrazione-budgetpercentages-usestate.md) · [P31](./P31-migrazione-preferenze-display-audio-screenreader.md) · [AuthContext.tsx](../../src/context/AuthContext.tsx) · [SecuritySettings.tsx](../../src/components/SecuritySettings.tsx) · [src/lib/crypto.ts](../../src/lib/crypto.ts) |
-| **Stato** | Bozza — in attesa di validazione |
+| **Stato** | Completato — implementazione validata il 2026-05-03 |
 
 > **Questo documento è vincolante per tutti i design operativi successivi (P33 in poi).
 > Le decisioni qui contenute sono già state validate e non vengono rimesse in discussione:
 > i design successivi possono solo dettagliarne l'implementazione, non cambiarne la sostanza.**
+
+> **Aggiornamento implementativo (2026-05-03)**
+> Il Blocco 8 è stato completato con **bcrypt lato client via `bcryptjs`**, salt factor **12**,
+> verifica lato client in `AuthContext.unlockPrivate()`, e refactoring definitivo della superficie
+> pubblica di `AuthContext`. I file applicativi modificati nel pacchetto sono esattamente 5:
+> `package.json`, `src/lib/crypto.ts`, `src/context/AuthContext.tsx`,
+> `src/components/SecuritySettings.tsx`, `src/components/DialogsOverlay.tsx`.
 
 ---
 
@@ -469,16 +476,9 @@ da `src/test/setup.ts`.
 
 ## 12. Punti aperti residui
 
-- **Algoritmo di hashing — sostituzione SHA-256**: P24 §4.3 e P24 §8 (Rischio R10) classificano
-  l'attuale SHA-256 puro come **inadeguato** per un hash che viene sincronizzato via rete su
-  Supabase. Il coding plan del Blocco 8 deve scegliere tra bcrypt, argon2 o verifica tramite
-  Supabase Edge Function. Il vincolo critico è la **continuità**: se l'algoritmo cambia, tutti
-  gli utenti che hanno già impostato un PIN privato (con hash SHA-256) avranno l'hash incompatibile
-  con il nuovo algoritmo. La scelta più sicura è una migrazione one-shot al primo login
-  post-distribuzione: se il record ha un hash in formato SHA-256 (riconoscibile dalla lunghezza
-  fissa di 64 caratteri esadecimali), `AuthContext` chiede all'utente di reinserire il PIN
-  per ricrearlo con il nuovo algoritmo. Il meccanismo esatto è un punto aperto da documentare
-  nel coding plan del Blocco 8, non risolvibile a livello di design.
+- **Algoritmo di hashing — RISOLTO**: P32 adotta **bcrypt lato client via `bcryptjs`** con salt
+      factor **12**. Il sistema è vergine: non esistono hash SHA-256 pregressi da migrare, quindi
+      non è stato necessario introdurre meccanismi di compatibilità o re-hash progressivo.
 
 - **Gestione errore su `updatePinHash()` durante operazioni PIN**: se Supabase non risponde
   durante `setPin`, `changePin` o `removePin`, il pattern non ottimistico (§8 punti 6–8)
@@ -551,4 +551,4 @@ da `src/test/setup.ts`.
 
 ---
 
-*Fine documento. Nessun file sorgente è stato modificato.*
+*Fine documento. Implementazione completata e validata il 2026-05-03.*

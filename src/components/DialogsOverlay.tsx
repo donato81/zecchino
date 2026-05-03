@@ -57,7 +57,7 @@ export function DialogsOverlay() {
   const {
     showPrivatePinDialog,
     setShowPrivatePinDialog,
-    handlePrivatePinSubmit,
+    unlockPrivate,
   } = useAuth()
 
   const {
@@ -74,8 +74,9 @@ export function DialogsOverlay() {
       <PinDialog
         open={showPrivatePinDialog}
         title="PIN Conto Privato"
-        description="Inserisci il PIN del conto privato. Se non è ancora configurato, verrà creato al primo utilizzo."
-        onSubmit={(pin) => handlePrivatePinSubmit(pin, () => {
+        description="Inserisci il PIN del conto privato per sbloccare i dati protetti."
+        onSubmit={async (pin) => {
+          await unlockPrivate(pin)
           if (privateAccount) {
             const balance = calculateAccountBalance(privateAccount, visibleTransactions)
             toast.success(`Conto privato sbloccato. Saldo: ${formatCurrency(balance)}`)
@@ -83,7 +84,7 @@ export function DialogsOverlay() {
           } else {
             screenReader.announceSuccess('Conto privato sbloccato.')
           }
-        })}
+        }}
         onCancel={() => setShowPrivatePinDialog(false)}
       />
 

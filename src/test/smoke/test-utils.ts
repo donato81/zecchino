@@ -17,12 +17,17 @@ type MockAuthState = {
   signUp: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
+  isPrivateEnabled: boolean
   isPrivateUnlocked: boolean
   setIsPrivateUnlocked: (value: boolean) => void
   showPrivatePinDialog: boolean
   setShowPrivatePinDialog: (value: boolean) => void
   setInactivityTimeout: (minutes: number) => Promise<void>
-  handlePrivatePinSubmit: (pin: string, onUnlocked?: () => void) => Promise<void>
+  unlockPrivate: (pin: string) => Promise<void>
+  lockPrivate: () => void
+  setPin: (pin: string) => Promise<void>
+  changePin: (oldPin: string, newPin: string) => Promise<void>
+  removePin: () => Promise<void>
 }
 
 const authStore = vi.hoisted(() => {
@@ -62,11 +67,13 @@ const authStore = vi.hoisted(() => {
       signOut: async () => {
         store.setState({
           isAuthenticated: false,
+          isPrivateEnabled: true,
           isPrivateUnlocked: false,
           showPrivatePinDialog: false,
         })
       },
       resetPassword: async () => undefined,
+      isPrivateEnabled: true,
       isPrivateUnlocked: false,
       setIsPrivateUnlocked: (value: boolean) => {
         store.setState({ isPrivateUnlocked: value })
@@ -78,12 +85,29 @@ const authStore = vi.hoisted(() => {
       setInactivityTimeout: async (minutes: number) => {
         store.setState({ inactivityTimeout: minutes })
       },
-      handlePrivatePinSubmit: async (_pin: string, onUnlocked?: () => void) => {
+      unlockPrivate: async (_pin: string) => {
         store.setState({
           isPrivateUnlocked: true,
           showPrivatePinDialog: false,
         })
-        onUnlocked?.()
+      },
+      lockPrivate: () => {
+        store.setState({ isPrivateUnlocked: false })
+      },
+      setPin: async (_pin: string) => {
+        store.setState({
+          isPrivateEnabled: true,
+          isPrivateUnlocked: true,
+        })
+      },
+      changePin: async (_oldPin: string, _newPin: string) => {
+        store.setState({ isPrivateEnabled: true })
+      },
+      removePin: async () => {
+        store.setState({
+          isPrivateEnabled: false,
+          isPrivateUnlocked: false,
+        })
       },
     }
   }

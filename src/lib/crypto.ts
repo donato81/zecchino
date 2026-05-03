@@ -1,15 +1,11 @@
+import bcrypt from 'bcryptjs'
+
 export async function hashPin(pin: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(pin)
-  const hash = await crypto.subtle.digest('SHA-256', data)
-  return Array.from(new Uint8Array(hash))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('')
+  return bcrypt.hash(pin, 12)
 }
 
 export async function verifyPin(pin: string, hash: string): Promise<boolean> {
-  const pinHash = await hashPin(pin)
-  return pinHash === hash
+  return bcrypt.compare(pin, hash)
 }
 
 export async function encryptData(data: string, key: string): Promise<string> {
