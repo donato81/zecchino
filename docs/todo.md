@@ -13,6 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| P32 — Migrazione PIN privato a Supabase (Blocco 8: bcrypt, API AuthContext, rimozione dipendenze dirette SecuritySettings) | `docs/3 - todo lists/P32-todo.md` | In corso | Alta |
 
 ## TODO completati
 
