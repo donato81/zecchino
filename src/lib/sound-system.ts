@@ -91,37 +91,41 @@ type SoundType =
   | 'validation-error'
   | 'validation-success'
 
+// Dependency injection strategy: callbacks.
+// AudioSettings calls soundSystem.configure({ onEnabledChange, onVolumeChange })
+// with Supabase persistence functions after mounting. Before configure() is called,
+// setEnabled/setVolume only update in-memory state (safe in-memory defaults apply).
+interface AudioPersistCallbacks {
+  onEnabledChange?: (enabled: boolean) => Promise<void>
+  onVolumeChange?: (volume: number) => Promise<void>
+}
+
 class SoundSystem {
   private audioContext: AudioContext | null = null
   private masterGain: GainNode | null = null
   private enabled: boolean = true
   private volume: number = 0.3
   private initialized: boolean = false
+  private persistCallbacks: AudioPersistCallbacks = {}
 
   constructor() {
     if (typeof window !== 'undefined') {
-      this.loadSettings()
       this.initialize()
     }
   }
 
-  private async loadSettings() {
-    try {
-      const enabledValue = await window.spark.kv.get<boolean>('audio-enabled')
-      const volumeValue = await window.spark.kv.get<number>('audio-volume')
-      
-      if (enabledValue !== undefined) {
-        this.enabled = enabledValue
-      }
-      if (volumeValue !== undefined && volumeValue >= 0 && volumeValue <= 1) {
-        this.volume = volumeValue
-        if (this.masterGain) {
-          this.masterGain.gain.value = this.volume
-        }
-      }
-    } catch (error) {
-      console.warn('Could not load audio settings:', error)
+  // Called by AudioSettings after it reads values from Supabase (via useUserSettings).
+  initFromSettings(enabled: boolean, volume: number): void {
+    this.enabled = enabled
+    this.volume = Math.max(0, Math.min(1, volume))
+    if (this.masterGain) {
+      this.masterGain.gain.value = this.volume
     }
+  }
+
+  // Called by AudioSettings to register Supabase persistence callbacks.
+  configure(callbacks: AudioPersistCallbacks): void {
+    this.persistCallbacks = callbacks
   }
 
   private initialize() {
@@ -867,19 +871,15 @@ class SoundSystem {
     if (this.masterGain) {
       this.masterGain.gain.value = this.volume
     }
-    try {
-      await window.spark.kv.set('audio-volume', this.volume)
-    } catch (error) {
-      console.warn('Could not save audio volume:', error)
+    if (this.persistCallbacks.onVolumeChange) {
+      await this.persistCallbacks.onVolumeChange(this.volume)
     }
   }
 
   async setEnabled(enabled: boolean) {
     this.enabled = enabled
-    try {
-      await window.spark.kv.set('audio-enabled', this.enabled)
-    } catch (error) {
-      console.warn('Could not save audio enabled state:', error)
+    if (this.persistCallbacks.onEnabledChange) {
+      await this.persistCallbacks.onEnabledChange(this.enabled)
     }
   }
 

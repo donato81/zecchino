@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useUserSettings } from '@/context/UserSettingsContext'
 import { useScreenReader } from '@/hooks/use-screen-reader'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -46,82 +45,17 @@ const verbosityOptions: VerbosityOption[] = [
 
 export function ScreenReaderSettings() {
   const screenReader = useScreenReader()
-  const [verbosityLevel, setVerbosityLevel] = useKV<VerbosityLevel>('sr-verbosity', 'normale')
-  const [announceNavigation, setAnnounceNavigation] = useKV<boolean>('sr-announce-navigation', true)
-  const [announceFilters, setAnnounceFilters] = useKV<boolean>('sr-announce-filters', true)
-  const [announceFormChanges, setAnnounceFormChanges] = useKV<boolean>('sr-announce-form-changes', false)
-  const [announceKeyboardShortcuts, setAnnounceKeyboardShortcuts] = useKV<boolean>('sr-announce-shortcuts', true)
-  const [announceBalanceChanges, setAnnounceBalanceChanges] = useKV<boolean>('sr-announce-balance-changes', true)
-  const [announceBudgetAlerts, setAnnounceBudgetAlerts] = useKV<boolean>('sr-announce-budget-alerts', true)
-  const [announceProgress, setAnnounceProgress] = useKV<boolean>('sr-announce-progress', true)
-  const [announceFocusChanges, setAnnounceFocusChanges] = useKV<boolean>('sr-announce-focus-changes', false)
-  const [announceListPosition, setAnnounceListPosition] = useKV<boolean>('sr-announce-list-position', true)
-  const [announceDelay, setAnnounceDelay] = useKV<number>('sr-announce-delay', 100)
-  const [reducedAnnouncements, setReducedAnnouncements] = useKV<boolean>('sr-reduced-announcements', false)
+  const { screenReaderPreferences, setScreenReaderPreference, resetScreenReaderPreferences } = useUserSettings()
 
-  const [localVerbosity, setLocalVerbosity] = useState<VerbosityLevel>(verbosityLevel || 'normale')
-  const [localAnnounceNav, setLocalAnnounceNav] = useState<boolean>(announceNavigation ?? true)
-  const [localAnnounceFilters, setLocalAnnounceFilters] = useState<boolean>(announceFilters ?? true)
-  const [localAnnounceFormChanges, setLocalAnnounceFormChanges] = useState<boolean>(announceFormChanges ?? false)
-  const [localAnnounceShortcuts, setLocalAnnounceShortcuts] = useState<boolean>(announceKeyboardShortcuts ?? true)
-  const [localAnnounceBalance, setLocalAnnounceBalance] = useState<boolean>(announceBalanceChanges ?? true)
-  const [localAnnounceBudget, setLocalAnnounceBudget] = useState<boolean>(announceBudgetAlerts ?? true)
-  const [localAnnounceProgress, setLocalAnnounceProgress] = useState<boolean>(announceProgress ?? true)
-  const [localAnnounceFocus, setLocalAnnounceFocus] = useState<boolean>(announceFocusChanges ?? false)
-  const [localAnnounceListPos, setLocalAnnounceListPos] = useState<boolean>(announceListPosition ?? true)
-  const [localAnnounceDelay, setLocalAnnounceDelay] = useState<number>(announceDelay ?? 100)
-  const [localReducedAnnouncements, setLocalReducedAnnouncements] = useState<boolean>(reducedAnnouncements ?? false)
-
-  useEffect(() => {
-    setVerbosityLevel(() => localVerbosity)
-  }, [localVerbosity, setVerbosityLevel])
-
-  useEffect(() => {
-    setAnnounceNavigation(() => localAnnounceNav)
-  }, [localAnnounceNav, setAnnounceNavigation])
-
-  useEffect(() => {
-    setAnnounceFilters(() => localAnnounceFilters)
-  }, [localAnnounceFilters, setAnnounceFilters])
-
-  useEffect(() => {
-    setAnnounceFormChanges(() => localAnnounceFormChanges)
-  }, [localAnnounceFormChanges, setAnnounceFormChanges])
-
-  useEffect(() => {
-    setAnnounceKeyboardShortcuts(() => localAnnounceShortcuts)
-  }, [localAnnounceShortcuts, setAnnounceKeyboardShortcuts])
-
-  useEffect(() => {
-    setAnnounceBalanceChanges(() => localAnnounceBalance)
-  }, [localAnnounceBalance, setAnnounceBalanceChanges])
-
-  useEffect(() => {
-    setAnnounceBudgetAlerts(() => localAnnounceBudget)
-  }, [localAnnounceBudget, setAnnounceBudgetAlerts])
-
-  useEffect(() => {
-    setAnnounceProgress(() => localAnnounceProgress)
-  }, [localAnnounceProgress, setAnnounceProgress])
-
-  useEffect(() => {
-    setAnnounceFocusChanges(() => localAnnounceFocus)
-  }, [localAnnounceFocus, setAnnounceFocusChanges])
-
-  useEffect(() => {
-    setAnnounceListPosition(() => localAnnounceListPos)
-  }, [localAnnounceListPos, setAnnounceListPosition])
-
-  useEffect(() => {
-    setAnnounceDelay(() => localAnnounceDelay)
-  }, [localAnnounceDelay, setAnnounceDelay])
-
-  useEffect(() => {
-    setReducedAnnouncements(() => localReducedAnnouncements)
-  }, [localReducedAnnouncements, setReducedAnnouncements])
+  const {
+    verbosityLevel, announceNavigation, announceFilters, announceFormChanges,
+    announceKeyboardShortcuts, announceBalanceChanges, announceBudgetAlerts,
+    announceProgress, announceFocusChanges, announceListPosition,
+    announceDelay, reducedAnnouncements,
+  } = screenReaderPreferences
 
   const handleVerbosityChange = (value: VerbosityLevel) => {
-    setLocalVerbosity(value)
+    setScreenReaderPreference('verbosityLevel', value).catch(console.error)
     soundSystem.play('settings-change')
     const option = verbosityOptions.find(o => o.value === value)
     toast.success(`Verbosità impostata: ${option?.label}`)
@@ -129,25 +63,24 @@ export function ScreenReaderSettings() {
   }
 
   const handleToggle = (
-    setter: React.Dispatch<React.SetStateAction<boolean>>,
+    key: keyof typeof screenReaderPreferences,
+    currentValue: boolean,
     name: string
   ) => {
-    setter((current) => {
-      const newValue = !current
-      soundSystem.play('settings-change')
-      if (newValue) {
-        toast.success(`${name} abilitati`)
-        screenReader.announceToggleState(name, true)
-      } else {
-        toast.success(`${name} disabilitati`)
-        screenReader.announceToggleState(name, false)
-      }
-      return newValue
-    })
+    const newValue = !currentValue
+    setScreenReaderPreference(key, newValue as never).catch(console.error)
+    soundSystem.play('settings-change')
+    if (newValue) {
+      toast.success(`${name} abilitati`)
+      screenReader.announceToggleState(name, true)
+    } else {
+      toast.success(`${name} disabilitati`)
+      screenReader.announceToggleState(name, false)
+    }
   }
 
   const handleDelayChange = (values: number[]) => {
-    setLocalAnnounceDelay(values[0])
+    setScreenReaderPreference('announceDelay', values[0]).catch(console.error)
     soundSystem.play('volume-change')
   }
 
@@ -158,19 +91,7 @@ export function ScreenReaderSettings() {
   }
 
   const handleResetToDefaults = () => {
-    setLocalVerbosity('normale')
-    setLocalAnnounceNav(true)
-    setLocalAnnounceFilters(true)
-    setLocalAnnounceFormChanges(false)
-    setLocalAnnounceShortcuts(true)
-    setLocalAnnounceBalance(true)
-    setLocalAnnounceBudget(true)
-    setLocalAnnounceProgress(true)
-    setLocalAnnounceFocus(false)
-    setLocalAnnounceListPos(true)
-    setLocalAnnounceDelay(100)
-    setLocalReducedAnnouncements(false)
-    
+    resetScreenReaderPreferences().catch(console.error)
     soundSystem.play('settings-reset')
     toast.success('Impostazioni screen reader ripristinate ai valori predefiniti')
     screenReader.announce('Tutte le impostazioni dello screen reader sono state ripristinate ai valori predefiniti', 'polite')
@@ -220,7 +141,7 @@ export function ScreenReaderSettings() {
           </div>
           
           <RadioGroup
-            value={localVerbosity}
+            value={verbosityLevel}
             onValueChange={(value) => handleVerbosityChange(value as VerbosityLevel)}
             className="space-y-3"
           >
@@ -237,7 +158,7 @@ export function ScreenReaderSettings() {
                     className="font-medium cursor-pointer flex items-center gap-2"
                   >
                     {option.label}
-                    {localVerbosity === option.value && (
+                    {verbosityLevel === option.value && (
                       <Badge variant="default" className="text-[10px] px-1.5 py-0">
                         Attivo
                       </Badge>
@@ -281,9 +202,9 @@ export function ScreenReaderSettings() {
             </div>
             <Switch
               id="reduced-announcements"
-              checked={localReducedAnnouncements}
-              onCheckedChange={() => handleToggle(setLocalReducedAnnouncements, 'Annunci ridotti')}
-              aria-label={localReducedAnnouncements ? 'Disabilita annunci ridotti' : 'Abilita annunci ridotti'}
+              checked={reducedAnnouncements}
+              onCheckedChange={() => handleToggle('reducedAnnouncements', reducedAnnouncements, 'Annunci ridotti')}
+              aria-label={reducedAnnouncements ? 'Disabilita annunci ridotti' : 'Abilita annunci ridotti'}
             />
           </div>
         </div>
@@ -308,9 +229,9 @@ export function ScreenReaderSettings() {
               </div>
               <Switch
                 id="announce-navigation"
-                checked={localAnnounceNav}
-                onCheckedChange={() => handleToggle(setLocalAnnounceNav, 'Annunci di navigazione')}
-                aria-label={localAnnounceNav ? 'Disabilita annunci di navigazione' : 'Abilita annunci di navigazione'}
+                checked={announceNavigation}
+                onCheckedChange={() => handleToggle('announceNavigation', announceNavigation, 'Annunci di navigazione')}
+                aria-label={announceNavigation ? 'Disabilita annunci di navigazione' : 'Abilita annunci di navigazione'}
               />
             </div>
 
@@ -325,9 +246,9 @@ export function ScreenReaderSettings() {
               </div>
               <Switch
                 id="announce-filters"
-                checked={localAnnounceFilters}
-                onCheckedChange={() => handleToggle(setLocalAnnounceFilters, 'Annunci filtri')}
-                aria-label={localAnnounceFilters ? 'Disabilita annunci filtri' : 'Abilita annunci filtri'}
+                checked={announceFilters}
+                onCheckedChange={() => handleToggle('announceFilters', announceFilters, 'Annunci filtri')}
+                aria-label={announceFilters ? 'Disabilita annunci filtri' : 'Abilita annunci filtri'}
               />
             </div>
 
@@ -342,9 +263,9 @@ export function ScreenReaderSettings() {
               </div>
               <Switch
                 id="announce-form-changes"
-                checked={localAnnounceFormChanges}
-                onCheckedChange={() => handleToggle(setLocalAnnounceFormChanges, 'Annunci modifiche form')}
-                aria-label={localAnnounceFormChanges ? 'Disabilita annunci modifiche form' : 'Abilita annunci modifiche form'}
+                checked={announceFormChanges}
+                onCheckedChange={() => handleToggle('announceFormChanges', announceFormChanges, 'Annunci modifiche form')}
+                aria-label={announceFormChanges ? 'Disabilita annunci modifiche form' : 'Abilita annunci modifiche form'}
               />
             </div>
 
@@ -359,9 +280,9 @@ export function ScreenReaderSettings() {
               </div>
               <Switch
                 id="announce-shortcuts"
-                checked={localAnnounceShortcuts}
-                onCheckedChange={() => handleToggle(setLocalAnnounceShortcuts, 'Annunci scorciatoie')}
-                aria-label={localAnnounceShortcuts ? 'Disabilita annunci scorciatoie' : 'Abilita annunci scorciatoie'}
+                checked={announceKeyboardShortcuts}
+                onCheckedChange={() => handleToggle('announceKeyboardShortcuts', announceKeyboardShortcuts, 'Annunci scorciatoie')}
+                aria-label={announceKeyboardShortcuts ? 'Disabilita annunci scorciatoie' : 'Abilita annunci scorciatoie'}
               />
             </div>
 
@@ -376,9 +297,9 @@ export function ScreenReaderSettings() {
               </div>
               <Switch
                 id="announce-balance"
-                checked={localAnnounceBalance}
-                onCheckedChange={() => handleToggle(setLocalAnnounceBalance, 'Annunci saldi')}
-                aria-label={localAnnounceBalance ? 'Disabilita annunci saldi' : 'Abilita annunci saldi'}
+                checked={announceBalanceChanges}
+                onCheckedChange={() => handleToggle('announceBalanceChanges', announceBalanceChanges, 'Annunci saldi')}
+                aria-label={announceBalanceChanges ? 'Disabilita annunci saldi' : 'Abilita annunci saldi'}
               />
             </div>
 
@@ -393,9 +314,9 @@ export function ScreenReaderSettings() {
               </div>
               <Switch
                 id="announce-budget"
-                checked={localAnnounceBudget}
-                onCheckedChange={() => handleToggle(setLocalAnnounceBudget, 'Avvisi budget')}
-                aria-label={localAnnounceBudget ? 'Disabilita avvisi budget' : 'Abilita avvisi budget'}
+                checked={announceBudgetAlerts}
+                onCheckedChange={() => handleToggle('announceBudgetAlerts', announceBudgetAlerts, 'Avvisi budget')}
+                aria-label={announceBudgetAlerts ? 'Disabilita avvisi budget' : 'Abilita avvisi budget'}
               />
             </div>
 
@@ -410,9 +331,9 @@ export function ScreenReaderSettings() {
               </div>
               <Switch
                 id="announce-progress"
-                checked={localAnnounceProgress}
-                onCheckedChange={() => handleToggle(setLocalAnnounceProgress, 'Annunci progressi')}
-                aria-label={localAnnounceProgress ? 'Disabilita annunci progressi' : 'Abilita annunci progressi'}
+                checked={announceProgress}
+                onCheckedChange={() => handleToggle('announceProgress', announceProgress, 'Annunci progressi')}
+                aria-label={announceProgress ? 'Disabilita annunci progressi' : 'Abilita annunci progressi'}
               />
             </div>
 
@@ -427,9 +348,9 @@ export function ScreenReaderSettings() {
               </div>
               <Switch
                 id="announce-focus"
-                checked={localAnnounceFocus}
-                onCheckedChange={() => handleToggle(setLocalAnnounceFocus, 'Annunci cambio focus')}
-                aria-label={localAnnounceFocus ? 'Disabilita annunci cambio focus' : 'Abilita annunci cambio focus'}
+                checked={announceFocusChanges}
+                onCheckedChange={() => handleToggle('announceFocusChanges', announceFocusChanges, 'Annunci cambio focus')}
+                aria-label={announceFocusChanges ? 'Disabilita annunci cambio focus' : 'Abilita annunci cambio focus'}
               />
             </div>
 
@@ -444,9 +365,9 @@ export function ScreenReaderSettings() {
               </div>
               <Switch
                 id="announce-list-pos"
-                checked={localAnnounceListPos}
-                onCheckedChange={() => handleToggle(setLocalAnnounceListPos, 'Annunci posizione liste')}
-                aria-label={localAnnounceListPos ? 'Disabilita annunci posizione liste' : 'Abilita annunci posizione liste'}
+                checked={announceListPosition}
+                onCheckedChange={() => handleToggle('announceListPosition', announceListPosition, 'Annunci posizione liste')}
+                aria-label={announceListPosition ? 'Disabilita annunci posizione liste' : 'Abilita annunci posizione liste'}
               />
             </div>
           </div>
@@ -475,18 +396,18 @@ export function ScreenReaderSettings() {
                 Ritardo (millisecondi)
               </Label>
               <span className="text-sm font-mono text-muted-foreground">
-                {localAnnounceDelay}ms
+                {announceDelay}ms
               </span>
             </div>
             <Slider
               id="announce-delay"
-              value={[localAnnounceDelay]}
+              value={[announceDelay]}
               onValueChange={handleDelayChange}
               min={0}
               max={500}
               step={50}
               className="flex-1"
-              aria-label={`Ritardo annunci: ${localAnnounceDelay} millisecondi`}
+              aria-label={`Ritardo annunci: ${announceDelay} millisecondi`}
             />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>Immediato (0ms)</span>

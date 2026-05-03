@@ -1,4 +1,5 @@
-import { useKV } from '@github/spark/hooks'
+import { useUserSettings } from '@/context/UserSettingsContext'
+import type { DisplayPreferences } from '@/hooks/use-user-settings'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -13,41 +14,35 @@ import { useScreenReader } from '@/hooks/use-screen-reader'
 
 export function DisplaySettings() {
   const screenReader = useScreenReader()
-  
-  const [showBalances, setShowBalances] = useKV<boolean>('display-show-balances', true)
-  const [showAccountIcons, setShowAccountIcons] = useKV<boolean>('display-show-account-icons', true)
-  const [compactMode, setCompactMode] = useKV<boolean>('display-compact-mode', false)
-  const [showCategories, setShowCategories] = useKV<boolean>('display-show-categories', true)
-  const [animationsEnabled, setAnimationsEnabled] = useKV<boolean>('display-animations-enabled', true)
-  const [fontSize, setFontSize] = useKV<number>('display-font-size', 100)
-  const [currencyDisplay, setCurrencyDisplay] = useKV<'symbol' | 'code' | 'full'>('display-currency-display', 'symbol')
-  const [numberFormat, setNumberFormat] = useKV<'standard' | 'compact'>('display-number-format', 'standard')
-  const [highContrast, setHighContrast] = useKV<boolean>('display-high-contrast', false)
-  const [showPercentages, setShowPercentages] = useKV<boolean>('display-show-percentages', true)
-  const [showTransactionIcons, setShowTransactionIcons] = useKV<boolean>('display-show-transaction-icons', true)
-  const [reduceMotion, setReduceMotion] = useKV<boolean>('display-reduce-motion', false)
+  const { displayPreferences, setDisplayPreference } = useUserSettings()
+
+  const {
+    showBalances, showAccountIcons, compactMode, showCategories,
+    animationsEnabled, fontSize, currencyDisplay, numberFormat,
+    highContrast, showPercentages, showTransactionIcons, reduceMotion,
+  } = displayPreferences
 
   const handleToggle = (
-    setter: (value: boolean) => void,
+    key: keyof DisplayPreferences,
     currentValue: boolean,
     label: string
   ) => {
     const newValue = !currentValue
-    setter(newValue)
+    setDisplayPreference(key, newValue as DisplayPreferences[typeof key]).catch(console.error)
     soundSystem.play('click')
     toast.success(`${label} ${newValue ? 'attivato' : 'disattivato'}`)
     screenReader.announceSuccess(`${label} ${newValue ? 'attivato' : 'disattivato'}`)
   }
 
   const handleFontSizeChange = (value: number[]) => {
-    setFontSize(value[0])
+    setDisplayPreference('fontSize', value[0]).catch(console.error)
     soundSystem.play('click')
     const percentage = value[0]
     screenReader.announce(`Dimensione testo: ${percentage}%`, 'polite')
   }
 
   const handleCurrencyDisplayChange = (value: 'symbol' | 'code' | 'full') => {
-    setCurrencyDisplay(value)
+    setDisplayPreference('currencyDisplay', value).catch(console.error)
     soundSystem.play('click')
     const displayNames = {
       symbol: 'Simbolo (€)',
@@ -59,7 +54,7 @@ export function DisplaySettings() {
   }
 
   const handleNumberFormatChange = (value: 'standard' | 'compact') => {
-    setNumberFormat(value)
+    setDisplayPreference('numberFormat', value).catch(console.error)
     soundSystem.play('click')
     const displayNames = {
       standard: 'Standard (1.000,00)',
@@ -105,8 +100,8 @@ export function DisplaySettings() {
               </div>
               <Switch
                 id="show-balances"
-                checked={showBalances ?? true}
-                onCheckedChange={(_checked) => handleToggle(setShowBalances, showBalances ?? true, 'Visualizzazione saldi')}
+                checked={showBalances}
+                onCheckedChange={(_checked) => handleToggle('showBalances', showBalances, 'Visualizzazione saldi')}
                 aria-label="Mostra o nascondi i saldi dei conti"
               />
             </div>
@@ -124,8 +119,8 @@ export function DisplaySettings() {
               </div>
               <Switch
                 id="show-account-icons"
-                checked={showAccountIcons ?? true}
-                onCheckedChange={(_checked) => handleToggle(setShowAccountIcons, showAccountIcons ?? true, 'Icone conti')}
+                checked={showAccountIcons}
+                onCheckedChange={(_checked) => handleToggle('showAccountIcons', showAccountIcons, 'Icone conti')}
                 aria-label="Mostra o nascondi le icone dei tipi di conto"
               />
             </div>
@@ -143,8 +138,8 @@ export function DisplaySettings() {
               </div>
               <Switch
                 id="show-categories"
-                checked={showCategories ?? true}
-                onCheckedChange={(_checked) => handleToggle(setShowCategories, showCategories ?? true, 'Visualizzazione categorie')}
+                checked={showCategories}
+                onCheckedChange={(_checked) => handleToggle('showCategories', showCategories, 'Visualizzazione categorie')}
                 aria-label="Mostra o nascondi le categorie nei movimenti"
               />
             </div>
@@ -162,8 +157,8 @@ export function DisplaySettings() {
               </div>
               <Switch
                 id="show-transaction-icons"
-                checked={showTransactionIcons ?? true}
-                onCheckedChange={(_checked) => handleToggle(setShowTransactionIcons, showTransactionIcons ?? true, 'Icone movimenti')}
+                checked={showTransactionIcons}
+                onCheckedChange={(_checked) => handleToggle('showTransactionIcons', showTransactionIcons, 'Icone movimenti')}
                 aria-label="Mostra o nascondi le icone dei movimenti"
               />
             </div>
@@ -181,8 +176,8 @@ export function DisplaySettings() {
               </div>
               <Switch
                 id="show-percentages"
-                checked={showPercentages ?? true}
-                onCheckedChange={(_checked) => handleToggle(setShowPercentages, showPercentages ?? true, 'Visualizzazione percentuali')}
+                checked={showPercentages}
+                onCheckedChange={(_checked) => handleToggle('showPercentages', showPercentages, 'Visualizzazione percentuali')}
                 aria-label="Mostra o nascondi le percentuali"
               />
             </div>
@@ -200,8 +195,8 @@ export function DisplaySettings() {
               </div>
               <Switch
                 id="compact-mode"
-                checked={compactMode ?? false}
-                onCheckedChange={(_checked) => handleToggle(setCompactMode, compactMode ?? false, 'Modalità compatta')}
+                checked={compactMode}
+                onCheckedChange={(_checked) => handleToggle('compactMode', compactMode, 'Modalità compatta')}
                 aria-label="Attiva o disattiva la modalità compatta"
               />
             </div>
@@ -223,7 +218,7 @@ export function DisplaySettings() {
                   Dimensione Testo
                 </Label>
                 <Badge variant="secondary" className="font-mono">
-                  {fontSize ?? 100}%
+                  {fontSize}%
                 </Badge>
               </div>
               <Slider
@@ -231,10 +226,10 @@ export function DisplaySettings() {
                 min={80}
                 max={150}
                 step={10}
-                value={[fontSize ?? 100]}
+                value={[fontSize]}
                 onValueChange={handleFontSizeChange}
                 className="w-full"
-                aria-label={`Dimensione testo: ${fontSize ?? 100}%`}
+                aria-label={`Dimensione testo: ${fontSize}%`}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>Piccolo (80%)</span>
@@ -306,8 +301,8 @@ export function DisplaySettings() {
               </div>
               <Switch
                 id="high-contrast"
-                checked={highContrast ?? false}
-                onCheckedChange={(_checked) => handleToggle(setHighContrast, highContrast ?? false, 'Alto contrasto')}
+                checked={highContrast}
+                onCheckedChange={(_checked) => handleToggle('highContrast', highContrast, 'Alto contrasto')}
                 aria-label="Attiva o disattiva l'alto contrasto"
               />
             </div>
@@ -325,8 +320,8 @@ export function DisplaySettings() {
               </div>
               <Switch
                 id="animations-enabled"
-                checked={animationsEnabled ?? true}
-                onCheckedChange={(_checked) => handleToggle(setAnimationsEnabled, animationsEnabled ?? true, 'Animazioni')}
+                checked={animationsEnabled}
+                onCheckedChange={(_checked) => handleToggle('animationsEnabled', animationsEnabled, 'Animazioni')}
                 aria-label="Attiva o disattiva le animazioni"
               />
             </div>
@@ -344,8 +339,8 @@ export function DisplaySettings() {
               </div>
               <Switch
                 id="reduce-motion"
-                checked={reduceMotion ?? false}
-                onCheckedChange={(_checked) => handleToggle(setReduceMotion, reduceMotion ?? false, 'Riduci movimento')}
+                checked={reduceMotion}
+                onCheckedChange={(_checked) => handleToggle('reduceMotion', reduceMotion, 'Riduci movimento')}
                 aria-label="Attiva o disattiva riduzione movimento"
               />
             </div>

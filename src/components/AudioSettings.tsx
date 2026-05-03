@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useUserSettings } from '@/context/UserSettingsContext'
 import { soundSystem } from '@/lib/sound-system'
 import { useScreenReader } from '@/hooks/use-screen-reader'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,28 +21,31 @@ const VOLUME_PRESETS = [
 
 export function AudioSettings() {
   const screenReader = useScreenReader()
-  const [audioEnabled, setAudioEnabled] = useKV<boolean>('audio-enabled', true)
-  const [audioVolume, setAudioVolume] = useKV<number>('audio-volume', 0.3)
-  
-  const [localEnabled, setLocalEnabled] = useState<boolean>(audioEnabled ?? true)
-  const [localVolume, setLocalVolume] = useState<number>((audioVolume ?? 0.3) * 100)
+  const { audioEnabled, audioVolume, setAudioEnabled, setAudioVolume, isSettingsReady } = useUserSettings()
+
+  const [localEnabled, setLocalEnabled] = useState<boolean>(true)
+  const [localVolume, setLocalVolume] = useState<number>(30)
+
+  // Sync local state from Supabase once settings are ready, then configure soundSystem.
+  useEffect(() => {
+    if (!isSettingsReady) return
+    setLocalEnabled(audioEnabled)
+    setLocalVolume(audioVolume * 100)
+    soundSystem.initFromSettings(audioEnabled, audioVolume)
+    soundSystem.configure({
+      onEnabledChange: (v) => setAudioEnabled(v).catch(console.error),
+      onVolumeChange: (v) => setAudioVolume(v).catch(console.error),
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSettingsReady])
 
   useEffect(() => {
-    const updateEnabled = async () => {
-      await soundSystem.setEnabled(localEnabled)
-      setAudioEnabled(() => localEnabled)
-    }
-    updateEnabled()
-  }, [localEnabled, setAudioEnabled])
+    soundSystem.setEnabled(localEnabled).catch(console.error)
+  }, [localEnabled])
 
   useEffect(() => {
-    const updateVolume = async () => {
-      const normalizedVolume = localVolume / 100
-      await soundSystem.setVolume(normalizedVolume)
-      setAudioVolume(() => normalizedVolume)
-    }
-    updateVolume()
-  }, [localVolume, setAudioVolume])
+    soundSystem.setVolume(localVolume / 100).catch(console.error)
+  }, [localVolume])
 
   const handleToggleAudio = () => {
     setLocalEnabled((current) => !current)

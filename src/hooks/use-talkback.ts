@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useUserSettings } from '@/context/UserSettingsContext'
 
 export interface TalkBackState {
   isEnabled: boolean
@@ -31,22 +31,21 @@ const DEFAULT_ADAPTATIONS: TalkBackAdaptations = {
 }
 
 export function useTalkBack() {
+  const {
+    talkBackAdaptations,
+    talkBackManualOverride,
+    setTalkBackAdaptations,
+    setTalkBackManualOverride,
+  } = useUserSettings()
   const [talkBackState, setTalkBackState] = useState<TalkBackState>({
     isEnabled: false,
     isDetected: false,
     confidenceLevel: 'low',
     adaptationsActive: false
   })
-  
-  const [adaptations, setAdaptations] = useKV<TalkBackAdaptations>(
-    'talkback-adaptations',
-    DEFAULT_ADAPTATIONS
-  )
-  
-  const [manualOverride, setManualOverride] = useKV<boolean | null>(
-    'talkback-manual-override',
-    null
-  )
+
+  const adaptations = talkBackAdaptations ?? DEFAULT_ADAPTATIONS
+  const manualOverride = talkBackManualOverride
 
   const detectTalkBack = useCallback(() => {
     let confidence: 'high' | 'medium' | 'low' = 'low'
@@ -189,28 +188,28 @@ export function useTalkBack() {
 
   const enableTalkBack = useCallback((manual: boolean = false) => {
     if (manual) {
-      setManualOverride(true)
+      setTalkBackManualOverride(true).catch(console.error)
     }
     setTalkBackState(prev => ({
       ...prev,
       isEnabled: true,
       adaptationsActive: true
     }))
-  }, [setManualOverride])
+  }, [setTalkBackManualOverride])
 
   const disableTalkBack = useCallback((manual: boolean = false) => {
     if (manual) {
-      setManualOverride(false)
+      setTalkBackManualOverride(false).catch(console.error)
     }
     setTalkBackState(prev => ({
       ...prev,
       isEnabled: false,
       adaptationsActive: false
     }))
-  }, [setManualOverride])
+  }, [setTalkBackManualOverride])
 
   const resetDetection = useCallback(() => {
-    setManualOverride(null)
+    setTalkBackManualOverride(null).catch(console.error)
     const { detected, confidence } = detectTalkBack()
     setTalkBackState({
       isEnabled: detected,
@@ -218,18 +217,18 @@ export function useTalkBack() {
       confidenceLevel: confidence as 'high' | 'medium' | 'low',
       adaptationsActive: detected
     })
-  }, [setManualOverride, detectTalkBack])
+  }, [setTalkBackManualOverride, detectTalkBack])
 
   const updateAdaptation = useCallback((key: keyof TalkBackAdaptations, value: boolean) => {
-    setAdaptations(current => ({
-      ...(current || DEFAULT_ADAPTATIONS),
+    setTalkBackAdaptations({
+      ...adaptations,
       [key]: value
-    }))
-  }, [setAdaptations])
+    }).catch(console.error)
+  }, [adaptations, setTalkBackAdaptations])
 
   const resetAdaptations = useCallback(() => {
-    setAdaptations(DEFAULT_ADAPTATIONS)
-  }, [setAdaptations])
+    setTalkBackAdaptations(DEFAULT_ADAPTATIONS).catch(console.error)
+  }, [setTalkBackAdaptations])
 
   const getTouchTargetSize = useCallback(() => {
     if (!talkBackState.adaptationsActive || !adaptations?.enhancedTouchTargets) {
