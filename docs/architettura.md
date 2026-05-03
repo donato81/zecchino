@@ -149,8 +149,8 @@ A partire da P01–P13, parte dello stato è migrata in Context dedicati:
   con strategia di caricamento parallelo (`Promise.all`) e spinner globale unico.
   P33 ha eliminato l'ultima dipendenza di produzione da `useKV` in
   `CategoryManagement.tsx`, che ora consuma le categorie direttamente da
-  `useAppData()`. Rimangono in `useKV` transitoriamente: `visibleCategories`
-  (migrazione al Blocco 5 — P29) e `budgetPercentages` (migrazione al Blocco 6 — P30).
+  `useAppData()`. Dopo P29 e P31, `budgetPercentages` è l'unica dipendenza
+  `useKV` rimasta nel perimetro attivo e sarà migrata nel Blocco 6 — P30.
 - `AuthContext` — autenticazione Supabase email/password, bootstrap sessione,
   logout, recovery password, timeout inattività e gestione transitoria del PIN privato.
 - `useVisibleData` — valori derivati calcolati da `AppDataContext` e `AuthContext`.
@@ -182,6 +182,19 @@ A partire da P28, `AppDataContext` è la fonte unica per caricare i dati di domi
 da Supabase. P33 ha completato la migrazione eliminando l'ultima dipendenza di
 produzione da `useKV` in `CategoryManagement.tsx`, che ora legge le categorie da
 `useAppData()`.
+
+## Migrazione preferenze: stato (P29, P31) — aggiornamento 2026-05-03
+
+- `src/hooks/use-user-settings.ts` ora gestisce 36 valori totali: 8 originari di P29 + 28 aggiunti in P31. L'hook espone lettura, setter non-ottimistici e funzioni di reset per i gruppi Audio, Display, ScreenReader e TalkBack. Non rimangono dipendenze di produzione a `@github/spark/hooks` nei file migrati.
+- `src/context/UserSettingsContext.tsx` espone via Provider tutti i 36 campi e wrapperizza `useUserSettings()` per i consumer React.
+- `src/components/AudioSettings.tsx` migrato a Supabase (P31 Wave A).
+- `src/components/DisplaySettings.tsx` migrato a Supabase (P31 Wave B).
+- `src/components/ScreenReaderSettings.tsx` migrato a Supabase (P31 Wave C).
+- `src/hooks/use-display-preferences.ts` è stato trasformato in un thin wrapper che ritorna `useUserSettings().displayPreferences`.
+- `src/hooks/use-talkback.ts` è il wrapper reale usato per TalkBack (il piano originale menzionava `use-accessibility-preferences.ts` — il percorso reale è `src/hooks/use-talkback.ts`); è stato migrato a Supabase (P31 Wave C).
+- `src/lib/sound-system.ts` ha rimosso tutti gli accessi diretti a `window.spark.kv` e ora riceve preferenze audio tramite callback iniettate da `useUserSettings()` al mount (pattern callback injection anziché `setSupabaseClient()`).
+- Rimozione Spark KV: le chiamate/usa `useKV` presenti originariamente in `DisplaySettings`, `AudioSettings`, `ScreenReaderSettings`, `use-display-preferences` e `use-talkback` sono state eliminate. La tabella delle dipendenze Spark KV in produzione è stata aggiornata rimuovendo i file migrati.
+- Dipendenza residua attiva: `budgetPercentages` in `src/context/AppDataContext.tsx` è l'unica dipendenza `useKV` rimasta nell'ambito attivo e sarà oggetto di P30.
 
 #### Strategie di caricamento dati (P28)
 

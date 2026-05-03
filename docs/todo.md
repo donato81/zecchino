@@ -13,8 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| P29 — Migrazione useUserSettings e Preferenze UI | `docs/3 - todo lists/P29-todo.md` | In lavorazione | Alta |
-| P31 — Migrazione UserPreferences SettingsTab (Display / Audio / Accessibilità) a Supabase | `docs/3 - todo lists/P31-todo.md` | 🔄 In corso | Alta |
+| P30 — Migrazione `budgetPercentages` a Supabase | — | Prossimo step | Alta |
 
 ## TODO completati
 
@@ -24,6 +23,8 @@
 | P28 — Migrazione AppDataContext a Supabase | `docs/3 - todo lists/P28-todo.md` | 2026-05-02 |
 | P33 — Migrazione CategoryManagement a useAppData() | `docs/3 - todo lists/P33-todo.md` | 2026-05-02 |
 | P25 — Schema impostazioni_utente e campo cifrato | `docs/3 - todo lists/P25-todo.md` | 2026-05-01 |
+| P29 — Migrazione useUserSettings e Preferenze UI | `docs/3 - todo lists/P29-todo.md` | 2026-05-03 |
+| P31 — Migrazione UserPreferences SettingsTab (Display / Audio / Accessibilità) a Supabase | `docs/3 - todo lists/P31-todo.md` | 2026-05-03 |
 | P26 — Strato di accesso dati Supabase | `docs/3 - todo lists/P26-todo.md` | 2026-05-01 |
 | P24 — Architettura migrazione Spark→Supabase (documento di architettura, nessun file sorgente modificato) | — | 2026-04-28 |
 | P23 — Bugfix BUG-01: bootstrap asincrono AuthContext + mock KV allineato | `docs/3 - todo lists/P23-todo.md` | 2026-04-28 |
@@ -53,3 +54,4 @@
 - **Nuovo TODO**: crea un file in `docs/3 - todo lists/todo-[nome].md`, poi aggiungi la riga nella tabella "attivi" qui sopra.
 - **Chiusura TODO**: sposta la riga nella tabella "completati" con la data.
 - **Blocco**: aggiungi `⚠️ BLOCKED` nella colonna Stato e spiega il motivo nel file specifico.
+- **Prossimo passo di migrazione**: P30 (`budgetPercentages` in `AppDataContext.tsx`). Il TODO specifico non è ancora presente in `docs/3 - todo lists/`.

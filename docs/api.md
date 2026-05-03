@@ -183,6 +183,44 @@ Tutti i dati di dominio sono caricati da Supabase tramite i repository P26.
 
 ---
 
+## `useUserSettings` (P29 / P31)
+
+Hook centralizzato che espone le preferenze utente migrate su Supabase. Combina i campi introdotti in P29 (visibilità categorie, dismissed alerts) e in P31 (Audio, Display, ScreenReader, TalkBack).
+
+P29
+- `visibleCategories: string[]`
+- `dismissedBudgetAlerts: string[]`
+- `setVisibleCategories(ids: string[]): Promise<void>`
+- `dismissBudgetAlert(budgetId: string): Promise<void>`
+- `resetDismissedAlerts(): Promise<void>`
+- `isSettingsReady: boolean`
+- `isSettingsLoading: boolean`
+- `settingsError: string | null`
+
+Audio
+- `audioEnabled: boolean` (default `true`)
+- `audioVolume: number` (default `0.3`)
+- `setAudioEnabled(v: boolean): Promise<void>`
+- `setAudioVolume(v: number): Promise<void>`
+
+Display
+- `displayPreferences: DisplayPreferences` con 12 campi: `showBalances`, `showAccountIcons`, `compactMode`, `showCategories`, `animationsEnabled`, `fontSize`, `currencyDisplay`, `numberFormat`, `highContrast`, `showPercentages`, `showTransactionIcons`, `reduceMotion`
+- `setDisplayPreference(key, value): Promise<void>`
+
+ScreenReader / TalkBack
+- `screenReaderPreferences: ScreenReaderPreferences` con 12 campi: `verbosityLevel`, `announceNavigation`, `announceFilters`, `announceFormChanges`, `announceKeyboardShortcuts`, `announceBalanceChanges`, `announceBudgetAlerts`, `announceProgress`, `announceFocusChanges`, `announceListPosition`, `announceDelay`, `reducedAnnouncements`
+- `setScreenReaderPreference(key, value): Promise<void>`
+- `resetScreenReaderPreferences(): Promise<void>`
+- `talkBackAdaptations: TalkBackAdaptations` (oggetto JSON con adattamenti)
+- `talkBackManualOverride: boolean | null`
+- `setTalkBackAdaptations(obj): Promise<void>`
+- `setTalkBackManualOverride(v): Promise<void>`
+
+Note
+- Tutti i setter di P31 sono non-ottimistici: lo stato locale viene aggiornato solo dopo la conferma di `updatePreference()` da parte del repository Supabase.
+- Il `sound-system.ts` riceve le preferenze audio tramite callback iniettate da `useUserSettings()` al mount (pattern di callback injection). Non usa accesso diretto a React context o `setSupabaseClient()` per ricevere preferenze in fase di runtime.
+
+
 ## Utility e sistemi (`src/lib/`)
 
 | Modulo | File | Scopo |
