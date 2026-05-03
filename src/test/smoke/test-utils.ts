@@ -12,6 +12,7 @@ type MockAuthState = {
   isAuthReady: boolean
   isAuthenticated: boolean
   needsOnboarding: boolean
+  completeOnboarding: () => void
   inactivityTimeout: number
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string) => Promise<void>
@@ -59,6 +60,7 @@ const authStore = vi.hoisted(() => {
       isAuthReady: true,
       isAuthenticated: false,
       needsOnboarding: false,
+      completeOnboarding: () => {},
       inactivityTimeout: 5,
       signIn: async () => {
         store.setState({ isAuthenticated: true })

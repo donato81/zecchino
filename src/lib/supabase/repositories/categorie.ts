@@ -69,3 +69,8 @@ export async function remove(id: string): Promise<void> {
   if (error) throw new RepositoryError(error)
   if (!data?.length) throw new RepositoryError('Categoria non trovata o non eliminabile')
 }
+
+export async function seedDefaultCategories(): Promise<void> {
+  const { error } = await supabase.rpc('seed_default_categories')
+  if (error) throw new RepositoryError(error)
+}

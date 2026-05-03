@@ -13,12 +13,12 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| P35 — Onboarding primo accesso Supabase (Blocco 9: OnboardingFlow completo, completeOnboarding() in AuthContext, seedDefaultCategories, flag onboarding_completed) | `docs/3 - todo lists/P35-todo.md` | ⏳ Da avviare | Alta |
 
 ## TODO completati
 
 | Feature / Sprint | File specifico | Completato il |
 |---|---|---|
+| P35 — Onboarding primo accesso Supabase [x] COMPLETATO (Blocco 9: OnboardingFlow completo, seed categorie via RPC, finalizzazione con onboarding_completed) | `docs/3 - todo lists/P35-todo.md` | 2026-05-04 |
 | P32 — Migrazione PIN privato a Supabase [x] COMPLETATO (Blocco 8: bcrypt client-side, API definitiva AuthContext, rimozione dipendenze dirette in SecuritySettings) | `docs/3 - todo lists/P32-todo.md` | 2026-05-03 |
 | P34 — Migrazione DataManagement a Supabase [x] COMPLETATO (Blocco 7: Fronte A one-shot Spark → Supabase + Fronte B export/import Supabase) | `docs/3 - todo lists/P34-todo.md` | 2026-05-03 |
 | P27 — Migrazione AuthContext a Supabase Auth | `docs/3 - todo lists/P27-todo.md` | 2026-05-02 |

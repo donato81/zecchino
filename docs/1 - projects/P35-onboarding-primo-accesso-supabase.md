@@ -13,7 +13,7 @@
 | **Autore** | Agent-Design |
 | **File modificati** | `src/components/OnboardingFlow.tsx` (nuovo) · `src/App.tsx` (gate onboarding) · `src/context/AuthContext.tsx` (aggiunta `completeOnboarding()` alla superficie pubblica) |
 | **Documenti di riferimento** | [P24](./P24-architettura-migrazione-supabase.md) · [P25](./P25-schema-impostazioni-utente-cifrato.md) · [P26](./P26-strato-accesso-dati-supabase.md) · [P27](./P27-migrazione-authcontext-supabase.md) · [P28](./P28-migrazione-appdatacontext-supabase.md) · [P33](./P33-migrazione-categorymanagement-useappdata.md) · [P34](./P34-migrazione-datamanagement-supabase.md) · [App.tsx](../../src/App.tsx) · [AuthScreen.tsx](../../src/components/AuthScreen.tsx) |
-| **Stato** | Bozza — in attesa di validazione |
+| **Stato** | Completato — implementazione validata localmente il 2026-05-04 |
 
 > **Questo documento è vincolante per tutti i design operativi successivi (P36 in poi).
 > Le decisioni qui contenute sono già state validate e non vengono rimesse in discussione:
