@@ -13,6 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| P34 — Migrazione DataManagement a Supabase (Blocco 7: Fronte A one-shot + Fronte B export/import) | `docs/3 - todo lists/P34-todo.md` · `docs/2 - coding plans/P34-coding-plan.md` | In corso — 2026-05-03 | Alta |
 
 ## TODO completati
 
