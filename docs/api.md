@@ -255,8 +255,48 @@ Note
 | Repository impostazioni utente | `src/lib/supabase/repositories/impostazioni-utente.ts` | Accesso a impostazioni e preferenze utente |
 | AppDataContext | `src/context/AppDataContext.tsx` | Orchestrazione del bootstrap dati di dominio Supabase e superficie `useAppData()` con `isDataReady`, azioni CRUD e `refreshAll()` |
 | CategoryManagement | `src/components/CategoryManagement.tsx` | Consuma `useAppData()` per categorie e non usa più `useKV` in produzione |
+| DataManagement | `src/components/DataManagement.tsx` | Fronte A: migrazione one-shot Spark → Supabase; Fronte B: export/import backup Supabase con `refreshAll()` |
 
 ---
+
+## `DataManagement` (`src/components/DataManagement.tsx`) — aggiornamento P34
+
+Il componente espone due fronti distinti.
+
+Fronte A — migrazione one-shot Spark → Supabase
+- Rilevamento al mount basato su `useAuth().userSettings?.preferences.legacy_domain_migrated`.
+- Usa `window.spark.kv.*` solo per `keys()` e per leggere le 4 chiavi di dominio legacy: `accounts`, `transactions`, `budgets`, `savings-goals`.
+- Mostra un pannello condizionale per utenti con dati storici Spark.
+- Costruisce in memoria una mappa `sparkId → supabaseId` per i conti, poi la applica ai FK di budget, obiettivi di risparmio e transazioni.
+- Accumula gli errori in modalità best-effort. Imposta `legacy_domain_migrated = true` solo se `migrationErrors.length === 0`.
+- Chiama `refreshAll()` solo in caso di completamento senza errori.
+
+Fronte B — export/import Supabase
+- Non usa più `window.spark.kv.*` per l'export o l'import normale.
+- L'export legge da `useAppData()` i quattro array `accounts`, `transactions`, `budgets`, `savingsGoals`.
+- L'import usa i repository P26 `conti`, `budget`, `obiettivi-risparmio`, `transazioni` con meccanismo upsert semantico: `getById(id)` → `create()` oppure `update()`.
+- L'import è additivo/aggiornante, non sostitutivo: nessuna operazione `delete()`.
+- `window.location.reload()` è stato rimosso e sostituito da `refreshAll()`.
+
+Formato del file JSON di backup
+
+```ts
+{
+  meta: {
+    schema_version: '1.0'
+    exported_at: string
+    app_version?: string
+  }
+  accounts: Account[]
+  transactions: Transaction[]
+  budgets: Budget[]
+  savingsGoals: SavingsGoal[]
+}
+```
+
+Note operative
+- Il campo `cifrato` di `Transaction` può essere presente nel file esportato ma viene ignorato in import: i payload di scrittura usano sempre `Omit<Transaction, 'id' | 'cifrato'>`.
+- Gli ID non UUID incontrati in import vengono trattati come warning best-effort e segnalati nel report come possibili backup pre-migrazione.
 
 ## Storage
 

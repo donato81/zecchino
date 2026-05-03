@@ -13,12 +13,12 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
-| P34 — Migrazione DataManagement a Supabase (Blocco 7: Fronte A one-shot + Fronte B export/import) | `docs/3 - todo lists/P34-todo.md` · `docs/2 - coding plans/P34-coding-plan.md` | In corso — 2026-05-03 | Alta |
 
 ## TODO completati
 
 | Feature / Sprint | File specifico | Completato il |
 |---|---|---|
+| P34 — Migrazione DataManagement a Supabase [x] COMPLETATO (Blocco 7: Fronte A one-shot Spark → Supabase + Fronte B export/import Supabase) | `docs/3 - todo lists/P34-todo.md` | 2026-05-03 |
 | P27 — Migrazione AuthContext a Supabase Auth | `docs/3 - todo lists/P27-todo.md` | 2026-05-02 |
 | P28 — Migrazione AppDataContext a Supabase | `docs/3 - todo lists/P28-todo.md` | 2026-05-02 |
 | P33 — Migrazione CategoryManagement a useAppData() | `docs/3 - todo lists/P33-todo.md` | 2026-05-02 |

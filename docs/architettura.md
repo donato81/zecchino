@@ -196,7 +196,15 @@ produzione da `useKV` in `CategoryManagement.tsx`, che ora legge le categorie da
 - `src/lib/sound-system.ts` ha rimosso tutti gli accessi diretti a `window.spark.kv` e ora riceve preferenze audio tramite callback iniettate da `useUserSettings()` al mount (pattern callback injection anziché `setSupabaseClient()`).
 - Rimozione Spark KV: le chiamate/usa `useKV` presenti originariamente in `DisplaySettings`, `AudioSettings`, `ScreenReaderSettings`, `use-display-preferences` e `use-talkback` sono state eliminate. La tabella delle dipendenze Spark KV in produzione è stata aggiornata rimuovendo i file migrati.
 - P30 (2026-05-03) ha completato il Blocco 6: `src/context/AppDataContext.tsx` non dipende più da `@github/spark/hooks`; `budgetPercentages` è una cache di sessione interna gestita con `useState<Record<string, number>>({})` e non è più esposta nella superficie pubblica del context.
+- P34 (2026-05-03) ha completato il Blocco 7 per `src/components/DataManagement.tsx`: il Fronte B (export/import ordinario) usa `useAppData()` e i repository P26 invece del KV Spark; `window.location.reload()` è stato sostituito da `refreshAll()`. Rimane un Fronte A temporaneo di migrazione one-shot per gli utenti che hanno ancora dati storici Spark.
 - Traguardo architetturale: per il perimetro dati di dominio e preferenze utente, non rimangono più dipendenze di produzione a `useKV` o `window.spark.kv`.
+
+## Stato migrazione Spark → Supabase dopo P34
+
+- `src/components/DataManagement.tsx` non usa più `window.spark.kv.*` nel flusso normale di backup e ripristino. L'export produce un file JSON strutturato `{ meta, accounts, transactions, budgets, savingsGoals }` a partire dai dati in memoria di `useAppData()`.
+- L'import usa i repository Supabase di P26 con ordine FK corretto `conti → budget → obiettivi_risparmio → transazioni`, strategia best-effort e upsert semantico additivo/aggiornante.
+- Il Rischio R7 descritto in P24 §7 è risolto: backup e ripristino operano ora sui dati Supabase, non sul KV Spark locale.
+- Gli accessi residui a `window.spark.*` in `DataManagement.tsx` sono limitati al solo Fronte A temporaneo: rilevamento legacy via `keys()` e lettura delle 4 chiavi di dominio Spark per la migrazione one-shot. Questo residuo è destinato alla rimozione nel Blocco 10.
 
 #### Strategie di caricamento dati (P28)
 
