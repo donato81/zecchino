@@ -17,6 +17,7 @@ interface AuthContextValue {
   isAuthReady: boolean
   isAuthenticated: boolean
   needsOnboarding: boolean
+  completeOnboarding: () => void
   inactivityTimeout: number
   userSettings: UserSettings | null
   signIn: (email: string, password: string) => Promise<void>
@@ -236,12 +237,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     screenReader.announceSuccess('PIN privato rimosso.')
   }, [isPrivateEnabled, screenReader])
 
+  const completeOnboarding = useCallback(() => {
+    setNeedsOnboarding(false)
+  }, [])
+
   const value = useMemo(() => ({
     user,
     session,
     isAuthReady,
     isAuthenticated,
     needsOnboarding,
+    completeOnboarding,
     inactivityTimeout: inactivityTimeoutState,
     userSettings,
     signIn,
@@ -261,6 +267,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     removePin,
   }), [
     changePin,
+    completeOnboarding,
     inactivityTimeoutState,
     isAuthReady,
     isAuthenticated,

@@ -40,7 +40,7 @@ export interface TalkBackAdaptations {
   spatialAudio: boolean
 }
 
-// Esattamente 28 chiavi — coerenti con P25 §3.1 Opzione 2
+// 29 chiavi — 28 da P25 §3.1 Opzione 2 + onboarding_completed aggiunta da P35
 export interface UserPreferences {
   display_show_balances: boolean
   display_show_account_icons: boolean
@@ -70,6 +70,7 @@ export interface UserPreferences {
   audio_volume: number
   talkback_adaptations: TalkBackAdaptations
   talkback_manual_override: boolean | null
+  onboarding_completed?: boolean
 }
 
 export interface UserSettings {
