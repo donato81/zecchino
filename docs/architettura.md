@@ -37,7 +37,7 @@ Browser
 | Grafici | D3 + Recharts | v7 / v2 |
 | Animazioni | Framer Motion | v12 |
 | Icone | Lucide React + Phosphor Icons | latest |
-| Piattaforma | GitHub Spark | `@github/spark` — `@github/spark/hooks` (`useKV`) non più usato in produzione dopo P33; rimane solo nel mock `src/test/setup.ts` |
+| Piattaforma | GitHub Spark | `@github/spark` — le dipendenze a `@github/spark/hooks` non sono più usate in produzione; in particolare la migrazione P30 (2026-05-03) ha rimosso l'ultima dipendenza da `useKV` in `AppDataContext.tsx`. Rimane traccia solo nei mock di test (`src/test/setup.ts`). |
 
 ---
 
@@ -149,8 +149,9 @@ A partire da P01–P13, parte dello stato è migrata in Context dedicati:
   con strategia di caricamento parallelo (`Promise.all`) e spinner globale unico.
   P33 ha eliminato l'ultima dipendenza di produzione da `useKV` in
   `CategoryManagement.tsx`, che ora consuma le categorie direttamente da
-  `useAppData()`. Dopo P29 e P31, `budgetPercentages` è l'unica dipendenza
-  `useKV` rimasta nel perimetro attivo e sarà migrata nel Blocco 6 — P30.
+  `useAppData()`. P30 (2026-05-03) ha completato la migrazione rimuovendo la
+  dipendenza residua `useKV` in `AppDataContext.tsx`: `budgetPercentages` è ora
+  gestito internamente con `useState` e non è esposto pubblicamente.
 - `AuthContext` — autenticazione Supabase email/password, bootstrap sessione,
   logout, recovery password, timeout inattività e gestione transitoria del PIN privato.
 - `useVisibleData` — valori derivati calcolati da `AppDataContext` e `AuthContext`.
@@ -194,7 +195,8 @@ produzione da `useKV` in `CategoryManagement.tsx`, che ora legge le categorie da
 - `src/hooks/use-talkback.ts` è il wrapper reale usato per TalkBack (il piano originale menzionava `use-accessibility-preferences.ts` — il percorso reale è `src/hooks/use-talkback.ts`); è stato migrato a Supabase (P31 Wave C).
 - `src/lib/sound-system.ts` ha rimosso tutti gli accessi diretti a `window.spark.kv` e ora riceve preferenze audio tramite callback iniettate da `useUserSettings()` al mount (pattern callback injection anziché `setSupabaseClient()`).
 - Rimozione Spark KV: le chiamate/usa `useKV` presenti originariamente in `DisplaySettings`, `AudioSettings`, `ScreenReaderSettings`, `use-display-preferences` e `use-talkback` sono state eliminate. La tabella delle dipendenze Spark KV in produzione è stata aggiornata rimuovendo i file migrati.
-- Dipendenza residua attiva: `budgetPercentages` in `src/context/AppDataContext.tsx` è l'unica dipendenza `useKV` rimasta nell'ambito attivo e sarà oggetto di P30.
+- P30 (2026-05-03) ha completato il Blocco 6: `src/context/AppDataContext.tsx` non dipende più da `@github/spark/hooks`; `budgetPercentages` è una cache di sessione interna gestita con `useState<Record<string, number>>({})` e non è più esposta nella superficie pubblica del context.
+- Traguardo architetturale: per il perimetro dati di dominio e preferenze utente, non rimangono più dipendenze di produzione a `useKV` o `window.spark.kv`.
 
 #### Strategie di caricamento dati (P28)
 

@@ -1,5 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
-import * as sparkHooks from '@github/spark/hooks'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Account, Transaction, TransactionInput, Category, Budget, SavingsGoal } from '@/lib/types'
 import { formatCurrency, exportToCSV, downloadFile, getActiveBudgets, getBudgetProgress } from '@/lib/helpers'
 import { shouldShowBudgetNotification, getBudgetNotificationTitle } from '@/lib/budget-alerts'
@@ -40,8 +39,6 @@ type AppDataContextValue = {
   isLoading: boolean
   error: string | null
   isDataReady: boolean
-  budgetPercentages: Record<string, number>
-  setBudgetPercentages: Dispatch<SetStateAction<Record<string, number>>>
   safeAccounts: Account[]
   safeTransactions: Transaction[]
   safeCategories: Category[]
@@ -169,7 +166,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const [isDataReady, setIsDataReady] = useState(false)
 
-  const [budgetPercentages, setBudgetPercentages] = sparkHooks.useKV<Record<string, number>>('budget-percentages', {})
+  const [budgetPercentages, setBudgetPercentages] = useState<Record<string, number>>({})
 
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined)
   const [showTransactionDialog, setShowTransactionDialog] = useState(false)
@@ -209,6 +206,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setCategories([])
       setBudgets([])
       setSavingsGoals([])
+      setBudgetPercentages({})
       setIsLoading(false)
       setError(null)
       setIsDataReady(false)
@@ -588,8 +586,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         isLoading,
         error,
         isDataReady,
-        budgetPercentages: budgetPercentages || {},
-        setBudgetPercentages,
         safeAccounts,
         safeTransactions,
         safeCategories,

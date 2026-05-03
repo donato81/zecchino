@@ -166,6 +166,8 @@ Tutti i dati di dominio sono caricati da Supabase tramite i repository P26.
 > Gli stati UI dei dialog (`editingTransaction`, `showTransactionDialog`, ecc.) rimangono
 > nella superficie pubblica come `useState` locali inalterati — non sono legati a storage.
 
+Nota (P30 - 2026-05-03): `budgetPercentages` e `setBudgetPercentages` NON sono più esposti nella superficie pubblica di `AppDataContextValue`. `budgetPercentages` è mantenuto internamente dal provider tramite `useState<Record<string, number>>({})` come cache di sessione non persistita. Inoltre, `AppDataContext.tsx` non dipende più da `@github/spark/hooks` in produzione.
+
 ---
 
 ## Hooks (`src/hooks/`)
