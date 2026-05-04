@@ -3,7 +3,54 @@ import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 import { vi } from 'vitest'
 import App from '@/App'
+import { ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from '@/lib/constants'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import type { TalkBackAdaptations } from '@/lib/supabase/types'
+import type { Account, Transaction, UserSettingsState } from '@/hooks/use-user-settings'
+
+type DisplayPreferences = UserSettingsState['displayPreferences']
+type ScreenReaderPreferences = UserSettingsState['screenReaderPreferences']
+
+const DISPLAY_DEFAULTS: DisplayPreferences = {
+  showBalances: true,
+  showAccountIcons: true,
+  compactMode: false,
+  showCategories: true,
+  animationsEnabled: true,
+  fontSize: 100,
+  currencyDisplay: 'symbol',
+  numberFormat: 'standard',
+  highContrast: false,
+  showPercentages: true,
+  showTransactionIcons: true,
+  reduceMotion: false,
+}
+
+const SCREEN_READER_DEFAULTS: ScreenReaderPreferences = {
+  verbosityLevel: 'normale',
+  announceNavigation: true,
+  announceFilters: true,
+  announceFormChanges: false,
+  announceKeyboardShortcuts: true,
+  announceBalanceChanges: true,
+  announceBudgetAlerts: true,
+  announceProgress: true,
+  announceFocusChanges: false,
+  announceListPosition: true,
+  announceDelay: 100,
+  reducedAnnouncements: false,
+}
+
+const TALKBACK_DEFAULTS: TalkBackAdaptations = {
+  enhancedTouchTargets: true,
+  simplifiedNavigation: true,
+  extendedTimeouts: true,
+  verboseDescriptions: true,
+  highContrastMode: false,
+  reducedMotion: true,
+  autoFocusManagement: true,
+  spatialAudio: true,
+}
 
 type MockAuthState = {
   user: { id: string; email: string } | null
@@ -13,6 +60,13 @@ type MockAuthState = {
   needsOnboarding: boolean
   completeOnboarding: () => void
   inactivityTimeout: number
+  userSettings: {
+    nomeVisualizzato: string | null
+    preferences: {
+      session_timeout_minutes?: number
+    }
+    pinPrivatoHash: string | null
+  } | null
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
@@ -61,6 +115,11 @@ const authStore = vi.hoisted(() => {
       needsOnboarding: false,
       completeOnboarding: () => {},
       inactivityTimeout: 5,
+      userSettings: {
+        nomeVisualizzato: 'Smoke User',
+        preferences: { session_timeout_minutes: 5 },
+        pinPrivatoHash: 'mock-private-pin-hash',
+      },
       signIn: async () => {
         store.setState({ isAuthenticated: true })
       },
@@ -109,6 +168,93 @@ const authStore = vi.hoisted(() => {
           isPrivateEnabled: false,
           isPrivateUnlocked: false,
         })
+      },
+    }
+  }
+
+  state = createState()
+
+  return store
+})
+
+const userSettingsStore = vi.hoisted(() => {
+  let state: UserSettingsState
+  const listeners = new Set<() => void>()
+
+  const store = {
+    subscribe(listener: () => void) {
+      listeners.add(listener)
+      return () => listeners.delete(listener)
+    },
+    getState() {
+      return state
+    },
+    setState(nextState: UserSettingsState) {
+      state = nextState
+      listeners.forEach((listener) => listener())
+    },
+    update(partial: Partial<UserSettingsState>) {
+      state = { ...state, ...partial }
+      listeners.forEach((listener) => listener())
+    },
+    reset() {
+      state = createState()
+      listeners.forEach((listener) => listener())
+    },
+  }
+
+  function createState(): UserSettingsState {
+    return {
+      visibleCategories: ['banking', 'digital', 'savings', 'investments', 'private'],
+      dismissedBudgetAlerts: [],
+      setVisibleCategories: async (ids: string[]) => {
+        store.update({ visibleCategories: ids })
+      },
+      dismissBudgetAlert: async (budgetId: string) => {
+        store.update({ dismissedBudgetAlerts: [...store.getState().dismissedBudgetAlerts, budgetId] })
+      },
+      resetDismissedAlerts: async () => {
+        store.update({ dismissedBudgetAlerts: [] })
+      },
+      isSettingsReady: true,
+      isSettingsLoading: false,
+      settingsError: null,
+      audioEnabled: true,
+      audioVolume: 0.3,
+      setAudioEnabled: async (value: boolean) => {
+        store.update({ audioEnabled: value })
+      },
+      setAudioVolume: async (value: number) => {
+        store.update({ audioVolume: value })
+      },
+      displayPreferences: structuredClone(DISPLAY_DEFAULTS),
+      setDisplayPreference: async <K extends keyof DisplayPreferences>(key: K, value: DisplayPreferences[K]) => {
+        store.update({
+          displayPreferences: {
+            ...store.getState().displayPreferences,
+            [key]: value,
+          },
+        })
+      },
+      screenReaderPreferences: structuredClone(SCREEN_READER_DEFAULTS),
+      setScreenReaderPreference: async <K extends keyof ScreenReaderPreferences>(key: K, value: ScreenReaderPreferences[K]) => {
+        store.update({
+          screenReaderPreferences: {
+            ...store.getState().screenReaderPreferences,
+            [key]: value,
+          },
+        })
+      },
+      talkBackAdaptations: structuredClone(TALKBACK_DEFAULTS),
+      talkBackManualOverride: null,
+      setTalkBackAdaptations: async (adaptations: TalkBackAdaptations) => {
+        store.update({ talkBackAdaptations: adaptations })
+      },
+      setTalkBackManualOverride: async (value: boolean | null) => {
+        store.update({ talkBackManualOverride: value })
+      },
+      resetScreenReaderPreferences: async () => {
+        store.update({ screenReaderPreferences: structuredClone(SCREEN_READER_DEFAULTS) })
       },
     }
   }
@@ -224,16 +370,63 @@ vi.mock('@/context/AppDataContext', () => ({
 
 vi.mock('@/context/UserSettingsContext', () => ({
   useUserSettings: () => ({
-    visibleCategories: ['banking', 'digital', 'savings', 'investments', 'private'],
-    dismissedBudgetAlerts: [],
-    setVisibleCategories: vi.fn().mockResolvedValue(undefined),
-    dismissBudgetAlert: vi.fn().mockResolvedValue(undefined),
-    resetDismissedAlerts: vi.fn().mockResolvedValue(undefined),
-    isSettingsReady: true,
-    isSettingsLoading: false,
-    settingsError: null,
-  }),
+    React.useSyncExternalStore(userSettingsStore.subscribe, userSettingsStore.getState, userSettingsStore.getState)
+    return userSettingsStore.getState()
+  },
   UserSettingsProvider: ({ children }: { children: React.ReactNode }) => children,
+}))
+
+vi.mock('@/context/VisibleDataContext', () => ({
+  useVisibleData: () => {
+    React.useSyncExternalStore(authStore.subscribe, authStore.getState, authStore.getState)
+    React.useSyncExternalStore(appDataStore.subscribe, appDataStore.getState, appDataStore.getState)
+    React.useSyncExternalStore(userSettingsStore.subscribe, userSettingsStore.getState, userSettingsStore.getState)
+
+    const authState = authStore.getState()
+    const appDataState = appDataStore.getState() as {
+      safeAccounts: Account[]
+      safeTransactions: Transaction[]
+    }
+    const userSettingsState = userSettingsStore.getState()
+
+    const visibleAccounts = appDataState.safeAccounts.filter((account) => {
+      if (account.isPrivato && !authState.isPrivateUnlocked) {
+        return false
+      }
+      return true
+    })
+
+    const visibleAccountIds = new Set(visibleAccounts.map((account) => account.id))
+    const visibleTransactions = appDataState.safeTransactions.filter((transaction) => visibleAccountIds.has(transaction.contoId))
+    const groupedAccounts = ACCOUNT_CATEGORIES
+      .map((category) => ({
+        ...category,
+        accounts: visibleAccounts.filter((account) => ACCOUNT_TYPE_TO_CATEGORY[account.tipo] === category.id),
+      }))
+      .filter((group) => group.accounts.length > 0)
+
+    const filteredGroupedAccounts = groupedAccounts.filter((group) => userSettingsState.visibleCategories.includes(group.id))
+    const hasPrivateAccount = appDataState.safeAccounts.some((account) => account.isPrivato)
+    const privateAccount = appDataState.safeAccounts.find((account) => account.isPrivato)
+    const totalBalance = visibleAccounts.reduce((sum, account) => sum + account.saldoIniziale, 0)
+    const recentTransactions = [...visibleTransactions]
+      .sort((left, right) => new Date(right.data).getTime() - new Date(left.data).getTime())
+      .slice(0, 10)
+
+    return {
+      visibleAccounts,
+      visibleTransactions,
+      hasPrivateAccount,
+      privateAccount,
+      totalBalance,
+      recentTransactions,
+      groupedAccounts,
+      filteredGroupedAccounts,
+      allCategoriesVisible: userSettingsState.visibleCategories.length === ACCOUNT_CATEGORIES.length,
+      budgetAlerts: [],
+    }
+  },
+  VisibleDataProvider: ({ children }: { children: React.ReactNode }) => children,
 }))
 
 type RenderAppOptions = {
@@ -243,6 +436,7 @@ type RenderAppOptions = {
 export function renderApp(options: RenderAppOptions = {}) {
   authStore.reset()
   appDataStore.reset(options.initialKv ?? {})
+  userSettingsStore.reset()
 
   const user = userEvent.setup()
   const result = render(
