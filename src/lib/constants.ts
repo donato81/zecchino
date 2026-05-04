@@ -1,4 +1,4 @@
-import { Category, AccountType } from './types'
+import { AccountType } from './types'
 import { Bank, CreditCard, Money, PiggyBank, Lock, TrendUp, Wallet, CurrencyBtc, Coins } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 

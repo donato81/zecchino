@@ -254,7 +254,7 @@ export function renderApp(options: RenderAppOptions = {}) {
   return { ...result, user }
 }
 
-export async function authenticateWithPin(user: ReturnType<typeof userEvent.setup>, pin = '1234') {
+export async function authenticateWithPin(user: ReturnType<typeof userEvent.setup>, _pin = '1234') {
   await act(async () => {
     authStore.setState({
       isAuthReady: true,

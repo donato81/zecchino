@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Account, Transaction, TransactionInput, Category, Budget, SavingsGoal } from '@/lib/types'
 import { formatCurrency, exportToCSV, downloadFile, getActiveBudgets, getBudgetProgress } from '@/lib/helpers'
 import { shouldShowBudgetNotification, getBudgetNotificationTitle } from '@/lib/budget-alerts'
@@ -177,16 +177,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   const screenReader = useScreenReader()
 
-  const applyDomainSnapshot = (snapshot: DomainSnapshot) => {
+  const applyDomainSnapshot = useCallback((snapshot: DomainSnapshot) => {
     setAccounts(snapshot.accounts)
     setTransactions(snapshot.transactions)
     setCategories(snapshot.categories)
     setBudgets(snapshot.budgets)
     setSavingsGoals(snapshot.savingsGoals)
     setBudgetPercentages({})
-  }
+  }, [])
 
-  const readCachedDomainSnapshot = (userId: string): { snapshot: DomainSnapshot; isStale: boolean } | null => {
+  const readCachedDomainSnapshot = useCallback((userId: string): { snapshot: DomainSnapshot; isStale: boolean } | null => {
     const accounts = readCache<Account[]>(userId, 'conti')
     const transactions = readCache<Transaction[]>(userId, 'transazioni')
     const categories = readCache<Category[]>(userId, 'categorie')
@@ -213,9 +213,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         isCacheStale(userId, 'obiettivi_risparmio', CACHE_TTL_MS),
       ].some(Boolean),
     }
-  }
+  }, [])
 
-  const hydrateFromCache = (userId: string): boolean => {
+  const hydrateFromCache = useCallback((userId: string): boolean => {
     const cached = readCachedDomainSnapshot(userId)
     if (!cached) {
       setError(OFFLINE_FIRST_ACCESS_MESSAGE)
@@ -229,7 +229,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
     setIsDataReady(true)
     return true
-  }
+  }, [applyDomainSnapshot, readCachedDomainSnapshot])
 
   // Bootstrap: carica tutti i dati in parallelo al login, resetta al logout
   useEffect(() => {
@@ -275,7 +275,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     void loadBootstrapData()
 
     return () => { cancelled = true }
-  }, [isAuthenticated, user?.id])
+  }, [applyDomainSnapshot, hydrateFromCache, isAuthenticated, user?.id])
 
   useEffect(() => {
     if (!isAuthenticated || !user?.id || !isDataReady) return
@@ -462,7 +462,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         toast.success('Conto modificato')
         screenReader.announceSuccess(`Conto ${account.nome} modificato con successo.`)
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id: _id, ...data } = account
         await addAccount(data)
         soundSystem.play('account-created')
@@ -488,7 +487,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         toast.success('Movimento modificato')
         screenReader.announceSuccess('Movimento modificato con successo.')
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id: _id, ...createData } = transactionData
         await addTransaction(createData)
         if (transaction.tipo === 'entrata') {
@@ -531,7 +529,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         toast.success('Budget modificato')
         screenReader.announceSuccess(`Budget ${budget.nome} modificato.`)
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id: _id, ...data } = budget
         await addBudget(data)
         soundSystem.play('budget-created')
@@ -556,7 +553,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         toast.success('Obiettivo di risparmio modificato')
         screenReader.announceSuccess(`Obiettivo ${goal.nome} modificato.`)
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id: _id, ...data } = goal
         await addSavingsGoal(data)
         soundSystem.play('goal-created')

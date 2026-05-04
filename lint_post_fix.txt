@@ -1,0 +1,10 @@
+
+> spark-template@0.0.0 lint
+> eslint .
+
+
+c:\Users\forbi\OneDrive\Documenti\GitHub\zecchino\src\context\AppDataContext.tsx
+  218:9  warning  The 'hydrateFromCache' function makes the dependencies of useEffect Hook (at line 278) change on every render. To fix this, wrap the definition of 'hydrateFromCache' in its own useCallback() Hook  react-hooks/exhaustive-deps
+
+✖ 1 problem (0 errors, 1 warning)
+
