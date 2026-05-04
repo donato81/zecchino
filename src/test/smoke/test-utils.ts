@@ -11,47 +11,6 @@ import type { Account, Transaction, UserSettingsState } from '@/hooks/use-user-s
 type DisplayPreferences = UserSettingsState['displayPreferences']
 type ScreenReaderPreferences = UserSettingsState['screenReaderPreferences']
 
-const DISPLAY_DEFAULTS: DisplayPreferences = {
-  showBalances: true,
-  showAccountIcons: true,
-  compactMode: false,
-  showCategories: true,
-  animationsEnabled: true,
-  fontSize: 100,
-  currencyDisplay: 'symbol',
-  numberFormat: 'standard',
-  highContrast: false,
-  showPercentages: true,
-  showTransactionIcons: true,
-  reduceMotion: false,
-}
-
-const SCREEN_READER_DEFAULTS: ScreenReaderPreferences = {
-  verbosityLevel: 'normale',
-  announceNavigation: true,
-  announceFilters: true,
-  announceFormChanges: false,
-  announceKeyboardShortcuts: true,
-  announceBalanceChanges: true,
-  announceBudgetAlerts: true,
-  announceProgress: true,
-  announceFocusChanges: false,
-  announceListPosition: true,
-  announceDelay: 100,
-  reducedAnnouncements: false,
-}
-
-const TALKBACK_DEFAULTS: TalkBackAdaptations = {
-  enhancedTouchTargets: true,
-  simplifiedNavigation: true,
-  extendedTimeouts: true,
-  verboseDescriptions: true,
-  highContrastMode: false,
-  reducedMotion: true,
-  autoFocusManagement: true,
-  spatialAudio: true,
-}
-
 type MockAuthState = {
   user: { id: string; email: string } | null
   session: null
@@ -178,6 +137,47 @@ const authStore = vi.hoisted(() => {
 })
 
 const userSettingsStore = vi.hoisted(() => {
+  const DISPLAY_DEFAULTS = {
+    showBalances: true,
+    showAccountIcons: true,
+    compactMode: false,
+    showCategories: true,
+    animationsEnabled: true,
+    fontSize: 100,
+    currencyDisplay: 'symbol' as const,
+    numberFormat: 'standard' as const,
+    highContrast: false,
+    showPercentages: true,
+    showTransactionIcons: true,
+    reduceMotion: false,
+  }
+
+  const SCREEN_READER_DEFAULTS = {
+    verbosityLevel: 'normale' as const,
+    announceNavigation: true,
+    announceFilters: true,
+    announceFormChanges: false,
+    announceKeyboardShortcuts: true,
+    announceBalanceChanges: true,
+    announceBudgetAlerts: true,
+    announceProgress: true,
+    announceFocusChanges: false,
+    announceListPosition: true,
+    announceDelay: 100,
+    reducedAnnouncements: false,
+  }
+
+  const TALKBACK_DEFAULTS = {
+    enhancedTouchTargets: true,
+    simplifiedNavigation: true,
+    extendedTimeouts: true,
+    verboseDescriptions: true,
+    highContrastMode: false,
+    reducedMotion: true,
+    autoFocusManagement: true,
+    spatialAudio: true,
+  }
+
   let state: UserSettingsState
   const listeners = new Set<() => void>()
 
@@ -369,7 +369,7 @@ vi.mock('@/context/AppDataContext', () => ({
 }))
 
 vi.mock('@/context/UserSettingsContext', () => ({
-  useUserSettings: () => ({
+  useUserSettings: () => {
     React.useSyncExternalStore(userSettingsStore.subscribe, userSettingsStore.getState, userSettingsStore.getState)
     return userSettingsStore.getState()
   },
