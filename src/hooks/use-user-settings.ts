@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
+import { ACCOUNT_CATEGORIES } from '@/lib/constants'
 import { updatePreference } from '@/lib/supabase/repositories/impostazioni-utente'
 import type { TalkBackAdaptations, UserPreferences } from '@/lib/supabase/types'
 
@@ -179,15 +180,19 @@ export function useUserSettings(): UserSettingsState {
 
     const rawVisible = prefs?.visible_category_ids
     const rawDismissed = prefs?.dismissed_budget_alert_ids
-    setVisibleCategoriesState(Array.isArray(rawVisible) ? (rawVisible as string[]) : [])
+    setVisibleCategoriesState(
+      Array.isArray(rawVisible) && rawVisible.length > 0
+        ? (rawVisible as string[])
+        : ACCOUNT_CATEGORIES.map(c => c.id)
+    )
     setDismissedBudgetAlertsState(Array.isArray(rawDismissed) ? (rawDismissed as string[]) : [])
 
     // Migrazione KV → Supabase completata. Periodo grazia scaduto 2026-08-01.
-    setAudioEnabledState(prefs.audio_enabled === true)
+    setAudioEnabledState(prefs.audio_enabled !== false)
     setAudioVolumeState(typeof prefs.audio_volume === 'number' ? prefs.audio_volume : 0.3)
 
     setDisplayPreferencesState({
-      showBalances: prefs.display_show_balances === true,
+      showBalances: prefs.display_show_balances !== false,
       showAccountIcons: prefs.display_show_account_icons !== false,
       compactMode: prefs.display_compact_mode === true,
       showCategories: prefs.display_show_categories !== false,
