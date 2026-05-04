@@ -57,7 +57,7 @@ export function AuthScreen() {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       emailRef.current?.focus()
-    }, 100)
+    }, 350)
 
     return () => window.clearTimeout(timer)
   }, [panel])
@@ -69,6 +69,24 @@ export function AuthScreen() {
 
   const goToPanel = (nextPanel: AuthPanel) => {
     resetMessages()
+
+    if (nextPanel === 'signup') {
+      screenReader.announce(
+        'Schermata di registrazione. Inserisci email, password e conferma password.',
+        'assertive'
+      )
+    } else if (nextPanel === 'login') {
+      screenReader.announce(
+        'Schermata di accesso. Inserisci email e password.',
+        'assertive'
+      )
+    } else if (nextPanel === 'recovery') {
+      screenReader.announce(
+        'Recupero password. Inserisci la tua email.',
+        'assertive'
+      )
+    }
+
     setPanel(nextPanel)
   }
 
@@ -194,8 +212,8 @@ export function AuthScreen() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4" aria-busy={isLoading}>
-              {error ? <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert" aria-live="assertive">{error}</p> : null}
-              {successMessage ? <p className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-foreground" aria-live="polite">{successMessage}</p> : null}
+              <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert" aria-live="assertive" aria-atomic="true">{error}</p>
+              <p className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-foreground" aria-live="polite" aria-atomic="true">{successMessage}</p>
 
               {panel === 'login' ? (
                 <form className="space-y-4" onSubmit={handleLogin}>
