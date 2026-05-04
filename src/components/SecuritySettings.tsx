@@ -22,7 +22,7 @@ type PinChangeMode = 'private' | null
 
 export function SecuritySettings() {
   const screenReader = useScreenReader()
-  const { user, resetPassword, isPrivateEnabled, setPin, changePin } = useAuth()
+  const { user, resetPassword, isPrivateEnabled, setPin, changePin, removePin } = useAuth()
   const [showPinDialog, setShowPinDialog] = useState(false)
   const [pinChangeMode, setPinChangeMode] = useState<PinChangeMode>(null)
   const [currentPin, setCurrentPin] = useState('')
@@ -32,6 +32,10 @@ export function SecuritySettings() {
   const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [passwordResetMessage, setPasswordResetMessage] = useState('')
   const [error, setError] = useState('')
+  const [showRemovePinDialog, setShowRemovePinDialog] = useState(false)
+  const [removePinCurrentPin, setRemovePinCurrentPin] = useState('')
+  const [isRemovingPin, setIsRemovingPin] = useState(false)
+  const [removePinError, setRemovePinError] = useState('')
   const newPinRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -150,6 +154,44 @@ export function SecuritySettings() {
     }
   }
 
+  const handleOpenRemovePin = () => {
+    setShowRemovePinDialog(true)
+    setRemovePinCurrentPin('')
+    setRemovePinError('')
+    soundSystem.play('dialog-open')
+    screenReader.announce('Apertura dialog per rimozione PIN privato', 'assertive')
+  }
+
+  const handleCloseRemovePin = () => {
+    setShowRemovePinDialog(false)
+    setRemovePinCurrentPin('')
+    setRemovePinError('')
+    soundSystem.play('dialog-close')
+  }
+
+  const handleRemovePinSubmit = async () => {
+    if (!removePinCurrentPin) {
+      setRemovePinError('Inserisci il PIN attuale per confermare la rimozione')
+      soundSystem.play('error')
+      screenReader.announceError('Errore: PIN attuale richiesto per la rimozione')
+      return
+    }
+    setIsRemovingPin(true)
+    setRemovePinError('')
+    try {
+      await removePin(removePinCurrentPin)
+      handleCloseRemovePin()
+      soundSystem.play('success')
+      screenReader.announceSuccess('PIN privato rimosso con successo')
+    } catch (_err) {
+      setRemovePinError('PIN non corretto o errore durante la rimozione')
+      soundSystem.play('error')
+      screenReader.announceError('Errore durante la rimozione del PIN. Verifica il PIN attuale.')
+    } finally {
+      setIsRemovingPin(false)
+    }
+  }
+
   return (
     <>
       <Card>
@@ -237,16 +279,30 @@ export function SecuritySettings() {
                       )}
                     </div>
                   </div>
-                  <Button
-                    onClick={() => handleOpenPinChange('private')}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    data-focus-info="Modifica PIN privato per il conto cifrato"
-                  >
-                    <Lock size={16} weight="duotone" />
-                    {isPrivateEnabled ? 'Modifica' : 'Configura'}
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      onClick={() => handleOpenPinChange('private')}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      data-focus-info="Modifica PIN privato per il conto cifrato"
+                    >
+                      <Lock size={16} weight="duotone" />
+                      {isPrivateEnabled ? 'Modifica' : 'Configura'}
+                    </Button>
+                    {isPrivateEnabled ? (
+                      <Button
+                        onClick={handleOpenRemovePin}
+                        variant="ghost"
+                        size="sm"
+                        className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        data-focus-info="Rimuovi PIN privato per il conto cifrato"
+                      >
+                        <X size={16} weight="bold" />
+                        Rimuovi PIN
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             </div>
@@ -370,6 +426,77 @@ export function SecuritySettings() {
                 <>
                   <CheckCircle size={18} weight="duotone" />
                   Conferma Modifica
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showRemovePinDialog} onOpenChange={setShowRemovePinDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <X size={20} weight="bold" className="text-destructive" />
+              Rimuovi PIN Privato
+            </DialogTitle>
+            <DialogDescription>
+              Inserisci il PIN attuale per confermare la rimozione.
+              Dopo questa operazione il conto privato non sarà più protetto da PIN.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="remove-current-pin">PIN attuale</Label>
+              <Input
+                id="remove-current-pin"
+                type="password"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="Inserisci il PIN attuale"
+                value={removePinCurrentPin}
+                onChange={(e) => {
+                  setRemovePinCurrentPin(e.target.value)
+                  setRemovePinError('')
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !isRemovingPin) void handleRemovePinSubmit()
+                }}
+                disabled={isRemovingPin}
+                autoFocus
+              />
+            </div>
+
+            {removePinError && (
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+                <p className="text-sm text-destructive font-medium">{removePinError}</p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCloseRemovePin}
+              disabled={isRemovingPin}
+            >
+              Annulla
+            </Button>
+            <Button
+              type="submit"
+              variant="destructive"
+              onClick={() => void handleRemovePinSubmit()}
+              disabled={isRemovingPin || !removePinCurrentPin}
+              className="gap-2"
+            >
+              {isRemovingPin ? (
+                <>Rimozione in corso...</>
+              ) : (
+                <>
+                  <X size={18} weight="bold" />
+                  Rimuovi PIN
                 </>
               )}
             </Button>
