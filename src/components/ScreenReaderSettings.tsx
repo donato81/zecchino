@@ -1,4 +1,5 @@
 import { useUserSettings } from '@/context/UserSettingsContext'
+import type { ScreenReaderPreferences } from '@/hooks/use-user-settings'
 import { useScreenReader } from '@/hooks/use-screen-reader'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -21,6 +22,10 @@ interface VerbosityOption {
   description: string
   example: string
 }
+
+type BooleanScreenReaderPreferenceKey = {
+  [K in keyof ScreenReaderPreferences]: ScreenReaderPreferences[K] extends boolean ? K : never
+}[keyof ScreenReaderPreferences]
 
 const verbosityOptions: VerbosityOption[] = [
   {
@@ -63,12 +68,12 @@ export function ScreenReaderSettings() {
   }
 
   const handleToggle = (
-    key: keyof typeof screenReaderPreferences,
+    key: BooleanScreenReaderPreferenceKey,
     currentValue: boolean,
     name: string
   ) => {
     const newValue = !currentValue
-    setScreenReaderPreference(key, newValue as never).catch(console.error)
+    setScreenReaderPreference(key, newValue).catch(console.error)
     soundSystem.play('settings-change')
     if (newValue) {
       toast.success(`${name} abilitati`)

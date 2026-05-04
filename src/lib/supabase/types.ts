@@ -40,9 +40,11 @@ export interface TalkBackAdaptations {
   spatialAudio: boolean
 }
 
-// 29 chiavi — 28 da P25 §3.1 Opzione 2 + onboarding_completed aggiunta da P35
+// 32 chiavi tipizzate lato client — base P25 + onboarding/on-session + preferenze UI persistite.
 export interface UserPreferences {
   session_timeout_minutes?: number
+  visible_category_ids?: string[]
+  dismissed_budget_alert_ids?: string[]
   display_show_balances: boolean
   display_show_account_icons: boolean
   display_compact_mode: boolean

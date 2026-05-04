@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { updatePreference } from '@/lib/supabase/repositories/impostazioni-utente'
-import type { TalkBackAdaptations } from '@/lib/supabase/types'
+import type { TalkBackAdaptations, UserPreferences } from '@/lib/supabase/types'
 
 // ── Wave B: Display preferences ──────────────────────────────────────────────
 export interface DisplayPreferences {
@@ -35,7 +35,7 @@ const DISPLAY_DEFAULTS: DisplayPreferences = {
 }
 
 // camelCase UI key → JSONB snake_case key
-const displayKeyMap: Record<keyof DisplayPreferences, string> = {
+const displayKeyMap: Record<keyof DisplayPreferences, keyof UserPreferences> = {
   showBalances: 'display_show_balances',
   showAccountIcons: 'display_show_account_icons',
   compactMode: 'display_compact_mode',
@@ -81,7 +81,7 @@ const SR_DEFAULTS: ScreenReaderPreferences = {
   reducedAnnouncements: false,
 }
 
-const srKeyMap: Record<keyof ScreenReaderPreferences, string> = {
+const srKeyMap: Record<keyof ScreenReaderPreferences, keyof UserPreferences> = {
   verbosityLevel: 'sr_verbosity',
   announceNavigation: 'sr_announce_navigation',
   announceFilters: 'sr_announce_filters',
@@ -175,7 +175,7 @@ export function useUserSettings(): UserSettingsState {
       return
     }
 
-    const prefs = userSettings.preferences as unknown as Record<string, unknown>
+    const prefs = userSettings.preferences
 
     const rawVisible = prefs?.visible_category_ids
     const rawDismissed = prefs?.dismissed_budget_alert_ids
@@ -229,7 +229,7 @@ export function useUserSettings(): UserSettingsState {
     setIsSettingsLoading(true)
     setSettingsError(null)
     try {
-      await updatePreference('visible_category_ids' as never, ids)
+      await updatePreference('visible_category_ids', ids)
       setVisibleCategoriesState(ids)
     } catch (err) {
       setSettingsError(err instanceof Error ? err.message : 'Errore aggiornamento preferenze')
@@ -244,7 +244,7 @@ export function useUserSettings(): UserSettingsState {
     setIsSettingsLoading(true)
     setSettingsError(null)
     try {
-      await updatePreference('dismissed_budget_alert_ids' as never, newIds)
+      await updatePreference('dismissed_budget_alert_ids', newIds)
       setDismissedBudgetAlertsState(newIds)
     } catch (err) {
       setSettingsError(err instanceof Error ? err.message : 'Errore aggiornamento preferenze')
@@ -257,7 +257,7 @@ export function useUserSettings(): UserSettingsState {
     setIsSettingsLoading(true)
     setSettingsError(null)
     try {
-      await updatePreference('dismissed_budget_alert_ids' as never, [])
+      await updatePreference('dismissed_budget_alert_ids', [])
       setDismissedBudgetAlertsState([])
     } catch (err) {
       setSettingsError(err instanceof Error ? err.message : 'Errore aggiornamento preferenze')
@@ -301,7 +301,7 @@ export function useUserSettings(): UserSettingsState {
     setIsSettingsLoading(true)
     setSettingsError(null)
     try {
-      await updatePreference(displayKeyMap[key] as never, value)
+      await updatePreference(displayKeyMap[key], value)
       setDisplayPreferencesState(prev => ({ ...prev, [key]: value }))
     } catch (err) {
       setSettingsError(err instanceof Error ? err.message : 'Errore aggiornamento visualizzazione')
@@ -318,7 +318,7 @@ export function useUserSettings(): UserSettingsState {
     setIsSettingsLoading(true)
     setSettingsError(null)
     try {
-      await updatePreference(srKeyMap[key] as never, value)
+      await updatePreference(srKeyMap[key], value)
       setScreenReaderPreferencesState(prev => ({ ...prev, [key]: value }))
     } catch (err) {
       setSettingsError(err instanceof Error ? err.message : 'Errore aggiornamento screen reader')
@@ -362,7 +362,7 @@ export function useUserSettings(): UserSettingsState {
     setSettingsError(null)
     try {
       const writes = (Object.keys(srKeyMap) as (keyof ScreenReaderPreferences)[]).map(uiKey =>
-        updatePreference(srKeyMap[uiKey] as never, SR_DEFAULTS[uiKey])
+        updatePreference(srKeyMap[uiKey], SR_DEFAULTS[uiKey])
       )
       await Promise.all([
         ...writes,
