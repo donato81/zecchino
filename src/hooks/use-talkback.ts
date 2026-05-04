@@ -1,22 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useUserSettings } from '@/context/UserSettingsContext'
+import type { TalkBackAdaptations } from '@/lib/supabase/types'
 
 export interface TalkBackState {
   isEnabled: boolean
   isDetected: boolean
   confidenceLevel: 'high' | 'medium' | 'low'
   adaptationsActive: boolean
-}
-
-export interface TalkBackAdaptations {
-  enhancedTouchTargets: boolean
-  simplifiedNavigation: boolean
-  extendedTimeouts: boolean
-  verboseDescriptions: boolean
-  highContrastMode: boolean
-  reducedMotion: boolean
-  autoFocusManagement: boolean
-  spatialAudio: boolean
 }
 
 const DEFAULT_ADAPTATIONS: TalkBackAdaptations = {
