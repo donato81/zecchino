@@ -13,6 +13,7 @@
 
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
+| P36 — Decommissioning Spark e cache offline read-only (Blocco 10: 10a rimozione @github/spark + 10b cache localStorage read-only) | `docs/3 - todo lists/P36-todo.md` | In corso | Alta |
 
 ## TODO completati
 
