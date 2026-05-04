@@ -4,7 +4,6 @@ import * as React from 'react'
 import { vi } from 'vitest'
 import App from '@/App'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { resetTestKvStore, seedTestKvStore } from '../setup'
 
 type MockAuthState = {
   user: { id: string; email: string } | null
@@ -242,8 +241,6 @@ type RenderAppOptions = {
 }
 
 export function renderApp(options: RenderAppOptions = {}) {
-  resetTestKvStore()
-  seedTestKvStore(options.initialKv ?? {})
   authStore.reset()
   appDataStore.reset(options.initialKv ?? {})
 

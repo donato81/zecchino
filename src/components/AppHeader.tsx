@@ -1,17 +1,21 @@
-import { Keyboard } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, Keyboard, WarningCircle } from '@phosphor-icons/react'
 import { useAppData } from '@/context/AppDataContext'
 import { useVisibleData } from '@/context/VisibleDataContext'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useOnlineStatus } from '@/hooks/use-online-status'
 import { hapticSystem } from '@/lib/haptic-system'
 import { formatCurrency } from '@/lib/helpers'
 import { soundSystem } from '@/lib/sound-system'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 export function AppHeader() {
-  const { setShowKeyboardHelp } = useAppData()
+  const { error, isLoading, refreshAll, setShowKeyboardHelp } = useAppData()
   const { totalBalance, visibleAccounts } = useVisibleData()
+  const { isOffline } = useOnlineStatus()
   const isMobile = useIsMobile()
+  const showOfflineBanner = isOffline || error?.startsWith('Modalità offline') === true
 
   return (
     <header
@@ -20,6 +24,47 @@ export function AppHeader() {
       aria-label="Intestazione principale applicazione Zecchino"
     >
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-5">
+        {showOfflineBanner ? (
+          <div
+            className="mb-3 flex flex-col gap-3 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-50 via-background to-amber-100/70 px-3 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+            role="alert"
+            aria-live="assertive"
+          >
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 text-amber-600" aria-hidden="true">
+                <WarningCircle size={20} weight="fill" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-amber-900">Modalità offline</p>
+                  <Badge variant="outline" className="border-amber-300 bg-amber-100/70 text-amber-900">
+                    sola lettura
+                  </Badge>
+                </div>
+                <p className="text-sm text-amber-950/90">
+                  {error?.startsWith('Modalità offline')
+                    ? error
+                    : 'Stai vedendo dati salvati in precedenza. Riconnettiti per aggiornare i contenuti.'}
+                </p>
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              className="border-amber-400/60 bg-background/70 text-amber-900 hover:bg-amber-100"
+              disabled={isOffline || isLoading}
+              onClick={() => {
+                soundSystem.play('dialog-open')
+                hapticSystem.dialogOpen()
+                refreshAll()
+              }}
+            >
+              <ArrowCounterClockwise size={18} weight="duotone" aria-hidden="true" />
+              Aggiorna ora
+            </Button>
+          </div>
+        ) : null}
+
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center shadow-lg shadow-primary/30 ring-2 ring-primary/40 flex-shrink-0">

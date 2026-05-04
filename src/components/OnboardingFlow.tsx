@@ -14,7 +14,7 @@ import { updateField, updatePreference } from '@/lib/supabase/repositories/impos
 import { useScreenReader } from '@/hooks/use-screen-reader'
 import { toast } from 'sonner'
 
-type SeedStatus = 'idle' | 'running' | 'done' | 'error'
+type SeedStatus = 'idle' | 'running' | 'done' | 'error' | (string & {})
 
 const TOTAL_STEPS = 5
 const STEP_LABELS = [

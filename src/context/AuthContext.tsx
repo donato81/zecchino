@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { Session, User } from '@supabase/supabase-js'
 import { hashPin, verifyPin } from '@/lib/crypto'
 import { supabase } from '@/lib/supabase/client'
+import { invalidateCache } from '@/lib/supabase/cache'
 import { getOrCreate, updatePinHash, updatePreference } from '@/lib/supabase/repositories/impostazioni-utente'
 import type { UserSettings } from '@/lib/supabase/types'
 import { soundSystem } from '@/lib/sound-system'
@@ -62,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const settings = await getOrCreate()
       setNeedsOnboarding(!settings.nomeVisualizzato)
-      setInactivityTimeoutState((settings.preferences as Record<string, unknown>)?.session_timeout_minutes as number ?? 5)
+      setInactivityTimeoutState(settings.preferences.session_timeout_minutes ?? 5)
       setPrivatePinHashCache(settings.pinPrivatoHash ?? null)
       setUserSettings(settings)
     } catch {
@@ -74,11 +75,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signOut = useCallback(async () => {
+    if (user?.id) {
+      invalidateCache(user.id)
+    }
     const { error } = await supabase.auth.signOut()
     if (error) throw error
     setIsPrivateUnlocked(false)
     setShowPrivatePinDialog(false)
-  }, [])
+  }, [user?.id])
 
   const { resetTimer, showWarning } = useInactivityTimer({
     timeoutMinutes: isAuthenticated ? inactivityTimeoutState : 0,
@@ -149,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const setInactivityTimeout = useCallback(async (minutes: number) => {
     setInactivityTimeoutState(minutes)
-    await updatePreference('session_timeout_minutes' as never, minutes)
+    await updatePreference('session_timeout_minutes', minutes)
     resetTimer()
   }, [resetTimer])
 

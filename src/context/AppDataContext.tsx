@@ -27,6 +27,7 @@ import {
   update as updateObiettivo, remove as removeObiettivo,
   updateProgress as updateObiettivoProgress,
 } from '@/lib/supabase/repositories/obiettivi-risparmio'
+import { CACHE_TTL_MS, isCacheStale, readCache, writeCache } from '@/lib/supabase/cache'
 import { useAuth } from '@/context/AuthContext'
 import { RepositoryError } from '@/lib/supabase/types'
 
@@ -112,27 +113,9 @@ type DomainSnapshot = {
   savingsGoals: SavingsGoal[]
 }
 
-async function readTestSeedSnapshot(): Promise<Partial<DomainSnapshot> | null> {
-  if (import.meta.env.MODE !== 'test' || typeof window === 'undefined' || !window.spark?.kv?.get) {
-    return null
-  }
-
-  const [accounts, transactions, categories, budgets, savingsGoals] = await Promise.all([
-    window.spark.kv.get('accounts'),
-    window.spark.kv.get('transactions'),
-    window.spark.kv.get('categories'),
-    window.spark.kv.get('budgets'),
-    window.spark.kv.get('savings-goals'),
-  ])
-
-  return {
-    accounts: Array.isArray(accounts) ? accounts as Account[] : undefined,
-    transactions: Array.isArray(transactions) ? transactions as Transaction[] : undefined,
-    categories: Array.isArray(categories) ? categories as Category[] : undefined,
-    budgets: Array.isArray(budgets) ? budgets as Budget[] : undefined,
-    savingsGoals: Array.isArray(savingsGoals) ? savingsGoals as SavingsGoal[] : undefined,
-  }
-}
+const OFFLINE_CACHE_MESSAGE = 'Modalità offline: stai vedendo dati salvati in precedenza.'
+const OFFLINE_STALE_CACHE_MESSAGE = 'Modalità offline: stai vedendo dati salvati in precedenza. I dati potrebbero non essere aggiornati.'
+const OFFLINE_FIRST_ACCESS_MESSAGE = 'Non è possibile caricare i dati senza connessione al primo accesso. Connettiti e riprova.'
 
 async function loadDomainSnapshot(): Promise<DomainSnapshot> {
   const [accounts, transactions, categories, budgets, savingsGoals] = await Promise.all([
@@ -143,19 +126,17 @@ async function loadDomainSnapshot(): Promise<DomainSnapshot> {
     getAllObiettivi(),
   ])
 
-  const seeded = await readTestSeedSnapshot()
-
   return {
-    accounts: seeded?.accounts?.length ? seeded.accounts : accounts,
-    transactions: seeded?.transactions?.length ? seeded.transactions : transactions,
-    categories: seeded?.categories?.length ? seeded.categories : categories,
-    budgets: seeded?.budgets?.length ? seeded.budgets : budgets,
-    savingsGoals: seeded?.savingsGoals?.length ? seeded.savingsGoals : savingsGoals,
+    accounts,
+    transactions,
+    categories,
+    budgets,
+    savingsGoals,
   }
 }
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
 
   const [accounts, setAccounts] = useState<Account[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -196,11 +177,65 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   const screenReader = useScreenReader()
 
+  const applyDomainSnapshot = (snapshot: DomainSnapshot) => {
+    setAccounts(snapshot.accounts)
+    setTransactions(snapshot.transactions)
+    setCategories(snapshot.categories)
+    setBudgets(snapshot.budgets)
+    setSavingsGoals(snapshot.savingsGoals)
+    setBudgetPercentages({})
+  }
+
+  const readCachedDomainSnapshot = (userId: string): { snapshot: DomainSnapshot; isStale: boolean } | null => {
+    const accounts = readCache<Account[]>(userId, 'conti')
+    const transactions = readCache<Transaction[]>(userId, 'transazioni')
+    const categories = readCache<Category[]>(userId, 'categorie')
+    const budgets = readCache<Budget[]>(userId, 'budget')
+    const savingsGoals = readCache<SavingsGoal[]>(userId, 'obiettivi_risparmio')
+
+    if (!accounts || !transactions || !categories || !budgets || !savingsGoals) {
+      return null
+    }
+
+    return {
+      snapshot: {
+        accounts: accounts.data,
+        transactions: transactions.data,
+        categories: categories.data,
+        budgets: budgets.data,
+        savingsGoals: savingsGoals.data,
+      },
+      isStale: [
+        isCacheStale(userId, 'conti', CACHE_TTL_MS),
+        isCacheStale(userId, 'transazioni', CACHE_TTL_MS),
+        isCacheStale(userId, 'categorie', CACHE_TTL_MS),
+        isCacheStale(userId, 'budget', CACHE_TTL_MS),
+        isCacheStale(userId, 'obiettivi_risparmio', CACHE_TTL_MS),
+      ].some(Boolean),
+    }
+  }
+
+  const hydrateFromCache = (userId: string): boolean => {
+    const cached = readCachedDomainSnapshot(userId)
+    if (!cached) {
+      setError(OFFLINE_FIRST_ACCESS_MESSAGE)
+      setIsLoading(false)
+      setIsDataReady(false)
+      return false
+    }
+
+    applyDomainSnapshot(cached.snapshot)
+    setError(cached.isStale ? OFFLINE_STALE_CACHE_MESSAGE : OFFLINE_CACHE_MESSAGE)
+    setIsLoading(false)
+    setIsDataReady(true)
+    return true
+  }
+
   // Bootstrap: carica tutti i dati in parallelo al login, resetta al logout
   useEffect(() => {
     let cancelled = false
 
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user?.id) {
       setAccounts([])
       setTransactions([])
       setCategories([])
@@ -216,40 +251,65 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setIsLoading(true)
     setError(null)
 
-    loadDomainSnapshot().then(({ accounts, transactions, categories, budgets, savingsGoals }) => {
-      if (cancelled) return
-      setAccounts(accounts)
-      setTransactions(transactions)
-      setCategories(categories)
-      setBudgets(budgets)
-      setSavingsGoals(savingsGoals)
-      setIsLoading(false)
-      setIsDataReady(true)
-    }).catch(() => {
-      if (cancelled) return
-      setError('Impossibile caricare i dati. Controlla la connessione e riprova.')
-      setIsLoading(false)
-    })
+    const loadBootstrapData = async () => {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        if (!cancelled) {
+          hydrateFromCache(user.id)
+        }
+        return
+      }
+
+      try {
+        const snapshot = await loadDomainSnapshot()
+        if (cancelled) return
+        applyDomainSnapshot(snapshot)
+        setError(null)
+        setIsLoading(false)
+        setIsDataReady(true)
+      } catch {
+        if (cancelled) return
+        hydrateFromCache(user.id)
+      }
+    }
+
+    void loadBootstrapData()
 
     return () => { cancelled = true }
-  }, [isAuthenticated])
+  }, [isAuthenticated, user?.id])
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id || !isDataReady) return
+
+    writeCache(user.id, 'conti', accounts)
+    writeCache(user.id, 'transazioni', transactions)
+    writeCache(user.id, 'categorie', categories)
+    writeCache(user.id, 'budget', budgets)
+    writeCache(user.id, 'obiettivi_risparmio', savingsGoals)
+  }, [accounts, budgets, categories, isAuthenticated, isDataReady, savingsGoals, transactions, user?.id])
 
   const refreshAll = () => {
-    if (isLoading) return
+    if (isLoading || !user?.id) return
     setIsLoading(true)
     setError(null)
 
-    loadDomainSnapshot().then(({ accounts, transactions, categories, budgets, savingsGoals }) => {
-      setAccounts(accounts)
-      setTransactions(transactions)
-      setCategories(categories)
-      setBudgets(budgets)
-      setSavingsGoals(savingsGoals)
-      setIsLoading(false)
-    }).catch(() => {
-      setError('Impossibile caricare i dati. Controlla la connessione e riprova.')
-      setIsLoading(false)
-    })
+    const reloadData = async () => {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        hydrateFromCache(user.id)
+        return
+      }
+
+      try {
+        const snapshot = await loadDomainSnapshot()
+        applyDomainSnapshot(snapshot)
+        setError(null)
+        setIsLoading(false)
+        setIsDataReady(true)
+      } catch {
+        hydrateFromCache(user.id)
+      }
+    }
+
+    void reloadData()
   }
 
   // --- Repository actions (pure, no UX side effects) ---
@@ -451,7 +511,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           category?.nome
         )
         if (transaction.tipo === 'uscita') {
-          checkBudgetNotifications([...transactions, transaction])
+          checkBudgetNotifications([...transactions, { ...transaction, cifrato: false }])
         }
       }
     } catch (err) {

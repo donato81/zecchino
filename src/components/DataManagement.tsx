@@ -1,11 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Account, Budget, SavingsGoal, Transaction } from '@/lib/types'
 import { soundSystem } from '@/lib/sound-system'
 import { useScreenReader } from '@/hooks/use-screen-reader'
 import { useAppData } from '@/context/AppDataContext'
 import { useAuth } from '@/context/AuthContext'
-import { useUserSettings } from '@/context/UserSettingsContext'
-import { updatePreference } from '@/lib/supabase/repositories/impostazioni-utente'
 import {
   create as createConto,
   getById as getContoById,
@@ -43,13 +41,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-
-const DOMAIN_KEYS = ['accounts', 'transactions', 'budgets', 'savings-goals'] as const
 const SUPPORTED_SCHEMA_MAJOR = '1'
 const APP_VERSION = '1.0.0'
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-type DomainKey = (typeof DOMAIN_KEYS)[number]
 
 type MigrationError = {
   entity: string
@@ -265,315 +259,18 @@ export function DataManagement() {
     savingsGoals: appSavingsGoals,
     refreshAll,
   } = useAppData()
-  const { user, isAuthenticated, userSettings } = useAuth()
-  const { isSettingsReady } = useUserSettings()
+  const { user } = useAuth()
   const [showExportConfirm, setShowExportConfirm] = useState(false)
   const [showImportConfirm, setShowImportConfirm] = useState(false)
   const [importFile, setImportFile] = useState<File | null>(null)
-  const [migrationChecked, setMigrationChecked] = useState(false)
-  const [migrationAvailable, setMigrationAvailable] = useState(false)
-  const [migrationDismissed, setMigrationDismissed] = useState(false)
-  const [migrationInProgress, setMigrationInProgress] = useState(false)
-  const [migrationErrors, setMigrationErrors] = useState<MigrationError[]>([])
-  const [migrationSummary, setMigrationSummary] = useState<string | null>(null)
-  const [networkErrorMessage, setNetworkErrorMessage] = useState<string | null>(null)
   const [progressMessage, setProgressMessage] = useState('')
   const [progressMode, setProgressMode] = useState<'polite' | 'assertive'>('polite')
   const [importErrors, setImportErrors] = useState<MigrationError[]>([])
   const [importSummary, setImportSummary] = useState<string | null>(null)
 
-  const preferences = (userSettings?.preferences as Record<string, unknown> | undefined) ?? undefined
-  const legacyDomainMigrated = preferences?.legacy_domain_migrated === true
-  const showMigrationPanel = !migrationDismissed && !legacyDomainMigrated && (migrationAvailable || migrationInProgress || migrationErrors.length > 0 || networkErrorMessage !== null)
-
-  useEffect(() => {
-    if (!migrationAvailable || migrationDismissed || migrationInProgress) return
-    screenReader.announce('Sono stati rilevati dati storici da importare su Supabase. È disponibile la migrazione una tantum.', 'assertive')
-  }, [migrationAvailable, migrationDismissed, migrationInProgress, screenReader])
-
-  useEffect(() => {
-    if (!isAuthenticated || !isSettingsReady || !userSettings || migrationChecked) {
-      return
-    }
-
-    let cancelled = false
-
-    const markLegacyMigrationDone = async () => {
-      await updatePreference('legacy_domain_migrated' as never, true)
-    }
-
-    const detectLegacyData = async () => {
-      if (legacyDomainMigrated) {
-        if (!cancelled) {
-          setMigrationChecked(true)
-          setMigrationAvailable(false)
-        }
-        return
-      }
-
-      if (typeof window === 'undefined' || !window.spark?.kv) {
-        try {
-          await markLegacyMigrationDone()
-        } catch {
-          if (!cancelled) {
-            setNetworkErrorMessage('Impossibile aggiornare lo stato di migrazione automatica.')
-          }
-        } finally {
-          if (!cancelled) {
-            setMigrationChecked(true)
-          }
-        }
-        return
-      }
-
-      try {
-        const keys = await window.spark.kv.keys()
-        const relevantKeys = keys.filter((key): key is DomainKey => DOMAIN_KEYS.includes(key as DomainKey))
-
-        if (relevantKeys.length === 0) {
-          await markLegacyMigrationDone()
-          if (!cancelled) {
-            setMigrationAvailable(false)
-          }
-        } else if (!cancelled) {
-          setMigrationAvailable(true)
-        }
-      } catch {
-        if (!cancelled) {
-          setNetworkErrorMessage('Connessione ai dati storici non riuscita. Riprova più tardi.')
-        }
-      } finally {
-        if (!cancelled) {
-          setMigrationChecked(true)
-        }
-      }
-    }
-
-    void detectLegacyData()
-
-    return () => {
-      cancelled = true
-    }
-  }, [isAuthenticated, isSettingsReady, legacyDomainMigrated, migrationChecked, userSettings])
-
   const setProgress = (message: string, mode: 'polite' | 'assertive' = 'polite') => {
     setProgressMessage(message)
     setProgressMode(mode)
-  }
-
-  const handleStartLegacyImport = async () => {
-    if (!user) {
-      soundSystem.play('error')
-      toast.error('Utente non autenticato. Impossibile avviare la migrazione storica.')
-      screenReader.announceError('Utente non autenticato. Migrazione storica non disponibile.')
-      return
-    }
-
-    if (typeof window === 'undefined' || !window.spark?.kv) {
-      soundSystem.play('error')
-      toast.error('Runtime Spark non disponibile per leggere i dati storici.')
-      screenReader.announceError('Runtime Spark non disponibile per leggere i dati storici.')
-      return
-    }
-
-    setMigrationInProgress(true)
-    setMigrationErrors([])
-    setMigrationSummary(null)
-    setNetworkErrorMessage(null)
-    setProgress('Preparazione migrazione storica...', 'polite')
-
-    const errors: MigrationError[] = []
-    const sparkToSupabaseIdMap = new Map<string, string>()
-    let migratedCount = 0
-    let knownAccounts = [...appAccounts]
-    let knownBudgets = [...appBudgets]
-    let knownSavingsGoals = [...appSavingsGoals]
-    let knownTransactions = [...appTransactions]
-
-    try {
-      const [accountsValue, transactionsValue, budgetsValue, savingsGoalsValue] = await Promise.all([
-        window.spark.kv.get('accounts'),
-        window.spark.kv.get('transactions'),
-        window.spark.kv.get('budgets'),
-        window.spark.kv.get('savings-goals'),
-      ])
-
-      const validAccounts = collectValidItems(Array.isArray(accountsValue) ? accountsValue : [], 'account', isValidAccount, errors)
-      const validBudgets = collectValidItems(Array.isArray(budgetsValue) ? budgetsValue : [], 'budget', isValidBudget, errors)
-      const validSavingsGoals = collectValidItems(Array.isArray(savingsGoalsValue) ? savingsGoalsValue : [], 'savings-goal', isValidSavingsGoal, errors)
-      const validTransactions = collectValidItems(Array.isArray(transactionsValue) ? transactionsValue : [], 'transaction', isValidTransaction, errors)
-
-      for (const [index, account] of validAccounts.entries()) {
-        setProgress(`Importazione conti: ${index + 1} di ${validAccounts.length}`)
-        const payload: Omit<Account, 'id'> = {
-          nome: account.nome,
-          tipo: account.tipo,
-          saldoIniziale: account.saldoIniziale,
-          valuta: account.valuta,
-          isPrivato: account.isPrivato,
-          dataCreazione: account.dataCreazione,
-        }
-
-        const existing = knownAccounts.find((current) => sameAccount(payload, current))
-        if (existing) {
-          sparkToSupabaseIdMap.set(account.id, existing.id)
-          migratedCount += 1
-          continue
-        }
-
-        try {
-          const created = await createConto(payload)
-          sparkToSupabaseIdMap.set(account.id, created.id)
-          knownAccounts = [...knownAccounts, created]
-          migratedCount += 1
-        } catch (error) {
-          errors.push({ entity: 'account', id: account.id, message: getErrorMessage(error) })
-        }
-      }
-
-      for (const [index, budget] of validBudgets.entries()) {
-        setProgress(`Importazione budget: ${index + 1} di ${validBudgets.length}`)
-        const mappedAccountId = budget.contoId ? sparkToSupabaseIdMap.get(budget.contoId) : undefined
-        if (budget.contoId && !mappedAccountId) {
-          errors.push({ entity: 'budget', id: budget.id, message: `Conto origine non migrato: ${budget.contoId}` })
-          continue
-        }
-
-        const payload: Omit<Budget, 'id'> = {
-          nome: budget.nome,
-          importoTarget: budget.importoTarget,
-          periodo: budget.periodo,
-          categoriaId: budget.categoriaId,
-          contoId: mappedAccountId,
-          dataInizio: budget.dataInizio,
-          dataFine: budget.dataFine,
-          attivo: budget.attivo,
-        }
-
-        const existing = knownBudgets.find((current) => sameBudget(payload, current))
-        if (existing) {
-          migratedCount += 1
-          continue
-        }
-
-        try {
-          const created = await createBudget(payload)
-          knownBudgets = [...knownBudgets, created]
-          migratedCount += 1
-        } catch (error) {
-          errors.push({ entity: 'budget', id: budget.id, message: getErrorMessage(error) })
-        }
-      }
-
-      for (const [index, goal] of validSavingsGoals.entries()) {
-        setProgress(`Importazione obiettivi: ${index + 1} di ${validSavingsGoals.length}`)
-        const mappedAccountId = goal.contoAssociato ? sparkToSupabaseIdMap.get(goal.contoAssociato) : undefined
-        if (goal.contoAssociato && !mappedAccountId) {
-          errors.push({ entity: 'savings-goal', id: goal.id, message: `Conto associato non migrato: ${goal.contoAssociato}` })
-          continue
-        }
-
-        const payload: Omit<SavingsGoal, 'id'> = {
-          nome: goal.nome,
-          descrizione: goal.descrizione,
-          importoTarget: goal.importoTarget,
-          importoCorrente: goal.importoCorrente,
-          dataInizio: goal.dataInizio,
-          dataScadenza: goal.dataScadenza,
-          contoAssociato: mappedAccountId,
-          colore: goal.colore,
-          icona: goal.icona,
-          completato: goal.completato,
-          dataCompletamento: goal.dataCompletamento,
-        }
-
-        const existing = knownSavingsGoals.find((current) => sameSavingsGoal(payload, current))
-        if (existing) {
-          migratedCount += 1
-          continue
-        }
-
-        try {
-          const created = await createSavingsGoal(payload)
-          knownSavingsGoals = [...knownSavingsGoals, created]
-          migratedCount += 1
-        } catch (error) {
-          errors.push({ entity: 'savings-goal', id: goal.id, message: getErrorMessage(error) })
-        }
-      }
-
-      for (const [index, transaction] of validTransactions.entries()) {
-        setProgress(`Importazione transazioni: ${index + 1} di ${validTransactions.length}`)
-        const mappedAccountId = sparkToSupabaseIdMap.get(transaction.contoId)
-        if (!mappedAccountId) {
-          errors.push({ entity: 'transaction', id: transaction.id, message: `Conto origine non migrato: ${transaction.contoId}` })
-          continue
-        }
-
-        const mappedDestinationId = transaction.contoDestinazioneId
-          ? sparkToSupabaseIdMap.get(transaction.contoDestinazioneId)
-          : undefined
-
-        if (transaction.contoDestinazioneId && !mappedDestinationId) {
-          errors.push({ entity: 'transaction', id: transaction.id, message: `Conto destinazione non migrato: ${transaction.contoDestinazioneId}` })
-          continue
-        }
-
-        const payload: Omit<Transaction, 'id' | 'cifrato'> = {
-          data: transaction.data,
-          importo: transaction.importo,
-          tipo: transaction.tipo,
-          contoId: mappedAccountId,
-          contoDestinazioneId: mappedDestinationId,
-          categoriaId: transaction.categoriaId,
-          descrizione: transaction.descrizione,
-          ricorrente: transaction.ricorrente,
-          frequenzaRicorrenza: transaction.frequenzaRicorrenza,
-        }
-
-        const existing = knownTransactions.find((current) => sameTransaction(payload, current))
-        if (existing) {
-          migratedCount += 1
-          continue
-        }
-
-        try {
-          const created = await createTransaction(payload)
-          knownTransactions = [...knownTransactions, created]
-          migratedCount += 1
-        } catch (error) {
-          errors.push({ entity: 'transaction', id: transaction.id, message: getErrorMessage(error) })
-        }
-      }
-
-      setMigrationErrors(errors)
-
-      if (errors.length === 0) {
-        await updatePreference('legacy_domain_migrated' as never, true)
-        refreshAll()
-        setMigrationAvailable(false)
-        setMigrationSummary(`Migrazione storica completata con successo. Entità migrate: ${migratedCount}.`)
-        soundSystem.play('success')
-        toast.success(`Migrazione storica completata. Entità migrate: ${migratedCount}.`)
-        screenReader.announceSuccess(`Migrazione storica completata. Entità migrate: ${migratedCount}.`)
-      } else {
-        setMigrationAvailable(true)
-        setMigrationSummary(`Migrazione storica completata con errori. Entità migrate: ${migratedCount}. Errori: ${errors.length}.`)
-        soundSystem.play('error')
-        toast.warning(`Migrazione parziale: ${errors.length} errori da correggere prima di confermare il completamento.`)
-        screenReader.announceError(`Migrazione storica completata con ${errors.length} errori. Il pannello rimane disponibile per un nuovo tentativo.`)
-      }
-    } catch (error) {
-      const message = getErrorMessage(error)
-      setMigrationErrors([{ entity: 'migration', id: 'global', message }])
-      setMigrationSummary('Migrazione storica non completata.')
-      soundSystem.play('error')
-      toast.error('Errore durante la migrazione dei dati storici.')
-      screenReader.announceError(`Errore durante la migrazione dei dati storici: ${message}`)
-    } finally {
-      setMigrationInProgress(false)
-      setProgress(errors.length === 0 ? 'Migrazione storica completata.' : 'Migrazione storica completata con errori.', 'assertive')
-    }
   }
 
   const handleExportData = async () => {
@@ -933,63 +630,6 @@ export function DataManagement() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {showMigrationPanel ? (
-            <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-primary">Importa dati storici da Spark</p>
-                <p className="text-sm text-muted-foreground">
-                  Sono stati rilevati dati finanziari nel formato precedente. Puoi importarli una sola volta su Supabase.
-                </p>
-              </div>
-
-              {networkErrorMessage ? (
-                <p className="text-sm text-destructive">{networkErrorMessage}</p>
-              ) : null}
-
-              {migrationSummary ? (
-                <p className="text-sm text-muted-foreground">{migrationSummary}</p>
-              ) : null}
-
-              {migrationErrors.length > 0 ? (
-                <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 space-y-2">
-                  <p className="text-sm font-medium text-destructive">Report errori migrazione</p>
-                  <ul className="space-y-1 text-xs text-destructive/90">
-                    {migrationErrors.map((error, index) => (
-                      <li key={`${error.entity}-${error.id}-${index}`}>
-                        • {error.entity} ({error.id}): {error.message}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-
-              {!networkErrorMessage ? (
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <Button
-                    onClick={() => {
-                      void handleStartLegacyImport()
-                    }}
-                    disabled={migrationInProgress}
-                    className="gap-2"
-                  >
-                    <Database size={18} weight="duotone" />
-                    {migrationInProgress ? 'Importazione in corso...' : 'Avvia importazione storica'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    disabled={migrationInProgress}
-                    onClick={() => {
-                      setMigrationDismissed(true)
-                      soundSystem.play('dialog-close')
-                    }}
-                  >
-                    Salta per ora
-                  </Button>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Database size={20} weight="duotone" className="text-primary" />

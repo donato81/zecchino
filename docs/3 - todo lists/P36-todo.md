@@ -4,7 +4,7 @@
 > Piano di riferimento: `docs/2 - coding plans/P36-coding-plan.md`
 > Design di riferimento: `docs/1 - projects/P36-decommissioning-spark-cache-offline.md`
 > Branch: `refactoring-architettura`
-> Data inizio: —
+> Data inizio: 2026-05-04
 > Completato: —
 
 ---
@@ -13,16 +13,16 @@
 
 | Verifica | Stato |
 |---|---|
-| `npm run build` exit 0 | [ ] |
-| `npx tsc --noEmit` → 0 errori TypeScript | [ ] |
-| `npm run test:run` → tutti i test passed | [ ] |
-| `grep "@github/spark" package.json` → 0 risultati | [ ] |
-| `grep -rn "@github/spark" src/ vite.config.ts` → 0 risultati | [ ] |
-| `grep -rn "window\.spark\|sparkKvMock\|seedTestKvStore\|resetTestKvStore" src/` → 0 risultati | [ ] |
-| `cache.ts` e `use-online-status.ts` creati e compilano | [ ] |
+| `npm run build` exit 0 | [x] |
+| `npx tsc --noEmit` → 0 errori TypeScript | [x] |
+| `npm run test:run` → tutti i test passed | [x] |
+| `grep "@github/spark" package.json` → 0 risultati | [x] |
+| `grep -rn "@github/spark" src/ vite.config.ts` → 0 risultati | [x] |
+| `grep -rn "window\.spark\|sparkKvMock\|seedTestKvStore\|resetTestKvStore" src/` → 0 risultati | [x] |
+| `cache.ts` e `use-online-status.ts` creati e compilano | [x] |
 | Banner offline visibile in browser con rete disabilitata | [ ] |
 | Pulizia localStorage al logout verificata | [ ] |
-| `git diff --name-only HEAD \| grep ".github"` → output vuoto | [ ] |
+| `git diff --name-only HEAD \| grep ".github"` → output vuoto | [x] |
 
 ---
 

@@ -3,7 +3,7 @@ import { useAuth } from '@/context/AuthContext'
 import { updatePreference } from '@/lib/supabase/repositories/impostazioni-utente'
 import type { TalkBackAdaptations } from '@/lib/supabase/types'
 
-// โ”€โ”€ Wave B: Display preferences โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€
+// ิ๖วิ๖ว Wave B: Display preferences ิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖ว
 export interface DisplayPreferences {
   showBalances: boolean
   showAccountIcons: boolean
@@ -34,7 +34,7 @@ const DISPLAY_DEFAULTS: DisplayPreferences = {
   reduceMotion: false,
 }
 
-// camelCase UI key โ’ JSONB snake_case key
+// camelCase UI key ิๅฦ JSONB snake_case key
 const displayKeyMap: Record<keyof DisplayPreferences, string> = {
   showBalances: 'display_show_balances',
   showAccountIcons: 'display_show_account_icons',
@@ -50,7 +50,23 @@ const displayKeyMap: Record<keyof DisplayPreferences, string> = {
   reduceMotion: 'display_reduce_motion',
 }
 
-// โ”€โ”€ Wave C: Screen reader preferences โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€
+// KV keys used for Wave B one-shot migration
+const displayKvMap: Record<keyof DisplayPreferences, string> = {
+  showBalances: 'display-show-balances',
+  showAccountIcons: 'display-show-account-icons',
+  compactMode: 'display-compact-mode',
+  showCategories: 'display-show-categories',
+  animationsEnabled: 'display-animations-enabled',
+  fontSize: 'display-font-size',
+  currencyDisplay: 'display-currency-display',
+  numberFormat: 'display-number-format',
+  highContrast: 'display-high-contrast',
+  showPercentages: 'display-show-percentages',
+  showTransactionIcons: 'display-show-transaction-icons',
+  reduceMotion: 'display-reduce-motion',
+}
+
+// ิ๖วิ๖ว Wave C: Screen reader preferences ิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖ว
 export interface ScreenReaderPreferences {
   verbosityLevel: 'conciso' | 'normale' | 'verboso'
   announceNavigation: boolean
@@ -96,6 +112,21 @@ const srKeyMap: Record<keyof ScreenReaderPreferences, string> = {
   reducedAnnouncements: 'sr_reduced_announcements',
 }
 
+const srKvMap: Record<keyof ScreenReaderPreferences, string> = {
+  verbosityLevel: 'sr-verbosity',
+  announceNavigation: 'sr-announce-navigation',
+  announceFilters: 'sr-announce-filters',
+  announceFormChanges: 'sr-announce-form-changes',
+  announceKeyboardShortcuts: 'sr-announce-shortcuts',
+  announceBalanceChanges: 'sr-announce-balance-changes',
+  announceBudgetAlerts: 'sr-announce-budget-alerts',
+  announceProgress: 'sr-announce-progress',
+  announceFocusChanges: 'sr-announce-focus-changes',
+  announceListPosition: 'sr-announce-list-position',
+  announceDelay: 'sr-announce-delay',
+  reducedAnnouncements: 'sr-reduced-announcements',
+}
+
 const DEFAULT_TALKBACK_ADAPTATIONS: TalkBackAdaptations = {
   enhancedTouchTargets: true,
   simplifiedNavigation: true,
@@ -118,7 +149,9 @@ function isTalkBackAdaptations(v: unknown): v is TalkBackAdaptations {
   return keys.every(k => typeof o[k] === 'boolean')
 }
 
+// ิ๖วิ๖ว Public state type ิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖ว
 export type UserSettingsState = {
+  // P29 fields
   visibleCategories: string[]
   dismissedBudgetAlerts: string[]
   setVisibleCategories: (ids: string[]) => Promise<void>
@@ -127,12 +160,15 @@ export type UserSettingsState = {
   isSettingsReady: boolean
   isSettingsLoading: boolean
   settingsError: string | null
+  // Wave A: Audio
   audioEnabled: boolean
   audioVolume: number
   setAudioEnabled: (v: boolean) => Promise<void>
   setAudioVolume: (v: number) => Promise<void>
+  // Wave B: Display
   displayPreferences: DisplayPreferences
   setDisplayPreference: <K extends keyof DisplayPreferences>(key: K, value: DisplayPreferences[K]) => Promise<void>
+  // Wave C: Screen reader
   screenReaderPreferences: ScreenReaderPreferences
   setScreenReaderPreference: <K extends keyof ScreenReaderPreferences>(key: K, value: ScreenReaderPreferences[K]) => Promise<void>
   talkBackAdaptations: TalkBackAdaptations
@@ -142,24 +178,32 @@ export type UserSettingsState = {
   resetScreenReaderPreferences: () => Promise<void>
 }
 
+// Hook puro interno ิว๖ non importare direttamente nei consumer UI.
+// I consumer devono usare useUserSettings() da '@/context/UserSettingsContext'.
 export function useUserSettings(): UserSettingsState {
   const { userSettings, isAuthenticated } = useAuth()
 
+  // P29 state
   const [visibleCategories, setVisibleCategoriesState] = useState<string[]>([])
   const [dismissedBudgetAlerts, setDismissedBudgetAlertsState] = useState<string[]>([])
   const [isSettingsReady, setIsSettingsReady] = useState(false)
   const [isSettingsLoading, setIsSettingsLoading] = useState(false)
   const [settingsError, setSettingsError] = useState<string | null>(null)
 
+  // Wave A: Audio state
   const [audioEnabled, setAudioEnabledState] = useState<boolean>(true)
   const [audioVolume, setAudioVolumeState] = useState<number>(0.3)
 
+  // Wave B: Display state
   const [displayPreferences, setDisplayPreferencesState] = useState<DisplayPreferences>(DISPLAY_DEFAULTS)
 
+  // Wave C: Screen reader state
   const [screenReaderPreferences, setScreenReaderPreferencesState] = useState<ScreenReaderPreferences>(SR_DEFAULTS)
   const [talkBackAdaptations, setTalkBackAdaptationsState] = useState<TalkBackAdaptations>(DEFAULT_TALKBACK_ADAPTATIONS)
   const [talkBackManualOverride, setTalkBackManualOverrideState] = useState<boolean | null>(null)
 
+  // Inizializzazione sincrona dal record gi+แ in memoria (parsing preferences JSONB).
+  // isSettingsReady diventa true nello stesso ciclo di rendering (React batch).
   useEffect(() => {
     if (!isAuthenticated || !userSettings) {
       setVisibleCategoriesState([])
@@ -177,53 +221,127 @@ export function useUserSettings(): UserSettingsState {
 
     const prefs = userSettings.preferences as unknown as Record<string, unknown>
 
+    // P29
     const rawVisible = prefs?.visible_category_ids
     const rawDismissed = prefs?.dismissed_budget_alert_ids
     setVisibleCategoriesState(Array.isArray(rawVisible) ? (rawVisible as string[]) : [])
     setDismissedBudgetAlertsState(Array.isArray(rawDismissed) ? (rawDismissed as string[]) : [])
 
-    // Migrazione KV โ’ Supabase completata. Periodo grazia scaduto 2026-08-01.
-    setAudioEnabledState(prefs.audio_enabled === true)
-    setAudioVolumeState(typeof prefs.audio_volume === 'number' ? prefs.audio_volume : 0.3)
+    // Wave A: Audio ิว๖ read from prefs; if absent trigger one-shot KV migration
+    if (prefs?.audio_enabled === undefined || prefs?.audio_enabled === null) {
+      ;(async () => {
+        let migratedEnabled = true
+        let migratedVolume = 0.3
+        try {
+          const kvEnabled = typeof window !== 'undefined' ? await window.spark.kv.get<boolean>('audio-enabled') : undefined
+          const kvVolume = typeof window !== 'undefined' ? await window.spark.kv.get<number>('audio-volume') : undefined
+          migratedEnabled = kvEnabled ?? true
+          migratedVolume = kvVolume ?? 0.3
+        } catch (_) { /* no KV available */ }
+        await Promise.all([
+          updatePreference('audio_enabled', migratedEnabled),
+          updatePreference('audio_volume', migratedVolume),
+        ]).catch(console.error)
+        setAudioEnabledState(migratedEnabled)
+        setAudioVolumeState(migratedVolume)
+      })()
+    } else {
+      setAudioEnabledState(prefs.audio_enabled === true)
+      setAudioVolumeState(typeof prefs.audio_volume === 'number' ? prefs.audio_volume : 0.3)
+    }
 
-    setDisplayPreferencesState({
-      showBalances: prefs.display_show_balances === true,
-      showAccountIcons: prefs.display_show_account_icons !== false,
-      compactMode: prefs.display_compact_mode === true,
-      showCategories: prefs.display_show_categories !== false,
-      animationsEnabled: prefs.display_animations_enabled !== false,
-      fontSize: typeof prefs.display_font_size === 'number' ? prefs.display_font_size : 100,
-      currencyDisplay: (prefs.display_currency_display as 'symbol' | 'code' | 'full') ?? 'symbol',
-      numberFormat: (prefs.display_number_format as 'standard' | 'compact') ?? 'standard',
-      highContrast: prefs.display_high_contrast === true,
-      showPercentages: prefs.display_show_percentages !== false,
-      showTransactionIcons: prefs.display_show_transaction_icons !== false,
-      reduceMotion: prefs.display_reduce_motion === true,
-    })
+    // Wave B: Display ิว๖ read from prefs; if absent trigger one-shot KV migration
+    if (prefs?.display_show_balances === undefined || prefs?.display_show_balances === null) {
+      ;(async () => {
+        const migrated: Partial<DisplayPreferences> = {}
+        try {
+          for (const [uiKey, kvKey] of Object.entries(displayKvMap)) {
+            const val = typeof window !== 'undefined' ? await window.spark.kv.get(kvKey) : undefined
+            if (val !== undefined) {
+              (migrated as Record<string, unknown>)[uiKey] = val
+            }
+          }
+        } catch (_) { /* no KV available */ }
+        const merged: DisplayPreferences = { ...DISPLAY_DEFAULTS, ...migrated }
+        const writes = (Object.keys(displayKeyMap) as (keyof DisplayPreferences)[]).map(uiKey =>
+          updatePreference(displayKeyMap[uiKey] as never, merged[uiKey])
+        )
+        await Promise.all(writes).catch(console.error)
+        setDisplayPreferencesState(merged)
+      })()
+    } else {
+      setDisplayPreferencesState({
+        showBalances: prefs.display_show_balances === true,
+        showAccountIcons: prefs.display_show_account_icons !== false,
+        compactMode: prefs.display_compact_mode === true,
+        showCategories: prefs.display_show_categories !== false,
+        animationsEnabled: prefs.display_animations_enabled !== false,
+        fontSize: typeof prefs.display_font_size === 'number' ? prefs.display_font_size : 100,
+        currencyDisplay: (prefs.display_currency_display as 'symbol' | 'code' | 'full') ?? 'symbol',
+        numberFormat: (prefs.display_number_format as 'standard' | 'compact') ?? 'standard',
+        highContrast: prefs.display_high_contrast === true,
+        showPercentages: prefs.display_show_percentages !== false,
+        showTransactionIcons: prefs.display_show_transaction_icons !== false,
+        reduceMotion: prefs.display_reduce_motion === true,
+      })
+    }
 
-    setScreenReaderPreferencesState({
-      verbosityLevel: (prefs.sr_verbosity as 'conciso' | 'normale' | 'verboso') ?? 'normale',
-      announceNavigation: prefs.sr_announce_navigation !== false,
-      announceFilters: prefs.sr_announce_filters !== false,
-      announceFormChanges: prefs.sr_announce_form_changes === true,
-      announceKeyboardShortcuts: prefs.sr_announce_shortcuts !== false,
-      announceBalanceChanges: prefs.sr_announce_balance_changes !== false,
-      announceBudgetAlerts: prefs.sr_announce_budget_alerts !== false,
-      announceProgress: prefs.sr_announce_progress !== false,
-      announceFocusChanges: prefs.sr_announce_focus_changes === true,
-      announceListPosition: prefs.sr_announce_list_position !== false,
-      announceDelay: typeof prefs.sr_announce_delay === 'number' ? prefs.sr_announce_delay : 100,
-      reducedAnnouncements: prefs.sr_reduced_announcements === true,
-    })
-    const rawAdaptations = prefs.talkback_adaptations
-    setTalkBackAdaptationsState(isTalkBackAdaptations(rawAdaptations) ? rawAdaptations : DEFAULT_TALKBACK_ADAPTATIONS)
-    const rawOverride = prefs.talkback_manual_override
-    setTalkBackManualOverrideState(rawOverride === true || rawOverride === false || rawOverride === null ? rawOverride : null)
+    // Wave C: Screen reader ิว๖ read from prefs; if absent trigger one-shot KV migration
+    if (prefs?.sr_verbosity === undefined || prefs?.sr_verbosity === null) {
+      ;(async () => {
+        const migratedSr: Partial<ScreenReaderPreferences> = {}
+        let migratedAdaptations: TalkBackAdaptations = DEFAULT_TALKBACK_ADAPTATIONS
+        let migratedOverride: boolean | null = null
+        try {
+          for (const [uiKey, kvKey] of Object.entries(srKvMap)) {
+            const val = typeof window !== 'undefined' ? await window.spark.kv.get(kvKey) : undefined
+            if (val !== undefined) {
+              (migratedSr as Record<string, unknown>)[uiKey] = val
+            }
+          }
+          const kvAdaptations = typeof window !== 'undefined' ? await window.spark.kv.get('talkback-adaptations') : undefined
+          if (isTalkBackAdaptations(kvAdaptations)) migratedAdaptations = kvAdaptations
+          const kvOverride = typeof window !== 'undefined' ? await window.spark.kv.get('talkback-manual-override') : undefined
+          if (kvOverride === true || kvOverride === false || kvOverride === null) migratedOverride = kvOverride as boolean | null
+        } catch (_) { /* no KV available */ }
+        const mergedSr: ScreenReaderPreferences = { ...SR_DEFAULTS, ...migratedSr }
+        const srWrites = (Object.keys(srKeyMap) as (keyof ScreenReaderPreferences)[]).map(uiKey =>
+          updatePreference(srKeyMap[uiKey] as never, mergedSr[uiKey])
+        )
+        await Promise.all([
+          ...srWrites,
+          updatePreference('talkback_adaptations', migratedAdaptations),
+          updatePreference('talkback_manual_override', migratedOverride),
+        ]).catch(console.error)
+        setScreenReaderPreferencesState(mergedSr)
+        setTalkBackAdaptationsState(migratedAdaptations)
+        setTalkBackManualOverrideState(migratedOverride)
+      })()
+    } else {
+      setScreenReaderPreferencesState({
+        verbosityLevel: (prefs.sr_verbosity as 'conciso' | 'normale' | 'verboso') ?? 'normale',
+        announceNavigation: prefs.sr_announce_navigation !== false,
+        announceFilters: prefs.sr_announce_filters !== false,
+        announceFormChanges: prefs.sr_announce_form_changes === true,
+        announceKeyboardShortcuts: prefs.sr_announce_shortcuts !== false,
+        announceBalanceChanges: prefs.sr_announce_balance_changes !== false,
+        announceBudgetAlerts: prefs.sr_announce_budget_alerts !== false,
+        announceProgress: prefs.sr_announce_progress !== false,
+        announceFocusChanges: prefs.sr_announce_focus_changes === true,
+        announceListPosition: prefs.sr_announce_list_position !== false,
+        announceDelay: typeof prefs.sr_announce_delay === 'number' ? prefs.sr_announce_delay : 100,
+        reducedAnnouncements: prefs.sr_reduced_announcements === true,
+      })
+      const rawAdaptations = prefs.talkback_adaptations
+      setTalkBackAdaptationsState(isTalkBackAdaptations(rawAdaptations) ? rawAdaptations : DEFAULT_TALKBACK_ADAPTATIONS)
+      const rawOverride = prefs.talkback_manual_override
+      setTalkBackManualOverrideState(rawOverride === true || rawOverride === false ? rawOverride : null)
+    }
 
     setIsSettingsReady(true)
   }, [userSettings, isAuthenticated])
 
-  // โ”€โ”€ P29 setters โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€
+  // ิ๖วิ๖ว P29 setters ิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖ว
   // Scrittura non ottimistica: stato locale aggiornato solo dopo conferma repository.
   const setVisibleCategories = useCallback(async (ids: string[]): Promise<void> => {
     setIsSettingsLoading(true)
@@ -266,7 +384,7 @@ export function useUserSettings(): UserSettingsState {
     }
   }, [])
 
-  // โ”€โ”€ Wave A: Audio setters โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€
+  // ิ๖วิ๖ว Wave A: Audio setters ิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖ว
   const setAudioEnabled = useCallback(async (v: boolean): Promise<void> => {
     setIsSettingsLoading(true)
     setSettingsError(null)
@@ -293,7 +411,7 @@ export function useUserSettings(): UserSettingsState {
     }
   }, [])
 
-  // โ”€โ”€ Wave B: Display setter โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€
+  // ิ๖วิ๖ว Wave B: Display setter ิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖ว
   const setDisplayPreference = useCallback(async <K extends keyof DisplayPreferences>(
     key: K,
     value: DisplayPreferences[K]
@@ -310,7 +428,7 @@ export function useUserSettings(): UserSettingsState {
     }
   }, [])
 
-  // โ”€โ”€ Wave C: Screen reader setters โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€
+  // ิ๖วิ๖ว Wave C: Screen reader setters ิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖วิ๖ว
   const setScreenReaderPreference = useCallback(async <K extends keyof ScreenReaderPreferences>(
     key: K,
     value: ScreenReaderPreferences[K]

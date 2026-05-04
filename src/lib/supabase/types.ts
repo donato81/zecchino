@@ -42,6 +42,7 @@ export interface TalkBackAdaptations {
 
 // 29 chiavi — 28 da P25 §3.1 Opzione 2 + onboarding_completed aggiunta da P35
 export interface UserPreferences {
+  session_timeout_minutes?: number
   display_show_balances: boolean
   display_show_account_icons: boolean
   display_compact_mode: boolean

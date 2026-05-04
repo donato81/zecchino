@@ -1,10 +1,10 @@
 {
-  "current_phase": "docs",
+  "current_phase": "code",
   "current_agent": "Agent-Orchestrator",
-  "retry_count": 0,
-  "confidence": 0.88,
+  "retry_count": 1,
+  "confidence": 0.68,
   "execution_mode": "autonomous",
-  "last_updated": "2026-05-03T10:16:53Z",
+  "last_updated": "2026-05-04T06:36:02Z",
   "phase_history": [
     "P01-step1-code-pass",
     "P06-code-pass",
@@ -41,8 +41,8 @@
   "project_name": "Zecchino",
   "stack": "React+TypeScript+Vite",
   "framework_version": "2.3.1",
-  "last_step_output": "P34 code+validate+docs completati: DataManagement migrato a doppio fronte con gate build/lint/test PASS; docs aggiornati in todo specifico, todo master, api e architettura; docs/CHANGELOG.md assente e non creato.",
-  "last_update_check": "2026-05-03",
+  "last_step_output": "P36 bloccato a BL5: trovate dipendenze Spark non documentate nel piano/design in src/main.tsx, src/context/AppDataContext.tsx e src/hooks/use-user-settings.ts. BL1 PASS, BL2 PASS (5/5), vite.config.ts già pulito in working tree, ma il perimetro reale eccede 10a e richiede decisione sul piano prima di procedere.",
+  "last_update_check": "2026-05-04",
   "update_check_done": true,
   "available_package_updates": 2,
   "completed_packages": [
@@ -50,5 +50,5 @@
     "P05",
     "P06"
   ],
-  "current_package": "P34"
+  "current_package": "P36"
 }
