@@ -1,3 +1,5 @@
+import type { AccountCategoryInfo } from '@/lib/constants'
+
 export type AccountType = 'bancario' | 'prepagata' | 'contanti' | 'salvadanaio' | 'privato' | 'investimenti' | 'credito' | 'paypal' | 'crypto' | 'pensione'
 
 export type TransactionType = 'entrata' | 'uscita' | 'trasferimento'
@@ -73,6 +75,8 @@ export type AccountGroup = {
   label: string
   accounts: Account[]
 }
+
+export type FullAccountGroup = AccountCategoryInfo & { accounts: Account[] }
 
 export interface AppState {
   isAuthenticated: boolean

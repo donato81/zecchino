@@ -8,8 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { useListNavigation } from '@/hooks/use-list-navigation'
 import { calculateAccountBalance, formatCurrency } from '@/lib/helpers'
 import { ACCOUNT_CATEGORIES } from '@/lib/constants'
-import type { AccountCategoryInfo } from '@/lib/constants'
-import type { Account } from '@/lib/types'
+import type { FullAccountGroup } from '@/lib/types'
 import { soundSystem } from '@/lib/sound-system'
 import { hapticSystem } from '@/lib/haptic-system'
 import { AccountCard } from '@/components/AccountCard'
@@ -67,9 +66,8 @@ export function DashboardTab() {
 
   const recentListContainerRef = useRef<HTMLDivElement>(null)
 
-  type FullAccountGroup = AccountCategoryInfo & { accounts: Account[] }
-  const typedGroupedAccounts = groupedAccounts as unknown as FullAccountGroup[]
-  const typedFilteredGroupedAccounts = filteredGroupedAccounts as unknown as FullAccountGroup[]
+  const typedGroupedAccounts = groupedAccounts as FullAccountGroup[]
+  const typedFilteredGroupedAccounts = filteredGroupedAccounts as FullAccountGroup[]
 
   const onEnterRecent = useCallback((index: number) => {
     const transaction = recentTransactions[index]

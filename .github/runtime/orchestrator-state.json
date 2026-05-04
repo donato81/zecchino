@@ -1,10 +1,10 @@
 {
-  "current_phase": "code",
+  "current_phase": "validate",
   "current_agent": "Agent-Orchestrator",
-  "retry_count": 1,
-  "confidence": 0.68,
+  "retry_count": 2,
+  "confidence": 0.74,
   "execution_mode": "autonomous",
-  "last_updated": "2026-05-04T06:36:02Z",
+  "last_updated": "2026-05-04T13:53:26Z",
   "phase_history": [
     "P01-step1-code-pass",
     "P06-code-pass",
@@ -41,7 +41,7 @@
   "project_name": "Zecchino",
   "stack": "React+TypeScript+Vite",
   "framework_version": "2.3.1",
-  "last_step_output": "P36 bloccato a BL5: trovate dipendenze Spark non documentate nel piano/design in src/main.tsx, src/context/AppDataContext.tsx e src/hooks/use-user-settings.ts. BL1 PASS, BL2 PASS (5/5), vite.config.ts già pulito in working tree, ma il perimetro reale eccede 10a e richiede decisione sul piano prima di procedere.",
+  "last_step_output": "FullAccountGroup condiviso introdotto in src/lib/types.ts e DashboardTab ripulito dai doppi cast. Build PASS, lint PASS, ma vitest run resta FAIL: smoke suite queued senza stack trace, problema apparentemente preesistente al refactor di tipi.",
   "last_update_check": "2026-05-04",
   "update_check_done": true,
   "available_package_updates": 2,
