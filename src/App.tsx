@@ -24,9 +24,11 @@ import { Badge } from '@/components/ui/badge'
 import { ChartLine, List, ArrowsLeftRight } from '@phosphor-icons/react'
 import { Toaster } from '@/components/ui/sonner'
 import { useAppShortcuts } from '@/hooks/use-app-shortcuts'
+import { useTalkBack } from '@/hooks/use-talkback'
 
 function AppContent() {
   const screenReader = useScreenReader()
+  const { isEnabled: isScreenReaderActive } = useTalkBack()
   const isMobile = useIsMobile()
   const {
     handleViewBudget, setShowTransactionDialog, setEditingAccount,
@@ -38,6 +40,14 @@ function AppContent() {
   const { budgetAlerts, totalBalance, visibleAccounts, visibleTransactions } = useVisibleData()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [previousTab, setPreviousTab] = useState('dashboard')
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-sr-active', isScreenReaderActive ? 'true' : 'false')
+
+    return () => {
+      document.documentElement.removeAttribute('data-sr-active')
+    }
+  }, [isScreenReaderActive])
 
   useEffect(() => {
     if (activeTab !== previousTab && isAuthenticated) {

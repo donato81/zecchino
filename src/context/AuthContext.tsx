@@ -10,7 +10,7 @@ import { hapticSystem } from '@/lib/haptic-system'
 import { Button } from '@/components/ui/button'
 import { useInactivityTimer } from '@/hooks/use-inactivity-timer'
 import { useScreenReader } from '@/hooks/use-screen-reader'
-import { toast } from 'sonner'
+import { toast as sonnerNotify } from 'sonner'
 
 interface AuthContextValue {
   user: User | null
@@ -58,6 +58,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [privatePinHashCache, setPrivatePinHashCache] = useState<string | null | undefined>(undefined)
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null)
   const screenReader = useScreenReader()
+  const isScreenReaderActive = typeof document !== 'undefined'
+    && document.querySelector('[aria-live]') !== null
+    && document.documentElement.getAttribute('data-sr-active') === 'true'
 
   const loadUserSettings = useCallback(async () => {
     try {
@@ -163,8 +166,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!isPrivateEnabled || !privatePinHashCache) {
       soundSystem.play('pin-error')
       hapticSystem.pinError()
-      toast.error('PIN privato non configurato')
       screenReader.announceError('PIN privato non configurato.')
+      if (!isScreenReaderActive) {
+        sonnerNotify.error('PIN privato non configurato')
+      }
       throw new Error('PIN privato non configurato')
     }
 
@@ -172,8 +177,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!isValid) {
       soundSystem.play('pin-error')
       hapticSystem.pinError()
-      toast.error('PIN privato non corretto')
       screenReader.announceError('PIN privato non corretto. Riprova.')
+      if (!isScreenReaderActive) {
+        sonnerNotify.error('PIN privato non corretto')
+      }
       throw new Error('PIN non corretto')
     }
 
@@ -181,9 +188,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setShowPrivatePinDialog(false)
     soundSystem.play('private-unlock')
     hapticSystem.privateUnlock()
-    toast.success('Conto privato sbloccato')
     screenReader.announceSuccess('Conto privato sbloccato.')
-  }, [isPrivateEnabled, privatePinHashCache, screenReader])
+    if (!isScreenReaderActive) {
+      sonnerNotify.success('Conto privato sbloccato')
+    }
+  }, [isPrivateEnabled, isScreenReaderActive, privatePinHashCache, screenReader])
 
   const lockPrivate = useCallback(() => {
     setIsPrivateUnlocked(false)
@@ -201,9 +210,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsPrivateUnlocked(true)
     soundSystem.play('private-unlock')
     hapticSystem.privateUnlock()
-    toast.success('PIN privato configurato con successo')
     screenReader.announceSuccess('PIN privato configurato.')
-  }, [isPrivateEnabled, screenReader])
+    if (!isScreenReaderActive) {
+      sonnerNotify.success('PIN privato configurato con successo')
+    }
+  }, [isPrivateEnabled, isScreenReaderActive, screenReader])
 
   const changePin = useCallback(async (oldPin: string, newPin: string) => {
     if (!isPrivateEnabled || !privatePinHashCache) {
@@ -223,9 +234,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserSettings(prev => prev ? { ...prev, pinPrivatoHash: newHash } : prev)
     soundSystem.play('private-unlock')
     hapticSystem.privateUnlock()
-    toast.success('PIN privato modificato con successo')
     screenReader.announceSuccess('PIN privato modificato.')
-  }, [isPrivateEnabled, privatePinHashCache, screenReader])
+    if (!isScreenReaderActive) {
+      sonnerNotify.success('PIN privato modificato con successo')
+    }
+  }, [isPrivateEnabled, isScreenReaderActive, privatePinHashCache, screenReader])
 
   const removePin = useCallback(async (pin: string) => {
     if (!isPrivateEnabled || !privatePinHashCache) {
@@ -244,9 +257,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserSettings(prev => prev ? { ...prev, pinPrivatoHash: null } : prev)
     setIsPrivateUnlocked(false)
     soundSystem.play('dialog-close')
-    toast.success('PIN privato rimosso')
     screenReader.announceSuccess('PIN privato rimosso.')
-  }, [isPrivateEnabled, privatePinHashCache, screenReader])
+    if (!isScreenReaderActive) {
+      sonnerNotify.success('PIN privato rimosso')
+    }
+  }, [isPrivateEnabled, isScreenReaderActive, privatePinHashCache, screenReader])
 
   const completeOnboarding = useCallback(() => {
     setNeedsOnboarding(false)
