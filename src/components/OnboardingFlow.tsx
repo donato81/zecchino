@@ -291,7 +291,15 @@ export function OnboardingFlow() {
             <p className="text-sm text-muted-foreground">
               Suggerimento: puoi confermare <strong>{suggestedName}</strong> oppure inserire un nome diverso.
             </p>
-            {nameError ? <p role="alert" className="text-sm text-destructive">{nameError}</p> : null}
+            <p
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
+              aria-hidden={!nameError}
+              className="text-sm text-destructive"
+            >
+              {nameError}
+            </p>
           </CardContent>
           <CardFooter className="justify-between gap-3">
             <Button variant="outline" onClick={goBack}>Indietro</Button>
@@ -327,7 +335,15 @@ export function OnboardingFlow() {
                 </SelectContent>
               </Select>
             </div>
-            {currencyError ? <p role="alert" className="text-sm text-destructive">{currencyError}</p> : null}
+            <p
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
+              aria-hidden={!currencyError}
+              className="text-sm text-destructive"
+            >
+              {currencyError}
+            </p>
           </CardContent>
           <CardFooter className="justify-between gap-3">
             <Button variant="outline" onClick={goBack}>Indietro</Button>
@@ -357,7 +373,15 @@ export function OnboardingFlow() {
             {seedStatus === 'done' ? (
               <p className="text-sm text-emerald-700" aria-live="polite">Categorie pronte. Puoi proseguire.</p>
             ) : null}
-            {seedError ? <p role="alert" className="text-sm text-destructive">{seedError}</p> : null}
+            <p
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
+              aria-hidden={!seedError}
+              className="text-sm text-destructive"
+            >
+              {seedError}
+            </p>
           </CardContent>
           <CardFooter className="justify-between gap-3">
             <Button variant="outline" onClick={goBack}>Indietro</Button>
@@ -426,7 +450,15 @@ export function OnboardingFlow() {
                 </div>
               </div>
             )}
-            {accountError ? <p role="alert" className="text-sm text-destructive">{accountError}</p> : null}
+            <p
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
+              aria-hidden={!accountError}
+              className="text-sm text-destructive"
+            >
+              {accountError}
+            </p>
           </CardContent>
           <CardFooter className="justify-between gap-3">
             <Button variant="outline" onClick={goBack}>Indietro</Button>
@@ -460,7 +492,15 @@ export function OnboardingFlow() {
             <li>Categorie iniziali: <strong>pronte</strong></li>
             <li>Conti disponibili: <strong>{accounts.length}</strong></li>
           </ul>
-          {completionError ? <p role="alert" className="text-sm text-destructive">{completionError}</p> : null}
+          <p
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+            aria-hidden={!completionError}
+            className="text-sm text-destructive"
+          >
+            {completionError}
+          </p>
         </CardContent>
         <CardFooter className="justify-end gap-3">
           <Button
