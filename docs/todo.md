@@ -14,6 +14,26 @@
 | Feature / Sprint | File specifico | Stato | Priorità |
 |---|---|---|---|
 | P36 — Decommissioning Spark e cache offline read-only (Blocco 10: 10a rimozione @github/spark + 10b cache localStorage read-only) | `docs/3 - todo lists/P36-todo.md` | Validazione manuale residua | Alta |
+| P37 — Correzioni Accessibilità WCAG 2.1 AA | `docs/3 - todo lists/P37-todo.md` | In corso | Alta |
+
+---
+
+## P37 — Correzioni Accessibilità WCAG 2.1 AA
+
+**Data inserimento:** 2026-05-05
+**Stato:** `[ ] In corso`
+**Piano:** [docs/2 - coding plans/P37-coding-plan.md](2%20-%20coding%20plans/P37-coding-plan.md)
+**Todo:** [docs/3 - todo lists/P37-todo.md](3%20-%20todo%20lists/P37-todo.md)
+**Report analisi:** [docs/4 - reports/report-analisi-accessibilita-completa.md](4%20-%20reports/report-analisi-accessibilita-completa.md)
+
+Correzioni ARIA derivate dall'analisi statica completa su 31 componenti (11 anomalie critiche, 21 minori). Tutte le correzioni usano attributi HTML/ARIA nativi e le API già presenti nel progetto — nessuna nuova dipendenza.
+
+| Fase | Descrizione | Componenti |
+|---|---|---|
+| Fase 1 | Navigazione e focus — landmark `<main>`, griglia tipo conto e template budget accessibili da tastiera, focus iniziale dialogs | `OnboardingFlow.tsx`, `AccountDialog.tsx`, `BudgetDialog.tsx`, `SavingsGoalDialog.tsx` |
+| Fase 2 | Barre di progresso e grafici — `role="progressbar"` con `aria-value*`, `role="img"` con `aria-label` descrittivo su grafici | `BudgetProgressCard.tsx`, `BudgetForecastCard.tsx`, `BudgetHistoryChart.tsx`, `MonthlyComparisonChart.tsx` |
+| Fase 3 | Stati interattivi — `aria-pressed` su pulsanti toggle (filtri categoria, selezione periodo) | `DashboardTab.tsx`, `PeriodSelector.tsx` |
+| Fase 4 | Anomalie minori — `aria-hidden` icone decorative, `aria-busy` su operazioni asincrone, pattern coerente messaggi errore in DOM | `AuthScreen.tsx`, `AppHeader.tsx`, e 11 altri componenti |
 
 ## TODO completati
 
