@@ -121,12 +121,20 @@ export function BudgetForecastCard({ budget, transactions }: BudgetForecastCardP
                     {forecast.projectedPercentage.toFixed(1)}%
                   </span>
                 </div>
-                <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                <div
+                  role="progressbar"
+                  aria-valuenow={Math.min(Math.round(forecast.projectedPercentage), 100)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={`Proiezione budget: ${Math.min(Math.round(forecast.projectedPercentage), 100)}% del target previsto a fine periodo`}
+                  className="w-full bg-muted rounded-full h-2 overflow-hidden"
+                >
                   <div 
                     className={`h-full transition-all rounded-full ${
                       forecast.willExceedBudget ? 'bg-destructive' : 'bg-accent'
                     }`}
                     style={{ width: `${Math.min(forecast.projectedPercentage, 100)}%` }}
+                    aria-hidden="true"
                   />
                 </div>
               </div>

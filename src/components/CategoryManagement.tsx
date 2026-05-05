@@ -169,7 +169,7 @@ export function CategoryManagement() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-secondary to-accent flex items-center justify-center shadow-md">
-                <Tag size={24} weight="duotone" className="text-secondary-foreground" />
+                <Tag size={24} weight="duotone" className="text-secondary-foreground" aria-hidden="true" />
               </div>
               <div>
                 <CardTitle className="flex items-center gap-2">
@@ -194,7 +194,7 @@ export function CategoryManagement() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <TrendUp size={20} weight="duotone" className="text-income" />
+                <TrendUp size={20} weight="duotone" className="text-income" aria-hidden="true" />
                 <h4 className="text-sm font-semibold">Categorie Entrate</h4>
                 <Badge variant="secondary" className="text-xs">
                   {incomeCategories.length}
@@ -267,7 +267,7 @@ export function CategoryManagement() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <TrendDown size={20} weight="duotone" className="text-expense" />
+                <TrendDown size={20} weight="duotone" className="text-expense" aria-hidden="true" />
                 <h4 className="text-sm font-semibold">Categorie Uscite</h4>
                 <Badge variant="secondary" className="text-xs">
                   {expenseCategories.length}
@@ -337,7 +337,7 @@ export function CategoryManagement() {
 
           <div className="p-4 bg-muted/50 rounded-lg space-y-2">
             <div className="flex items-start gap-2">
-              <Tag size={16} className="text-muted-foreground shrink-0 mt-0.5" weight="duotone" />
+              <Tag size={16} className="text-muted-foreground shrink-0 mt-0.5" weight="duotone" aria-hidden="true" />
               <div className="space-y-1">
                 <p className="text-sm font-medium text-foreground">Note sulle Categorie</p>
                 <ul className="text-xs text-muted-foreground space-y-1">
@@ -356,7 +356,7 @@ export function CategoryManagement() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Tag size={20} weight="duotone" />
+              <Tag size={20} weight="duotone" aria-hidden="true" />
               {editingCategory ? 'Modifica Categoria' : 'Nuova Categoria'}
             </DialogTitle>
             <DialogDescription>
@@ -393,13 +393,13 @@ export function CategoryManagement() {
                 <SelectContent>
                   <SelectItem value="entrata">
                     <div className="flex items-center gap-2">
-                      <TrendUp size={16} weight="duotone" className="text-income" />
+                      <TrendUp size={16} weight="duotone" className="text-income" aria-hidden="true" />
                       Entrata
                     </div>
                   </SelectItem>
                   <SelectItem value="uscita">
                     <div className="flex items-center gap-2">
-                      <TrendDown size={16} weight="duotone" className="text-expense" />
+                      <TrendDown size={16} weight="duotone" className="text-expense" aria-hidden="true" />
                       Uscita
                     </div>
                   </SelectItem>

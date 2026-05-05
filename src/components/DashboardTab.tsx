@@ -217,6 +217,7 @@ export function DashboardTab() {
                     onClick={handleToggleAll}
                     variant={allCategoriesVisible ? 'default' : 'outline'}
                     size="sm"
+                    aria-pressed={allCategoriesVisible}
                     className="gap-2"
                     aria-label={allCategoriesVisible ? 'Nascondi tutte le categorie' : 'Mostra tutte le categorie'}
                     data-focus-info={`${allCategoriesVisible ? 'Nascondi' : 'Mostra'} tutte le categorie (Ctrl+A)`}
@@ -244,6 +245,7 @@ export function DashboardTab() {
                         onClick={() => handleToggleCategory(category.id)}
                         variant={isActive ? category.badgeVariant : 'outline'}
                         size="sm"
+                        aria-pressed={isActive}
                         className="gap-2"
                         data-focus-info={`Filtra ${category.label} (${category.accounts.length} conti) - Tasto ${keyNumber}`}
                       >

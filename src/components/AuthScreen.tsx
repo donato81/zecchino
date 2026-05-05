@@ -197,7 +197,7 @@ export function AuthScreen() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.3),transparent_50%)] animate-pulse" style={{ animationDuration: '4s' }} aria-hidden="true"></div>
         <Card className="relative z-10 w-full max-w-md border-white/20 bg-background/95 shadow-2xl backdrop-blur">
           <CardHeader className="space-y-3 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary via-secondary to-accent text-2xl font-bold text-primary-foreground shadow-lg">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary via-secondary to-accent text-2xl font-bold text-primary-foreground shadow-lg" aria-hidden="true">
               Z
             </div>
             <div className="space-y-1">
@@ -212,7 +212,7 @@ export function AuthScreen() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4" aria-busy={isLoading}>
-              <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert" aria-live="assertive" aria-atomic="true">{error}</p>
+              <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert" aria-live="assertive" aria-atomic="true" aria-hidden={!error}>{error}</p>
               <p className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-foreground" aria-live="polite" aria-atomic="true">{successMessage}</p>
 
               {panel === 'login' ? (

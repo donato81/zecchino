@@ -21,12 +21,12 @@ export function BudgetComparisonCard({ budget, transactions }: BudgetComparisonC
 
   const getTrendIcon = () => {
     if (Math.abs(changePercentage) < 5) {
-      return <Equals size={24} weight="duotone" className="text-muted-foreground" />
+      return <Equals size={24} weight="duotone" className="text-muted-foreground" aria-hidden="true" />
     }
     if (change > 0) {
-      return <TrendUp size={24} weight="duotone" className="text-destructive" />
+      return <TrendUp size={24} weight="duotone" className="text-destructive" aria-hidden="true" />
     }
-    return <TrendDown size={24} weight="duotone" className="text-green-600" />
+    return <TrendDown size={24} weight="duotone" className="text-green-600" aria-hidden="true" />
   }
 
   const getTrendColor = () => {

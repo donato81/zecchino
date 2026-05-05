@@ -99,7 +99,7 @@ export function KeyboardShortcutsHelp({ open, onClose }: KeyboardShortcutsHelpPr
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Keyboard size={24} weight="duotone" />
+            <Keyboard size={24} weight="duotone" aria-hidden="true" />
             Scorciatoie da Tastiera
           </DialogTitle>
           <DialogDescription>

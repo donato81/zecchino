@@ -398,11 +398,9 @@ export function SecuritySettings() {
               />
             </div>
 
-            {error && (
-              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
-                <p className="text-sm text-destructive font-medium">{error}</p>
-              </div>
-            )}
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30" aria-hidden={!error}>
+              <p className="text-sm text-destructive font-medium" role="alert" aria-live="assertive" aria-atomic="true" aria-hidden={!error}>{error}</p>
+            </div>
           </div>
 
           <DialogFooter>
@@ -468,11 +466,9 @@ export function SecuritySettings() {
               />
             </div>
 
-            {removePinError && (
-              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
-                <p className="text-sm text-destructive font-medium">{removePinError}</p>
-              </div>
-            )}
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30" aria-hidden={!removePinError}>
+              <p className="text-sm text-destructive font-medium" role="alert" aria-live="assertive" aria-atomic="true" aria-hidden={!removePinError}>{removePinError}</p>
+            </div>
           </div>
 
           <DialogFooter>

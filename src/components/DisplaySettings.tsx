@@ -69,7 +69,7 @@ export function DisplaySettings() {
       <CardHeader>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent/80 flex items-center justify-center shadow-md">
-            <Eye size={24} weight="duotone" className="text-primary-foreground" />
+            <Eye size={24} weight="duotone" className="text-primary-foreground" aria-hidden="true" />
           </div>
           <div>
             <CardTitle className="flex items-center gap-2">
@@ -84,7 +84,7 @@ export function DisplaySettings() {
       <CardContent className="space-y-6">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <Monitor size={20} weight="duotone" className="text-primary" />
+            <Monitor size={20} weight="duotone" className="text-primary" aria-hidden="true" />
             <h4 className="text-sm font-semibold">Visualizzazione Generale</h4>
           </div>
           
@@ -207,7 +207,7 @@ export function DisplaySettings() {
 
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <TextAa size={20} weight="duotone" className="text-secondary" />
+            <TextAa size={20} weight="duotone" className="text-secondary" aria-hidden="true" />
             <h4 className="text-sm font-semibold">Formato e Dimensioni</h4>
           </div>
           
@@ -285,7 +285,7 @@ export function DisplaySettings() {
 
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <Palette size={20} weight="duotone" className="text-accent" />
+            <Palette size={20} weight="duotone" className="text-accent" aria-hidden="true" />
             <h4 className="text-sm font-semibold">Accessibilità Visiva</h4>
           </div>
           

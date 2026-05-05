@@ -72,6 +72,7 @@ export function OnboardingFlow() {
   const [isSavingAccount, setIsSavingAccount] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
   const [pendingFinalize, setPendingFinalize] = useState(false)
+  const isSaving = isSavingName || isSavingCurrency || isSavingAccount || isCompleting
 
   const suggestedName = useMemo(() => user?.email?.split('@')[0] ?? 'utente', [user?.email])
 
@@ -476,7 +477,11 @@ export function OnboardingFlow() {
   }
 
   return (
-    <section className="min-h-screen bg-muted/30 px-4 py-8 sm:px-6 lg:px-8">
+    <main
+      id="main-content"
+      className="min-h-screen bg-muted/30 px-4 py-8 sm:px-6 lg:px-8"
+      aria-label="Configurazione iniziale Zecchino"
+    >
       <div className="mx-auto flex max-w-3xl flex-col gap-4">
         <div aria-live="polite" className="sr-only">
           {currentStep <= TOTAL_STEPS
@@ -496,10 +501,10 @@ export function OnboardingFlow() {
           </div>
         ) : null}
 
-        <Card className="border-primary/10">
+        <Card className="border-primary/10" aria-busy={isSaving}>
           {renderCurrentStep()}
         </Card>
       </div>
-    </section>
+    </main>
   )
 }

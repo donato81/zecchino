@@ -96,11 +96,11 @@ export function AudioSettings() {
   )
 
   const getVolumeIcon = () => {
-    if (!localEnabled) return <SpeakerSlash size={20} weight="duotone" />
-    if (localVolume === 0) return <SpeakerSlash size={20} weight="duotone" />
-    if (localVolume < 33) return <SpeakerLow size={20} weight="duotone" />
-    if (localVolume < 66) return <SpeakerHigh size={20} weight="duotone" />
-    return <SpeakerSimpleHigh size={20} weight="duotone" />
+    if (!localEnabled) return <SpeakerSlash size={20} weight="duotone" aria-hidden="true" />
+    if (localVolume === 0) return <SpeakerSlash size={20} weight="duotone" aria-hidden="true" />
+    if (localVolume < 33) return <SpeakerLow size={20} weight="duotone" aria-hidden="true" />
+    if (localVolume < 66) return <SpeakerHigh size={20} weight="duotone" aria-hidden="true" />
+    return <SpeakerSimpleHigh size={20} weight="duotone" aria-hidden="true" />
   }
 
   const getCurrentPreset = () => {
@@ -156,7 +156,7 @@ export function AudioSettings() {
                     className="gap-2 flex-col h-auto py-3 relative"
                     data-focus-info={`Preset ${preset.name}: ${preset.description} - Scorciatoia Alt+${preset.key}`}
                   >
-                    <Icon size={20} weight="duotone" />
+                    <Icon size={20} weight="duotone" aria-hidden="true" />
                     <span className="text-xs font-medium">{preset.name}</span>
                     <span className="text-[10px] opacity-75">{preset.description}</span>
                     <Badge 
@@ -189,7 +189,7 @@ export function AudioSettings() {
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <SpeakerX size={18} className="text-muted-foreground shrink-0" />
+              <SpeakerX size={18} className="text-muted-foreground shrink-0" aria-hidden="true" />
               <Slider
                 id="volume-slider"
                 value={[localVolume]}
@@ -201,7 +201,7 @@ export function AudioSettings() {
                 className="flex-1"
                 aria-label={`Volume: ${Math.round(localVolume)}%`}
               />
-              <SpeakerSimpleHigh size={18} className="text-muted-foreground shrink-0" />
+              <SpeakerSimpleHigh size={18} className="text-muted-foreground shrink-0" aria-hidden="true" />
             </div>
           </div>
         </div>
@@ -212,7 +212,7 @@ export function AudioSettings() {
           className="w-full gap-2"
           disabled={!localEnabled}
         >
-          <SpeakerHigh size={18} weight="duotone" />
+          <SpeakerHigh size={18} weight="duotone" aria-hidden="true" />
           Prova Suono
         </Button>
       </CardContent>

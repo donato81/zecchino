@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { SavingsGoal, Account } from '@/lib/types'
 import { generateId } from '@/lib/helpers'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useScreenReader } from '@/hooks/use-screen-reader'
 import { soundSystem } from '@/lib/sound-system'
 import { 
   PiggyBank, 
@@ -43,6 +44,7 @@ interface SavingsGoalDialogProps {
 }
 
 export function SavingsGoalDialog({ open, onClose, onSave, goal, accounts }: SavingsGoalDialogProps) {
+  const { announceDialogOpen } = useScreenReader()
   const [nome, setNome] = useState('')
   const [descrizione, setDescrizione] = useState('')
   const [importoTarget, setImportoTarget] = useState('')
@@ -51,12 +53,16 @@ export function SavingsGoalDialog({ open, onClose, onSave, goal, accounts }: Sav
   const [contoAssociato, setContoAssociato] = useState<string>('')
   const [selectedIcon, setSelectedIcon] = useState('piggy-bank')
   const [selectedColor, setSelectedColor] = useState(GOAL_ICONS[0].color)
+  const nameInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (open) {
       soundSystem.play('dialog-open')
+      announceDialogOpen(goal ? 'Modifica Obiettivo di Risparmio' : 'Nuovo Obiettivo di Risparmio')
+      const timer = setTimeout(() => nameInputRef.current?.focus(), 100)
+      return () => clearTimeout(timer)
     }
-  }, [open])
+  }, [announceDialogOpen, goal, open])
 
   useEffect(() => {
     if (goal) {
@@ -168,6 +174,7 @@ export function SavingsGoalDialog({ open, onClose, onSave, goal, accounts }: Sav
           <div className="space-y-2">
             <Label htmlFor="goal-name">Nome Obiettivo *</Label>
             <Input
+              ref={nameInputRef}
               id="goal-name"
               value={nome}
               onChange={(e) => setNome(e.target.value)}

@@ -97,6 +97,8 @@ export function MonthlyComparisonChart({ transactions }: MonthlyComparisonChartP
     }
   ]
 
+  const chartAriaLabel = `Confronto mensile: ${comparisonData.currentMonth.name} - Entrate ${formatCurrency(comparisonData.currentMonth.income)}, Uscite ${formatCurrency(comparisonData.currentMonth.expenses)}. ${comparisonData.previousMonth.name} - Entrate ${formatCurrency(comparisonData.previousMonth.income)}, Uscite ${formatCurrency(comparisonData.previousMonth.expenses)}.`
+
   interface RechartsTooltipProps {
     active?: boolean
     payload?: Array<{ payload: { name: string } }>
@@ -145,9 +147,9 @@ export function MonthlyComparisonChart({ transactions }: MonthlyComparisonChartP
 
     return (
       <div className={`flex items-center gap-1 ${isPositive ? 'text-income' : isNegative ? 'text-expense' : 'text-muted-foreground'}`}>
-        {isPositive && <ArrowUp size={16} weight="bold" />}
-        {isNegative && <ArrowDown size={16} weight="bold" />}
-        {isNeutral && <Minus size={16} weight="bold" />}
+        {isPositive && <ArrowUp size={16} weight="bold" aria-hidden="true" />}
+        {isNegative && <ArrowDown size={16} weight="bold" aria-hidden="true" />}
+        {isNeutral && <Minus size={16} weight="bold" aria-hidden="true" />}
         <span className="font-mono font-semibold text-sm">
           {isPositive && '+'}{formatCurrency(Math.abs(change))}
         </span>
@@ -231,41 +233,42 @@ export function MonthlyComparisonChart({ transactions }: MonthlyComparisonChartP
             </div>
           </div>
         </div>
-
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.88 0.01 240)" opacity={0.5} />
-            <XAxis 
-              dataKey="name" 
-              stroke="oklch(0.5 0.02 240)"
-              tick={{ fill: 'oklch(0.5 0.02 240)', fontSize: 12 }}
-              tickLine={{ stroke: 'oklch(0.88 0.01 240)' }}
-            />
-            <YAxis 
-              stroke="oklch(0.5 0.02 240)"
-              tick={{ fill: 'oklch(0.5 0.02 240)', fontSize: 12 }}
-              tickLine={{ stroke: 'oklch(0.88 0.01 240)' }}
-              tickFormatter={(value) => `€${value}`}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend 
-              wrapperStyle={{ paddingTop: '10px' }}
-              iconType="rect"
-            />
-            <Bar 
-              dataKey="Entrate" 
-              fill="oklch(0.75 0.12 85)" 
-              radius={[8, 8, 0, 0]}
-              maxBarSize={80}
-            />
-            <Bar 
-              dataKey="Uscite" 
-              fill="oklch(0.55 0.15 25)" 
-              radius={[8, 8, 0, 0]}
-              maxBarSize={80}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+        <div role="img" aria-label={chartAriaLabel}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.88 0.01 240)" opacity={0.5} />
+              <XAxis 
+                dataKey="name" 
+                stroke="oklch(0.5 0.02 240)"
+                tick={{ fill: 'oklch(0.5 0.02 240)', fontSize: 12 }}
+                tickLine={{ stroke: 'oklch(0.88 0.01 240)' }}
+              />
+              <YAxis 
+                stroke="oklch(0.5 0.02 240)"
+                tick={{ fill: 'oklch(0.5 0.02 240)', fontSize: 12 }}
+                tickLine={{ stroke: 'oklch(0.88 0.01 240)' }}
+                tickFormatter={(value) => `€${value}`}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend 
+                wrapperStyle={{ paddingTop: '10px' }}
+                iconType="rect"
+              />
+              <Bar 
+                dataKey="Entrate" 
+                fill="oklch(0.75 0.12 85)" 
+                radius={[8, 8, 0, 0]}
+                maxBarSize={80}
+              />
+              <Bar 
+                dataKey="Uscite" 
+                fill="oklch(0.55 0.15 25)" 
+                radius={[8, 8, 0, 0]}
+                maxBarSize={80}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   )

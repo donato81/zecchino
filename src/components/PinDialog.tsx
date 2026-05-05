@@ -97,7 +97,7 @@ export function PinDialog({
                   placeholder={confirmMode ? 'Inserisci il nuovo PIN' : 'Inserisci il tuo PIN'}
                   className="pr-10"
                   aria-invalid={!!error}
-                  aria-describedby={error ? 'pin-error' : undefined}
+                  aria-describedby="pin-dialog-description pin-error"
                 />
                 <button
                   type="button"
@@ -124,11 +124,9 @@ export function PinDialog({
               </div>
             )}
 
-            {error && (
-              <p id="pin-error" className="text-sm text-destructive" role="alert">
-                {error}
-              </p>
-            )}
+            <p id="pin-error" className="text-sm text-destructive" role="alert" aria-live="assertive" aria-atomic="true" aria-hidden={!error}>
+              {error}
+            </p>
           </div>
 
           <DialogFooter>

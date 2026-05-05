@@ -4,7 +4,7 @@
   "retry_count": 2,
   "confidence": 0.74,
   "execution_mode": "autonomous",
-  "last_updated": "2026-05-04T13:53:26Z",
+  "last_updated": "2026-05-05T07:35:07Z",
   "phase_history": [
     "P01-step1-code-pass",
     "P06-code-pass",
@@ -42,7 +42,7 @@
   "stack": "React+TypeScript+Vite",
   "framework_version": "2.3.1",
   "last_step_output": "FullAccountGroup condiviso introdotto in src/lib/types.ts e DashboardTab ripulito dai doppi cast. Build PASS, lint PASS, ma vitest run resta FAIL: smoke suite queued senza stack trace, problema apparentemente preesistente al refactor di tipi.",
-  "last_update_check": "2026-05-04",
+  "last_update_check": "2026-05-05",
   "update_check_done": true,
   "available_package_updates": 2,
   "completed_packages": [

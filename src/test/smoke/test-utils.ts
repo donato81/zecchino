@@ -5,8 +5,9 @@ import { vi } from 'vitest'
 import App from '@/App'
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPE_TO_CATEGORY } from '@/lib/constants'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import type { Account, Transaction } from '@/lib/types'
 import type { TalkBackAdaptations } from '@/lib/supabase/types'
-import type { Account, Transaction, UserSettingsState } from '@/hooks/use-user-settings'
+import type { UserSettingsState } from '@/hooks/use-user-settings'
 
 type DisplayPreferences = UserSettingsState['displayPreferences']
 type ScreenReaderPreferences = UserSettingsState['screenReaderPreferences']
@@ -40,7 +41,7 @@ type MockAuthState = {
   lockPrivate: () => void
   setPin: (pin: string) => Promise<void>
   changePin: (oldPin: string, newPin: string) => Promise<void>
-  removePin: () => Promise<void>
+  removePin: (pin: string) => Promise<void>
 }
 
 const authStore = vi.hoisted(() => {
@@ -122,7 +123,7 @@ const authStore = vi.hoisted(() => {
       changePin: async (_oldPin: string, _newPin: string) => {
         store.setState({ isPrivateEnabled: true })
       },
-      removePin: async () => {
+      removePin: async (_pin: string) => {
         store.setState({
           isPrivateEnabled: false,
           isPrivateUnlocked: false,

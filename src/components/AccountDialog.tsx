@@ -115,8 +115,12 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
             </div>
 
             <div className="space-y-3">
-              <Label>Tipo di Conto</Label>
-              <div className="space-y-4 max-h-[400px] overflow-y-auto">
+              <Label id="account-type-label">Tipo di Conto</Label>
+              <div
+                role="radiogroup"
+                aria-labelledby="account-type-label"
+                className="space-y-4 max-h-[400px] overflow-y-auto"
+              >
                 {ACCOUNT_CATEGORIES.map((category) => (
                   <div key={category.id} className="space-y-2">
                     <div className="flex items-center gap-2">
@@ -136,6 +140,10 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
                         return (
                           <Card
                             key={type}
+                            role="radio"
+                            aria-checked={isSelected}
+                            aria-disabled={disabled}
+                            tabIndex={isSelected ? 0 : -1}
                             className={cn(
                               'cursor-pointer transition-all hover:shadow-md',
                               isSelected && 'ring-2 ring-primary bg-primary/5',
@@ -147,11 +155,20 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
                                 setTipo(type)
                               }
                             }}
+                            onKeyDown={(event) => {
+                              if (disabled) return
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault()
+                                soundSystem.play('select-option')
+                                setTipo(type)
+                              }
+                            }}
                           >
                             <CardContent className="p-3 flex flex-col items-center gap-2 text-center">
                               <Icon 
                                 size={28} 
                                 weight="duotone" 
+                                aria-hidden="true"
                                 className={cn(
                                   'transition-colors',
                                   isSelected ? 'text-primary' : 'text-muted-foreground'

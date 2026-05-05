@@ -440,16 +440,16 @@ export function TransactionDialog({
               )}
             </div>
 
-            {error && (
-              <p 
-                className="text-sm text-destructive" 
-                role="alert"
-                aria-live="assertive"
-                id="form-error"
-              >
-                {error}
-              </p>
-            )}
+            <p 
+              className="text-sm text-destructive" 
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
+              aria-hidden={!error}
+              id="form-error"
+            >
+              {error}
+            </p>
           </div>
 
           <DialogFooter>

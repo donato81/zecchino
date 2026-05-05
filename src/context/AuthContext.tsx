@@ -35,7 +35,7 @@ interface AuthContextValue {
   lockPrivate: () => void
   setPin: (pin: string) => Promise<void>
   changePin: (oldPin: string, newPin: string) => Promise<void>
-  removePin: () => Promise<void>
+  removePin: (pin: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -227,9 +227,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     screenReader.announceSuccess('PIN privato modificato.')
   }, [isPrivateEnabled, privatePinHashCache, screenReader])
 
-  const removePin = useCallback(async () => {
-    if (!isPrivateEnabled) {
+  const removePin = useCallback(async (pin: string) => {
+    if (!isPrivateEnabled || !privatePinHashCache) {
       throw new Error('PIN privato non configurato')
+    }
+
+    const isValid = await verifyPin(pin, privatePinHashCache)
+    if (!isValid) {
+      soundSystem.play('pin-error')
+      hapticSystem.pinError()
+      throw new Error('PIN attuale non corretto')
     }
 
     await updatePinHash(null)
@@ -239,7 +246,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     soundSystem.play('dialog-close')
     toast.success('PIN privato rimosso')
     screenReader.announceSuccess('PIN privato rimosso.')
-  }, [isPrivateEnabled, screenReader])
+  }, [isPrivateEnabled, privatePinHashCache, screenReader])
 
   const completeOnboarding = useCallback(() => {
     setNeedsOnboarding(false)

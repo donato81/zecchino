@@ -168,7 +168,14 @@ export function BudgetHistoryChart({ budget, transactions, periodsToShow = 6 }: 
                         {formatCurrency(period.spent)}
                       </span>
                     </div>
-                    <div className="relative w-full bg-muted rounded-full h-8 overflow-hidden">
+                    <div
+                      role="progressbar"
+                      aria-valuenow={Math.min(Math.round(period.percentage), 100)}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`${period.periodLabel}: ${Math.min(Math.round(period.percentage), 100)}% del budget, ${formatCurrency(period.spent)} su ${formatCurrency(budget.importoTarget)}`}
+                      className="relative w-full bg-muted rounded-full h-8 overflow-hidden"
+                    >
                       <div 
                         className={`h-full transition-all rounded-full ${
                           isOverBudget 
@@ -180,14 +187,16 @@ export function BudgetHistoryChart({ budget, transactions, periodsToShow = 6 }: 
                             : 'bg-accent'
                         }`}
                         style={{ width: `${Math.min(barWidth, 100)}%` }}
+                        aria-hidden="true"
                       />
                       <div 
                         className="absolute top-0 bottom-0 w-0.5 bg-foreground/40"
                         style={{ left: `${Math.min(targetPosition, 100)}%` }}
+                        aria-hidden="true"
                       >
                         <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-foreground/60" />
                       </div>
-                      <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-foreground/80">
+                      <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-foreground/80" aria-hidden="true">
                         {period.percentage.toFixed(0)}%
                       </span>
                     </div>

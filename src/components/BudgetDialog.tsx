@@ -144,16 +144,28 @@ export function BudgetDialog({ open, onClose, onSave, budget, categories, accoun
             </div>
 
             <ScrollArea className="h-[400px] pr-4">
-              <div className="grid gap-3">
+              <div role="radiogroup" aria-label="Modelli di budget predefiniti" className="grid gap-3">
                 {BUDGET_TEMPLATES.map((template) => {
                   const Icon = template.icon
                   const periodLabel = template.periodo === 'mensile' ? 'al mese' : template.periodo === 'trimestrale' ? 'al trimestre' : 'all\'anno'
+                  const isSelected = nome === template.nome
+                    && importoTarget === template.importoSuggerito.toString()
+                    && periodo === template.periodo
                   
                   return (
                     <Card 
                       key={template.id}
+                      role="radio"
+                      aria-checked={isSelected}
+                      tabIndex={isSelected ? 0 : -1}
                       className="cursor-pointer transition-all hover:shadow-md hover:border-accent"
                       onClick={() => handleTemplateSelect(template)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          handleTemplateSelect(template)
+                        }
+                      }}
                     >
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
@@ -162,7 +174,7 @@ export function BudgetDialog({ open, onClose, onSave, budget, categories, accoun
                               className="p-2 rounded-lg"
                               style={{ backgroundColor: `${template.color}20`, color: template.color }}
                             >
-                              <Icon size={24} weight="duotone" />
+                              <Icon size={24} weight="duotone" aria-hidden="true" />
                             </div>
                             <div>
                               <CardTitle className="text-base">{template.nome}</CardTitle>

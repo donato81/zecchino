@@ -50,7 +50,7 @@ export function HapticSettings() {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Vibrate size={24} weight="duotone" className="text-primary" />
+          <Vibrate size={24} weight="duotone" className="text-primary" aria-hidden="true" />
           <div className="flex-1">
             <CardTitle>Feedback Tattile</CardTitle>
             <CardDescription>Configura la vibrazione per le azioni dell'app</CardDescription>
@@ -114,11 +114,11 @@ export function HapticSettings() {
             />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <SpeakerSimpleSlash size={14} weight="duotone" />
+                <SpeakerSimpleSlash size={14} weight="duotone" aria-hidden="true" />
                 Leggera
               </span>
               <span className="flex items-center gap-1">
-                <SpeakerSimpleHigh size={14} weight="duotone" />
+                <SpeakerSimpleHigh size={14} weight="duotone" aria-hidden="true" />
                 Forte
               </span>
             </div>
@@ -134,7 +134,7 @@ export function HapticSettings() {
                 disabled={!enabled || !isSupported}
                 className="gap-2"
               >
-                <Vibrate size={16} weight="duotone" />
+                <Vibrate size={16} weight="duotone" aria-hidden="true" />
                 Leggera
               </Button>
               <Button
@@ -144,7 +144,7 @@ export function HapticSettings() {
                 disabled={!enabled || !isSupported}
                 className="gap-2"
               >
-                <Vibrate size={16} weight="duotone" />
+                <Vibrate size={16} weight="duotone" aria-hidden="true" />
                 Media
               </Button>
               <Button
@@ -154,7 +154,7 @@ export function HapticSettings() {
                 disabled={!enabled || !isSupported}
                 className="gap-2"
               >
-                <Vibrate size={16} weight="duotone" />
+                <Vibrate size={16} weight="duotone" aria-hidden="true" />
                 Forte
               </Button>
               <Button
@@ -164,7 +164,7 @@ export function HapticSettings() {
                 disabled={!enabled || !isSupported}
                 className="gap-2 text-success border-success/30"
               >
-                <Vibrate size={16} weight="duotone" />
+                <Vibrate size={16} weight="duotone" aria-hidden="true" />
                 Successo
               </Button>
               <Button
@@ -174,7 +174,7 @@ export function HapticSettings() {
                 disabled={!enabled || !isSupported}
                 className="gap-2 text-warning border-warning/30"
               >
-                <Vibrate size={16} weight="duotone" />
+                <Vibrate size={16} weight="duotone" aria-hidden="true" />
                 Avviso
               </Button>
               <Button
@@ -184,7 +184,7 @@ export function HapticSettings() {
                 disabled={!enabled || !isSupported}
                 className="gap-2 text-destructive border-destructive/30"
               >
-                <Vibrate size={16} weight="duotone" />
+                <Vibrate size={16} weight="duotone" aria-hidden="true" />
                 Errore
               </Button>
             </div>
@@ -192,7 +192,7 @@ export function HapticSettings() {
 
           <div className="bg-muted/50 rounded-lg p-4 space-y-2">
             <h4 className="text-sm font-medium flex items-center gap-2">
-              <Vibrate size={16} weight="duotone" className="text-primary" />
+              <Vibrate size={16} weight="duotone" className="text-primary" aria-hidden="true" />
               Quando viene utilizzata la vibrazione?
             </h4>
             <ul className="text-sm text-muted-foreground space-y-1 ml-6 list-disc">

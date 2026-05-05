@@ -22,6 +22,7 @@ export function AppHeader() {
       className="border-b border-primary/30 bg-card/90 backdrop-blur-lg sticky top-0 z-10 shadow-lg shadow-primary/10"
       role="banner"
       aria-label="Intestazione principale applicazione Zecchino"
+      aria-busy={isLoading}
     >
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-5">
         {showOfflineBanner ? (

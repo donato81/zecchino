@@ -108,7 +108,7 @@ export function ScreenReaderSettings() {
         <div className="flex items-center justify-between">
           <div className="space-y-1.5">
             <CardTitle className="flex items-center gap-2">
-              <TextAa size={20} weight="duotone" />
+              <TextAa size={20} weight="duotone" aria-hidden="true" />
               Impostazioni Screen Reader
             </CardTitle>
             <CardDescription>
@@ -118,7 +118,7 @@ export function ScreenReaderSettings() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge variant="outline" className="gap-1 cursor-help">
-                <Info size={12} weight="fill" />
+                <Info size={12} weight="fill" aria-hidden="true" />
                 Aiuto
               </Badge>
             </TooltipTrigger>
@@ -186,7 +186,7 @@ export function ScreenReaderSettings() {
             <Label className="text-base font-medium">Modalità Ridotta</Label>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Info size={16} className="text-muted-foreground cursor-help" />
+                <Info size={16} className="text-muted-foreground cursor-help" aria-hidden="true" />
               </TooltipTrigger>
               <TooltipContent variant="accent" className="max-w-xs">
                 <p className="text-xs">
@@ -429,7 +429,7 @@ export function ScreenReaderSettings() {
             variant="outline"
             className="gap-2 flex-1"
           >
-            <SpeakerHigh size={18} weight="duotone" />
+            <SpeakerHigh size={18} weight="duotone" aria-hidden="true" />
             Prova Annuncio
           </Button>
           <Button
@@ -437,14 +437,14 @@ export function ScreenReaderSettings() {
             variant="outline"
             className="gap-2 flex-1"
           >
-            <CheckCircle size={18} weight="duotone" />
+            <CheckCircle size={18} weight="duotone" aria-hidden="true" />
             Ripristina Predefiniti
           </Button>
         </div>
 
         <div className="p-4 bg-muted/50 rounded-lg space-y-2">
           <div className="flex items-start gap-2">
-            <Info size={16} className="text-muted-foreground shrink-0 mt-0.5" />
+            <Info size={16} className="text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
             <div className="space-y-1">
               <p className="text-sm font-medium text-foreground">Note Importanti</p>
               <ul className="text-xs text-muted-foreground space-y-1">

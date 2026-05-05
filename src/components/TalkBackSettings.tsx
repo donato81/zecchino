@@ -71,7 +71,7 @@ export function TalkBackSettings() {
     if (!isDetected) {
       return (
         <Badge variant="secondary" className="gap-1.5">
-          <Info size={14} weight="fill" />
+          <Info size={14} weight="fill" aria-hidden="true" />
           Non rilevato
         </Badge>
       )
@@ -80,21 +80,21 @@ export function TalkBackSettings() {
     if (confidenceLevel === 'high') {
       return (
         <Badge variant="secondary" className="gap-1.5 bg-success/10 text-success border-success/20">
-          <CheckCircle size={14} weight="fill" />
+          <CheckCircle size={14} weight="fill" aria-hidden="true" />
           Alta affidabilità
         </Badge>
       )
     } else if (confidenceLevel === 'medium') {
       return (
         <Badge variant="secondary" className="gap-1.5 bg-warning/10 text-warning border-warning/20">
-          <WarningCircle size={14} weight="fill" />
+          <WarningCircle size={14} weight="fill" aria-hidden="true" />
           Media affidabilità
         </Badge>
       )
     } else {
       return (
         <Badge variant="secondary" className="gap-1.5">
-          <Info size={14} weight="fill" />
+          <Info size={14} weight="fill" aria-hidden="true" />
           Bassa affidabilità
         </Badge>
       )

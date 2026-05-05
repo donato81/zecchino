@@ -135,10 +135,18 @@ export function BudgetProgressCard({
               {percentage.toFixed(0)}%
             </span>
           </div>
-          <div className="w-full bg-gradient-to-r from-muted via-muted to-muted/80 rounded-full h-4 overflow-hidden shadow-inner">
+          <div
+            role="progressbar"
+            aria-valuenow={Math.min(Math.round(percentage), 100)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`${budget.nome}: ${Math.min(Math.round(percentage), 100)}% del budget utilizzato`}
+            className="w-full bg-gradient-to-r from-muted via-muted to-muted/80 rounded-full h-4 overflow-hidden shadow-inner"
+          >
             <div 
               className={`h-full transition-all rounded-full shadow-md ${getProgressColor()}`}
               style={{ width: `${Math.min(percentage, 100)}%` }}
+              aria-hidden="true"
             />
           </div>
         </div>

@@ -36,6 +36,7 @@ export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
           onClick={() => handlePeriodChange(period.value)}
           variant={value === period.value ? 'default' : 'outline'}
           size="sm"
+          aria-pressed={value === period.value}
           className="gap-2"
           data-focus-info={`Visualizza trend ${period.label.toLowerCase()}`}
         >
