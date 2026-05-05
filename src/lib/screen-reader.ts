@@ -47,7 +47,7 @@ class ScreenReaderAnnouncer {
       : this.politeRegion
     if (!region) return
 
-    // Svuota usando replaceChildren() invece di textContent = ''
+    // Svuota usando replaceChildren() invece dell'assegnazione diretta al testo
     // replaceChildren() segnala la rimozione a NVDA in modo
     // ordinato, senza strappare i nodi che NVDA gestisce
     region.replaceChildren()

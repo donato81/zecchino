@@ -38,7 +38,7 @@ export function FocusIndicator() {
         const ariaLabel = target.getAttribute('aria-label')
         const dataFocusInfo = target.getAttribute('data-focus-info') || target.closest('[data-focus-info]')?.getAttribute('data-focus-info')
         const title = target.getAttribute('title')
-        const buttonText = target.textContent?.trim()
+        const buttonText = target.innerText?.trim()
         
         const tooltip = dataFocusInfo || ariaLabel || title || (buttonText && buttonText.length < 50 ? buttonText : '')
         setTooltipText(tooltip)

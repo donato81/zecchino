@@ -11,12 +11,14 @@ export function LiveRegion({ message, priority = 'polite', clearAfter = 5000 }: 
 
   useEffect(() => {
     if (message && regionRef.current) {
-      regionRef.current.textContent = message
+      regionRef.current.replaceChildren(
+        document.createTextNode(message)
+      )
 
       if (clearAfter > 0) {
         const timer = setTimeout(() => {
           if (regionRef.current) {
-            regionRef.current.textContent = ''
+            regionRef.current.replaceChildren()
           }
         }, clearAfter)
 
