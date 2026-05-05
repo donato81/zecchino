@@ -207,23 +207,31 @@ export function BudgetProgressCard({
           </Tooltip>
         </div>
 
-        {isOverBudget && (
-          <div className="pt-2 border-t" role="alert" aria-live="polite">
-            <p className="text-xs text-destructive flex items-center gap-2">
-              <Warning size={14} weight="fill" aria-hidden="true" />
-              Hai superato il budget del {((percentage - 100)).toFixed(0)}%
-            </p>
-          </div>
-        )}
-        
-        {!isOverBudget && percentage >= 90 && (
-          <div className="pt-2 border-t" role="alert" aria-live="polite">
-            <p className="text-xs text-amber-600 flex items-center gap-2">
-              <Warning size={14} weight="fill" aria-hidden="true" />
-              Attenzione: stai per raggiungere il limite del budget
-            </p>
-          </div>
-        )}
+        <div
+          className="pt-2 border-t"
+          role="alert"
+          aria-live="polite"
+          aria-atomic="true"
+          aria-hidden={!isOverBudget}
+        >
+          <p className="text-xs text-destructive flex items-center gap-2">
+            <Warning size={14} weight="fill" aria-hidden="true" />
+            Hai superato il budget del {((percentage - 100)).toFixed(0)}%
+          </p>
+        </div>
+
+        <div
+          className="pt-2 border-t"
+          role="alert"
+          aria-live="polite"
+          aria-atomic="true"
+          aria-hidden={isOverBudget || percentage < 90}
+        >
+          <p className="text-xs text-amber-600 flex items-center gap-2">
+            <Warning size={14} weight="fill" aria-hidden="true" />
+            Attenzione: stai per raggiungere il limite del budget
+          </p>
+        </div>
       </CardContent>
     </Card>
   )

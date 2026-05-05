@@ -210,11 +210,15 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
               />
             </div>
 
-            {error && (
-              <p className="text-sm text-destructive" role="alert">
-                {error}
-              </p>
-            )}
+            <p
+              className="text-sm text-destructive"
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
+              aria-hidden={!error}
+            >
+              {error}
+            </p>
           </div>
 
           <DialogFooter>

@@ -41,22 +41,28 @@ class ScreenReaderAnnouncer {
     if (!this.initialized) {
       this.initializeLiveRegions()
     }
-    
-    const region = priority === 'assertive' ? this.assertiveRegion : this.politeRegion
+
+    const region = priority === 'assertive'
+      ? this.assertiveRegion
+      : this.politeRegion
     if (!region) return
 
-    region.textContent = ''
-    
+    // Svuota usando replaceChildren() invece di textContent = ''
+    // replaceChildren() segnala la rimozione a NVDA in modo
+    // ordinato, senza strappare i nodi che NVDA gestisce
+    region.replaceChildren()
+
     setTimeout(() => {
-      if (region) {
-        region.textContent = message
-      }
+      if (!region) return
+      // Aggiunge il testo come nodo separato, non come
+      // proprietà diretta — NVDA può agganciarsi senza conflitti
+      const textNode = document.createTextNode(message)
+      region.replaceChildren(textNode)
     }, 100)
 
     setTimeout(() => {
-      if (region && region.textContent === message) {
-        region.textContent = ''
-      }
+      if (!region) return
+      region.replaceChildren()
     }, 5000)
   }
 
