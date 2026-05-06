@@ -36,7 +36,7 @@ function AppContent() {
     isDataReady,
   } = useAppData()
   const { isAuthenticated, isAuthReady, needsOnboarding } = useAuth()
-  const { dismissBudgetAlert } = useUserSettings()
+  const { dismissBudgetAlert, isSettingsReady } = useUserSettings()
   const { budgetAlerts, totalBalance, visibleAccounts, visibleTransactions } = useVisibleData()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [previousTab, setPreviousTab] = useState('dashboard')
@@ -85,6 +85,7 @@ function AppContent() {
   if (!isAuthReady) return <LoadingSpinner />
   if (!isAuthenticated) return <AuthScreen />
   if (needsOnboarding) return <OnboardingFlow />
+  if (isAuthenticated && !isSettingsReady) return <LoadingSpinner />   // ← riga aggiunta
   if (!isDataReady) return <LoadingSpinner />
 
   return (

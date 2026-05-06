@@ -202,6 +202,7 @@ export function OnboardingFlow() {
         valuta: valutaValue,
         isPrivato: accountType === 'privato',
         dataCreazione: new Date().toISOString().slice(0, 10),
+        archiviato: false,
       })
       toast.success('Conto creato con successo')
       screenReader.announceSuccess('Conto creato con successo.')

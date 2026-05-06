@@ -16,6 +16,7 @@ export interface Account {
   valuta: string
   isPrivato: boolean
   dataCreazione: string
+  archiviato: boolean
 }
 
 export interface Transaction {

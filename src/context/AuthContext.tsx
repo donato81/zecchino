@@ -102,11 +102,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(currentSession)
       setUser(currentSession?.user ?? null)
       setIsAuthenticated(!!currentSession)
-      setIsAuthReady(true)
 
       if (currentSession) {
         await loadUserSettings()
       }
+
+      setIsAuthReady(true)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {

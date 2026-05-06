@@ -135,7 +135,7 @@ export function useAppShortcuts(options: AppShortcutsOptions): void {
       description: 'Toggle all categories'
     },
     {
-      key: 'n',
+      key: 'm',
       ctrl: true,
       callback: () => {
         if (isAuthenticated) {
@@ -148,7 +148,7 @@ export function useAppShortcuts(options: AppShortcutsOptions): void {
       description: 'New transaction'
     },
     {
-      key: 'm',
+      key: 'b',
       ctrl: true,
       callback: () => {
         if (isAuthenticated) {

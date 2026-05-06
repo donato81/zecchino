@@ -43,8 +43,8 @@ const shortcutGroups: ShortcutGroup[] = [
   {
     title: 'Azioni Rapide',
     shortcuts: [
-      { keys: ['Ctrl', 'N'], description: 'Nuovo Movimento' },
-      { keys: ['Ctrl', 'M'], description: 'Nuovo Conto' },
+      { keys: ['Ctrl', 'M'], description: 'Nuovo Movimento' },
+      { keys: ['Ctrl', 'B'], description: 'Nuovo Conto' },
       { keys: ['Ctrl', 'U'], description: 'Sblocca Conto Privato' },
       { keys: ['Ctrl', 'E'], description: 'Esporta CSV (dalla tab Movimenti)' }
     ]
