@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback, useRef, RefObject } from 'react'
 interface UseListNavigationProps {
   itemCount: number
   onEnter?: (index: number) => void
+  onMenu?: (index: number) => void
   onDelete?: (index: number) => void
   onEdit?: (index: number) => void
   enabled?: boolean
@@ -13,6 +14,7 @@ interface UseListNavigationProps {
 export function useListNavigation({
   itemCount,
   onEnter,
+  onMenu,
   onDelete,
   onEdit,
   enabled = true,
@@ -21,10 +23,10 @@ export function useListNavigation({
 }: UseListNavigationProps) {
   const [focusedIndex, setFocusedIndex] = useState<number>(-1)
 
-  const callbacksRef = useRef({ onEnter, onDelete, onEdit })
+  const callbacksRef = useRef({ onEnter, onMenu, onDelete, onEdit })
 
   useEffect(() => {
-    callbacksRef.current = { onEnter, onDelete, onEdit }
+    callbacksRef.current = { onEnter, onMenu, onDelete, onEdit }
   })
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -50,9 +52,13 @@ export function useListNavigation({
     } else if (e.key === 'End') {
       e.preventDefault()
       setFocusedIndex(itemCount - 1)
-    } else if (e.key === 'Enter' && focusedIndex >= 0) {
+    } else if ((e.key === 'Enter' || e.key === ' ') && focusedIndex >= 0) {
       e.preventDefault()
-      callbacksRef.current.onEnter?.(focusedIndex)
+      if (callbacksRef.current.onMenu) {
+        callbacksRef.current.onMenu(focusedIndex)
+      } else {
+        callbacksRef.current.onEnter?.(focusedIndex)
+      }
     } else if (e.key === 'Delete' && focusedIndex >= 0 && !e.ctrlKey && !e.metaKey) {
       e.preventDefault()
       callbacksRef.current.onDelete?.(focusedIndex)

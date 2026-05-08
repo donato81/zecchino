@@ -1,14 +1,15 @@
-import { useMemo, useRef, useCallback } from 'react'
+import { useMemo, useRef, useCallback, useState, useEffect } from 'react'
 import { useAppData } from '@/context/AppDataContext'
 import { useAuth } from '@/context/AuthContext'
 import { useVisibleData } from '@/context/VisibleDataContext'
 import { useListNavigation } from '@/hooks/use-list-navigation'
-import { formatCurrency } from '@/lib/helpers'
+import { formatCurrency, formatDateShort } from '@/lib/helpers'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { TabsContent } from '@/components/ui/tabs'
-import { DownloadSimple, Plus, PencilSimple, Trash } from '@phosphor-icons/react'
+import { DownloadSimple, Plus } from '@phosphor-icons/react'
+import { TransactionActionMenu } from '@/components/TransactionActionMenu'
 
 export function TransactionsTab() {
   const {
@@ -27,17 +28,26 @@ export function TransactionsTab() {
 
   const transactionsListContainerRef = useRef<HTMLDivElement>(null)
 
+  const [openMenuIndex, setOpenMenuIndex] = useState<number>(-1)
+
+  useEffect(() => {
+    if (openMenuIndex < 0) return
+    return () => {
+      const el = transactionsListContainerRef.current?.querySelector<HTMLElement>(
+        `[data-list-item][data-index="${openMenuIndex}"]`
+      )
+      el?.focus()
+    }
+  }, [openMenuIndex])
+
   const sortedTransactions = useMemo(
     () => [...visibleTransactions].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()),
     [visibleTransactions]
   )
 
-  const onEnterTransactions = useCallback((index: number) => {
-    const transaction = sortedTransactions[index]
-    if (transaction) {
-      openEditTransactionDialog(transaction)
-    }
-  }, [sortedTransactions, openEditTransactionDialog])
+  const onMenuTransactions = useCallback((index: number) => {
+    setOpenMenuIndex(index)
+  }, [])
 
   const onDeleteTransactions = useCallback((index: number) => {
     const transaction = sortedTransactions[index]
@@ -57,8 +67,8 @@ export function TransactionsTab() {
   const allTransactionsNav = useListNavigation({
     itemCount: sortedTransactions.length,
     enabled: isAuthenticated,
-    disabled: showTransactionDialog,
-    onEnter: onEnterTransactions,
+    disabled: showTransactionDialog || openMenuIndex >= 0,
+    onMenu: onMenuTransactions,
     onDelete: onDeleteTransactions,
     onEdit: onEditTransactions,
     containerRef: transactionsListContainerRef,
@@ -94,8 +104,8 @@ export function TransactionsTab() {
       </div>
 
       {visibleTransactions.length > 0 && (
-        <Badge variant="secondary" className="text-xs" role="note" aria-label="Istruzioni navigazione: freccia su e freccia giù per navigare, Enter o E per modificare, Canc per eliminare, Home e End per primo e ultimo">
-          ↑/↓ Naviga · Enter Modifica · E Modifica · Del Elimina · Home/End Primo/Ultimo
+        <Badge variant="secondary" className="text-xs" role="note" aria-label="Istruzioni navigazione: freccia su e freccia giù per navigare, Enter o Spazio per aprire il menu azioni, E per modifica diretta, Canc per eliminare, Home e End per primo e ultimo">
+          ↑/↓ Naviga · Enter Menu · E Modifica · Del Elimina · Home/End Primo/Ultimo
         </Badge>
       )}
 
@@ -110,7 +120,16 @@ export function TransactionsTab() {
               </Button>
             </div>
           ) : (
-            <div className="divide-y max-h-[600px] overflow-y-auto" ref={transactionsListContainerRef}>
+            <div
+              className="divide-y max-h-[600px] overflow-y-auto"
+              ref={transactionsListContainerRef}
+              tabIndex={allTransactionsNav.focusedIndex < 0 ? 0 : -1}
+              onFocus={(e) => {
+                if (e.target === e.currentTarget && allTransactionsNav.focusedIndex < 0) {
+                  allTransactionsNav.setFocusedIndex(0)
+                }
+              }}
+            >
               {sortedTransactions.map((transaction, index) => {
                 const account = visibleAccounts.find(a => a.id === transaction.contoId)
                 const destAccount = transaction.contoDestinazioneId
@@ -121,87 +140,57 @@ export function TransactionsTab() {
                 const isTransfer = transaction.tipo === 'trasferimento'
                 const isFocused = allTransactionsNav.isFocused(index)
 
+                const rawDesc = transaction.descrizione || category?.nome || 'Movimento'
+                const shortDesc = rawDesc.length > 30 ? rawDesc.slice(0, 30) + '…' : rawDesc
+                const shortAccount = isTransfer
+                  ? 'Trasferimento'
+                  : (account?.nome ?? '').length > 15
+                    ? (account?.nome ?? '').slice(0, 15) + '…'
+                    : (account?.nome ?? '')
+
                 return (
                   <div
                     key={transaction.id}
-                    className={`p-4 flex items-center justify-between transition-all focus:outline-none ${
+                    className={`px-4 py-3 flex items-center gap-3 transition-all focus:outline-none ${
                       isFocused
                         ? 'bg-accent/10 border-l-4 border-l-accent ring-2 ring-accent/20'
                         : 'hover:bg-muted/50'
                     }`}
                     onClick={() => allTransactionsNav.setFocusedIndex(index)}
-                     onKeyDown={(event) => {
-                       if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
-                         event.preventDefault()
-                         allTransactionsNav.setFocusedIndex(index)
-                       }
-                     }}
-                    data-focus-info={`Movimento: ${transaction.descrizione || category?.nome} - ${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'} ${formatCurrency(transaction.importo)} - Premi Enter per modificare`}
+                    data-focus-info={`Movimento: ${rawDesc} - ${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'} ${formatCurrency(transaction.importo)} - Premi Enter per il menu azioni`}
                     tabIndex={isFocused ? 0 : -1}
                     role="button"
                     data-list-item
                     data-index={index}
-                    aria-label={`${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'}: ${transaction.descrizione || category?.nome || 'Movimento'}, ${formatCurrency(transaction.importo)}, ${new Date(transaction.data).toLocaleDateString('it-IT')}, ${account?.nome || ''}${isTransfer && destAccount ? ` \u2192 ${destAccount.nome}` : ''}${category && !isTransfer ? `, ${category.nome}` : ''}`}
+                    aria-label={`${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'}: ${rawDesc}, ${formatCurrency(transaction.importo)}, ${formatDateShort(transaction.data)}, ${isTransfer ? 'Trasferimento' : account?.nome || ''}`}
                   >
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">
-                          {transaction.descrizione || category?.nome || 'Movimento'}
-                        </p>
-                        {transaction.ricorrente && (
-                          <Badge variant="outline" className="text-xs">
-                            {transaction.frequenzaRicorrenza}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
-                        <span>{new Date(transaction.data).toLocaleDateString('it-IT')}</span>
-                        <span>•</span>
-                        <span>{account?.nome}</span>
-                        {isTransfer && destAccount && (
-                          <>
-                            <span>→</span>
-                            <span>{destAccount.nome}</span>
-                          </>
-                        )}
-                        {category && (
-                          <>
-                            <span>•</span>
-                            <span>{category.nome}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className={`text-lg font-mono font-semibold ${isIncome ? 'text-income' : isTransfer ? 'text-accent' : 'text-expense'}`}>
-                        {isIncome ? '+' : isTransfer ? '→' : '-'}{formatCurrency(transaction.importo)}
-                      </div>
-                      <div className="flex gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            openEditTransactionDialog(transaction)
-                          }}
-                          aria-label="Modifica movimento"
-                        >
-                          <PencilSimple size={18} />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setDeletingItem({ type: 'transaction', id: transaction.id })
-                            setShowDeleteDialog(true)
-                          }}
-                          aria-label="Elimina movimento"
-                        >
-                          <Trash size={18} />
-                        </Button>
-                      </div>
-                    </div>
+                    <span className="w-16 shrink-0 text-xs text-muted-foreground tabular-nums">
+                      {formatDateShort(transaction.data)}
+                    </span>
+                    <span className="flex-1 min-w-0 truncate text-sm">
+                      {shortDesc}
+                    </span>
+                    <span className={`shrink-0 text-sm font-mono font-semibold ${isIncome ? 'text-income' : isTransfer ? 'text-accent' : 'text-expense'}`}>
+                      {isIncome ? '+' : isTransfer ? '→' : '-'}{formatCurrency(transaction.importo)}
+                    </span>
+                    <span className="w-24 shrink-0 truncate text-xs text-muted-foreground text-right">
+                      {shortAccount}
+                    </span>
+                    <TransactionActionMenu
+                      isOpen={openMenuIndex === index}
+                      onOpenChange={(open) => setOpenMenuIndex(open ? index : -1)}
+                      onEdit={() => openEditTransactionDialog(transaction)}
+                      onDelete={() => {
+                        setDeletingItem({ type: 'transaction', id: transaction.id })
+                        setShowDeleteDialog(true)
+                      }}
+                      onFocusReturn={() => {
+                        const el = transactionsListContainerRef.current?.querySelector<HTMLElement>(
+                          `[data-list-item][data-index="${index}"]`
+                        )
+                        el?.focus()
+                      }}
+                    />
                   </div>
                 )
               })}

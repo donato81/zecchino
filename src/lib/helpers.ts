@@ -41,6 +41,14 @@ export function formatDate(dateString: string): string {
   return new Intl.DateTimeFormat('it-IT').format(date)
 }
 
+export function formatDateShort(dateString: string): string {
+  const date = new Date(dateString)
+  const dd = String(date.getDate()).padStart(2, '0')
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const yy = String(date.getFullYear()).slice(-2)
+  return `${dd}/${mm}/${yy}`
+}
+
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
