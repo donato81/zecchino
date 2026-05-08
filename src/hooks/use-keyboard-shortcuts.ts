@@ -15,9 +15,12 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled: boo
 
     const handleKeyDown = (event: KeyboardEvent) => {
       for (const shortcut of shortcuts) {
-        const ctrlMatch = shortcut.ctrl ? event.ctrlKey || event.metaKey : !event.ctrlKey && !event.metaKey
-        const altMatch = shortcut.alt ? event.altKey : !event.altKey
-        const shiftMatch = shortcut.shift ? event.shiftKey : !event.shiftKey
+        //const ctrlMatch = shortcut.ctrl ? event.ctrlKey || event.metaKey : !event.ctrlKey && !event.metaKey
+        //const altMatch = shortcut.alt ? event.altKey : !event.altKey
+        //const shiftMatch = shortcut.shift ? event.shiftKey : !event.shiftKey
+        const ctrlMatch = shortcut.ctrl ? (event.ctrlKey || event.metaKey) : true
+        const altMatch = shortcut.alt ? event.altKey : true
+        const shiftMatch = shortcut.shift ? event.shiftKey : true
         const keyMatch = event.key.toLowerCase() === shortcut.key.toLowerCase()
 
         if (keyMatch && ctrlMatch && altMatch && shiftMatch) {

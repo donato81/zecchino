@@ -387,6 +387,7 @@ export function DataManagement() {
           valuta: account.valuta,
           isPrivato: account.isPrivato,
           dataCreazione: account.dataCreazione,
+          archiviato: account.archiviato ?? false,
         }
 
         try {

@@ -99,7 +99,7 @@ export function DialogsOverlay() {
       <TransactionDialog
         open={showTransactionDialog}
         onClose={() => { setShowTransactionDialog(false); setEditingTransaction(undefined) }}
-        onSave={(transaction) => { handleSaveTransaction(transaction); setEditingTransaction(undefined) }}
+        onSave={async (transaction) => { try { await handleSaveTransaction(transaction) } finally { setEditingTransaction(undefined) } }}
         transaction={editingTransaction}
         accounts={visibleAccounts}
         categories={safeCategories}

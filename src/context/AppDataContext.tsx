@@ -76,6 +76,8 @@ type AppDataContextValue = {
   setEditingTransaction: (t: Transaction | undefined) => void
   showTransactionDialog: boolean
   setShowTransactionDialog: (v: boolean) => void
+  openNewTransactionDialog: () => void
+  openEditTransactionDialog: (tx: Transaction) => void
   // Dialog delete (shared)
   deletingItem: { type: 'account' | 'transaction' | 'budget' | 'savingsGoal'; id: string } | null
   setDeletingItem: (item: { type: 'account' | 'transaction' | 'budget' | 'savingsGoal'; id: string } | null) => void
@@ -163,6 +165,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [showSavingsGoalDialog, setShowSavingsGoalDialog] = useState(false)
   const [editingSavingsGoal, setEditingSavingsGoal] = useState<SavingsGoal | undefined>(undefined)
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
+
+  const openNewTransactionDialog = useCallback(() => {
+    setEditingTransaction(undefined)
+    setShowTransactionDialog(true)
+  }, [])
+
+  const openEditTransactionDialog = useCallback((tx: Transaction) => {
+    setEditingTransaction(tx)
+    setShowTransactionDialog(true)
+  }, [])
 
   const handleAddFundsToGoal = (goal: SavingsGoal) => {
     setEditingSavingsGoal(goal)
@@ -478,10 +490,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const handleSaveTransaction = async (transaction: TransactionInput) => {
     try {
       const transactionData = transaction
-      const existing = transactions.find(t => t.id === transaction.id)
-      if (existing) {
+      const existing = transaction.id
+        ? transactions.find(t => t.id === transaction.id)
+        : undefined
+      if (transaction.id && existing) {
         const { id, ...updateData } = transactionData
-        await updateTransaction(id, updateData)
+        await updateTransaction(transaction.id, updateData)
         soundSystem.play('save')
         hapticSystem.save()
         toast.success('Movimento modificato')
@@ -509,7 +523,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           category?.nome
         )
         if (transaction.tipo === 'uscita') {
-          checkBudgetNotifications([...transactions, { ...transaction, cifrato: false }])
+          checkBudgetNotifications([...transactions, { ...transaction, cifrato: false, id: transaction.id ?? '' }])
         }
       }
     } catch (err) {
@@ -675,6 +689,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         setEditingTransaction,
         showTransactionDialog,
         setShowTransactionDialog,
+        openNewTransactionDialog,
+        openEditTransactionDialog,
         deletingItem,
         setDeletingItem,
         showDeleteDialog,

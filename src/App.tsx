@@ -28,7 +28,7 @@ import { useTalkBack } from '@/hooks/use-talkback'
 
 function AppContent() {
   const screenReader = useScreenReader()
-  const { isEnabled: isScreenReaderActive } = useTalkBack()
+  const { talkBackState: { isEnabled: isScreenReaderActive } } = useTalkBack()
   const isMobile = useIsMobile()
   const {
     handleViewBudget, setShowTransactionDialog, setEditingAccount,

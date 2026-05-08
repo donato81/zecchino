@@ -14,8 +14,9 @@ export function TransactionsTab() {
   const {
     safeCategories,
     handleExportCSV,
-    setEditingTransaction,
-    setShowTransactionDialog,
+    openNewTransactionDialog,
+    openEditTransactionDialog,
+    showTransactionDialog,
     setDeletingItem,
     setShowDeleteDialog,
   } = useAppData()
@@ -34,10 +35,9 @@ export function TransactionsTab() {
   const onEnterTransactions = useCallback((index: number) => {
     const transaction = sortedTransactions[index]
     if (transaction) {
-      setEditingTransaction(transaction)
-      setShowTransactionDialog(true)
+      openEditTransactionDialog(transaction)
     }
-  }, [sortedTransactions, setEditingTransaction, setShowTransactionDialog])
+  }, [sortedTransactions, openEditTransactionDialog])
 
   const onDeleteTransactions = useCallback((index: number) => {
     const transaction = sortedTransactions[index]
@@ -50,14 +50,14 @@ export function TransactionsTab() {
   const onEditTransactions = useCallback((index: number) => {
     const transaction = sortedTransactions[index]
     if (transaction) {
-      setEditingTransaction(transaction)
-      setShowTransactionDialog(true)
+      openEditTransactionDialog(transaction)
     }
-  }, [sortedTransactions, setEditingTransaction, setShowTransactionDialog])
+  }, [sortedTransactions, openEditTransactionDialog])
 
   const allTransactionsNav = useListNavigation({
     itemCount: sortedTransactions.length,
     enabled: isAuthenticated,
+    disabled: showTransactionDialog,
     onEnter: onEnterTransactions,
     onDelete: onDeleteTransactions,
     onEdit: onEditTransactions,
@@ -81,7 +81,7 @@ export function TransactionsTab() {
             <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1 hidden sm:inline-flex" aria-hidden="true">Ctrl+E</Badge>
           </Button>
           <Button
-            onClick={() => { setEditingTransaction(undefined); setShowTransactionDialog(true) }}
+            onClick={() => openNewTransactionDialog()}
             className="gap-2"
             data-focus-info="Aggiungi nuovo movimento (Ctrl+N)"
             aria-label="Aggiungi nuovo movimento. Scorciatoia: Control più N"
@@ -104,7 +104,7 @@ export function TransactionsTab() {
           {visibleTransactions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-muted-foreground mb-4">Nessun movimento da visualizzare</p>
-              <Button onClick={() => setShowTransactionDialog(true)} className="gap-2">
+              <Button onClick={() => openNewTransactionDialog()} className="gap-2">
                 <Plus size={18} weight="bold" />
                 Aggiungi Movimento
               </Button>
@@ -182,8 +182,7 @@ export function TransactionsTab() {
                           variant="ghost"
                           onClick={(e) => {
                             e.stopPropagation()
-                            setEditingTransaction(transaction)
-                            setShowTransactionDialog(true)
+                            openEditTransactionDialog(transaction)
                           }}
                           aria-label="Modifica movimento"
                         >

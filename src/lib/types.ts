@@ -33,7 +33,7 @@ export interface Transaction {
   cifrato: boolean
 }
 
-export type TransactionInput = Omit<Transaction, 'cifrato'>
+export type TransactionInput = Omit<Transaction, 'id' | 'cifrato'> & { id?: string }
 
 export interface Category {
   id: string

@@ -8,7 +8,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Transaction, TransactionInput, TransactionType, Account, Category, RecurrenceFrequency } from '@/lib/types'
 import { TRANSACTION_TYPE_LABELS, RECURRENCE_LABELS } from '@/lib/constants'
-import { generateId } from '@/lib/helpers'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { soundSystem } from '@/lib/sound-system'
 import { useScreenReader } from '@/hooks/use-screen-reader'
@@ -81,6 +80,21 @@ export function TransactionDialog({
       }
     }
   }, [open, transaction, announceDialogOpen, resetForm])
+
+  useEffect(() => {
+    if (open && transaction) {
+      setTipo(transaction.tipo)
+      setData(transaction.data)
+      setImporto(transaction.importo.toString())
+      setContoId(transaction.contoId)
+      setContoDestinazioneId(transaction.contoDestinazioneId || '')
+      setCategoriaId(transaction.categoriaId || '')
+      setDescrizione(transaction.descrizione || '')
+      setRicorrente(transaction.ricorrente)
+      setFrequenzaRicorrenza(transaction.frequenzaRicorrenza || '')
+      setError('')
+    }
+  }, [open, transaction])
 
   useEffect(() => {
     if (tipo !== 'trasferimento') {
@@ -169,7 +183,7 @@ export function TransactionDialog({
     }
 
     const newTransaction: TransactionInput = {
-      id: transaction?.id || generateId(),
+      ...(transaction?.id ? { id: transaction.id } : {}),
       data,
       importo: amount,
       tipo,
@@ -187,9 +201,7 @@ export function TransactionDialog({
 
   const handleClose = () => {
     soundSystem.play('dialog-close')
-    if (!transaction) {
-      resetForm()
-    }
+    resetForm()
     onClose()
   }
 

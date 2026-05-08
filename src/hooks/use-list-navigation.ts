@@ -6,6 +6,7 @@ interface UseListNavigationProps {
   onDelete?: (index: number) => void
   onEdit?: (index: number) => void
   enabled?: boolean
+  disabled?: boolean
   containerRef?: RefObject<HTMLElement | null>
 }
 
@@ -15,6 +16,7 @@ export function useListNavigation({
   onDelete,
   onEdit,
   enabled = true,
+  disabled = false,
   containerRef
 }: UseListNavigationProps) {
   const [focusedIndex, setFocusedIndex] = useState<number>(-1)
@@ -26,6 +28,7 @@ export function useListNavigation({
   })
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (disabled) return
     if (document.querySelector('[data-state="open"][aria-modal="true"]')) return
     if (!enabled || itemCount === 0) return
 
@@ -57,7 +60,7 @@ export function useListNavigation({
       e.preventDefault()
       callbacksRef.current.onEdit?.(focusedIndex)
     }
-  }, [enabled, itemCount, focusedIndex])
+  }, [disabled, enabled, itemCount, focusedIndex])
 
   useEffect(() => {
     const target = containerRef?.current || document

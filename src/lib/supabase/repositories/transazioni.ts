@@ -33,7 +33,7 @@ function toDb(data: Partial<Omit<Transaction, 'id' | 'cifrato'>>): Record<string
   if (data.tipo !== undefined) out.tipo = data.tipo
   if (data.contoId !== undefined) out.conto_id = data.contoId
   if ('contoDestinazioneId' in data) out.conto_destinazione_id = data.contoDestinazioneId ?? null
-  if (data.categoriaId !== undefined) out.categoria_id = data.categoriaId
+  if (data.categoriaId !== undefined && data.categoriaId !== '') out.categoria_id = data.categoriaId || null
   if (data.descrizione !== undefined) out.descrizione = data.descrizione
   if (data.ricorrente !== undefined) out.ricorrente = data.ricorrente
   if ('frequenzaRicorrenza' in data) out.frequenza_ricorrenza = data.frequenzaRicorrenza ?? null

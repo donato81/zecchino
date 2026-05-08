@@ -23,15 +23,14 @@ export function useAppShortcuts(options: AppShortcutsOptions): void {
   const {
     activeTab,
     setActiveTab,
-    setShowTransactionDialog,
     setShowAccountDialog,
     setShowKeyboardHelp,
-    setEditingTransaction,
     setEditingAccount,
   } = options
 
   const {
     handleExportCSV,
+    openNewTransactionDialog,
   } = useAppData()
 
   const { visibleCategories, setVisibleCategories } = useUserSettings()
@@ -139,8 +138,7 @@ export function useAppShortcuts(options: AppShortcutsOptions): void {
       ctrl: true,
       callback: () => {
         if (isAuthenticated) {
-          setEditingTransaction(undefined)
-          setShowTransactionDialog(true)
+          openNewTransactionDialog()
           soundSystem.play('click')
           toast.success('Nuovo movimento')
         }
@@ -242,10 +240,9 @@ export function useAppShortcuts(options: AppShortcutsOptions): void {
     handleExportCSV,
     setShowPrivatePinDialog,
     setActiveTab,
-    setShowTransactionDialog,
+    openNewTransactionDialog,
     setShowAccountDialog,
     setShowKeyboardHelp,
-    setEditingTransaction,
     setEditingAccount,
   ])
 

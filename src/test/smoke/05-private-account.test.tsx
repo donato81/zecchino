@@ -10,6 +10,7 @@ const privateAccount: Account = {
   valuta: 'EUR',
   isPrivato: true,
   dataCreazione: '2026-04-24T00:00:00.000Z',
+  archiviato: false,
 }
 
 describe('05 — Private account', () => {

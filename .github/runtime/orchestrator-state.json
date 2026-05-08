@@ -1,10 +1,10 @@
 {
   "current_phase": "validate",
-  "current_agent": "Agent-Orchestrator",
+  "current_agent": "Agent-Code",
   "retry_count": 0,
-  "confidence": 0.94,
+  "confidence": 0.98,
   "execution_mode": "autonomous",
-  "last_updated": "2026-05-05T08:43:46Z",
+  "last_updated": "2026-05-07T11:18:52Z",
   "phase_history": [
     "P01-step1-code-pass",
     "P06-code-pass",
@@ -41,8 +41,8 @@
   "project_name": "Zecchino",
   "stack": "React+TypeScript+Vite",
   "framework_version": "2.3.1",
-  "last_step_output": "Bugfix NVDA removeChild completato: alert condizionali resi persistenti in AccountDialog e BudgetProgressCard; TransactionDialog e PinDialog già conformi. Build PASS, typecheck PASS, test PASS (7 file, 10 test), grep globale PASS.",
-  "last_update_check": "2026-05-05",
+  "last_step_output": "Rimozione ID temporaneo transazioni completata in 3 file: TransactionInput con id opzionale, handleSaveTransaction adattato per create/update, TransactionDialog senza generateId per nuovi movimenti. get_errors PASS sui file toccati, typecheck PASS (npm exec -- tsc --noEmit).",
+  "last_update_check": "2026-05-07",
   "update_check_done": true,
   "available_package_updates": 2,
   "completed_packages": [

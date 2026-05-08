@@ -11,6 +11,7 @@ function toClient(row: DbAccount): Account {
     valuta: row.valuta,
     isPrivato: row.is_privato,
     dataCreazione: row.data_creazione,
+    archiviato: row.archiviato,
   }
 }
 

@@ -23,8 +23,9 @@ import { Plus, EyeSlash, Eye, LockOpen, PencilSimple, Trash } from '@phosphor-ic
 export function DashboardTab() {
   const {
     safeCategories,
-    setEditingTransaction,
-    setShowTransactionDialog,
+    openNewTransactionDialog,
+    openEditTransactionDialog,
+    showTransactionDialog,
     setDeletingItem,
     setShowDeleteDialog,
     setEditingAccount,
@@ -72,10 +73,9 @@ export function DashboardTab() {
   const onEnterRecent = useCallback((index: number) => {
     const transaction = recentTransactions[index]
     if (transaction) {
-      setEditingTransaction(transaction)
-      setShowTransactionDialog(true)
+      openEditTransactionDialog(transaction)
     }
-  }, [recentTransactions, setEditingTransaction, setShowTransactionDialog])
+  }, [recentTransactions, openEditTransactionDialog])
 
   const onDeleteRecent = useCallback((index: number) => {
     const transaction = recentTransactions[index]
@@ -88,14 +88,14 @@ export function DashboardTab() {
   const onEditRecent = useCallback((index: number) => {
     const transaction = recentTransactions[index]
     if (transaction) {
-      setEditingTransaction(transaction)
-      setShowTransactionDialog(true)
+      openEditTransactionDialog(transaction)
     }
-  }, [recentTransactions, setEditingTransaction, setShowTransactionDialog])
+  }, [recentTransactions, openEditTransactionDialog])
 
   const recentTransactionsNav = useListNavigation({
     itemCount: recentTransactions.length,
     enabled: isAuthenticated,
+    disabled: showTransactionDialog,
     onEnter: onEnterRecent,
     onDelete: onDeleteRecent,
     onEdit: onEditRecent,
@@ -114,11 +114,10 @@ export function DashboardTab() {
                   onClick={() => {
                     soundSystem.play('dialog-open')
                     hapticSystem.dialogOpen()
-                    setEditingTransaction(undefined)
-                    setShowTransactionDialog(true)
+                    openNewTransactionDialog()
                   }}
                   className={`gap-2 flex-1 sm:flex-none ${isMobile ? 'min-h-[48px] text-base' : ''}`}
-                  aria-label="Aggiungi nuovo movimento. Apre finestra di dialogo per inserire entrata, uscita o trasferimento. Scorciatoia tastiera: Control più N"
+                  aria-label="Aggiungi nuovo movimento. Apre finestra di dialogo per inserire entrata, uscita o trasferimento. Scorciatoia tastiera: Control più M"
                   data-focus-info="Aggiungi nuovo movimento (Ctrl+N)"
                 >
                   <Plus size={isMobile ? 22 : 18} weight="bold" aria-hidden="true" />
@@ -146,7 +145,7 @@ export function DashboardTab() {
                   }}
                   variant="outline"
                   className={`gap-2 flex-1 sm:flex-none ${isMobile ? 'min-h-[48px] text-base' : ''}`}
-                  aria-label="Aggiungi nuovo conto. Apre finestra di dialogo per creare conto bancario, digitale, risparmio o investimenti. Scorciatoia tastiera: Control più M"
+                  aria-label="Aggiungi nuovo conto. Apre finestra di dialogo per creare conto bancario, digitale, risparmio o investimenti. Scorciatoia tastiera: Control più B"
                   data-focus-info="Aggiungi nuovo conto (Ctrl+M)"
                 >
                   <Plus size={isMobile ? 22 : 18} weight="bold" aria-hidden="true" />
@@ -393,8 +392,7 @@ export function DashboardTab() {
                             variant="ghost"
                             onClick={(e) => {
                               e.stopPropagation()
-                              setEditingTransaction(transaction)
-                              setShowTransactionDialog(true)
+                              openEditTransactionDialog(transaction)
                             }}
                             aria-label="Modifica movimento"
                           >

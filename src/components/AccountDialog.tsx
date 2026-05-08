@@ -64,7 +64,8 @@ export function AccountDialog({ open, onClose, onSave, account, hasPrivateAccoun
       saldoIniziale: saldo,
       valuta: 'EUR',
       isPrivato: tipo === 'privato',
-      dataCreazione: account?.dataCreazione || new Date().toISOString()
+      dataCreazione: account?.dataCreazione || new Date().toISOString(),
+      archiviato: account?.archiviato ?? false,
     }
 
     soundSystem.play('form-submit')
