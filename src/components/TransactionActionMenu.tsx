@@ -18,6 +18,8 @@ import { DotsThreeVertical } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 interface TransactionActionMenuProps {
+  transactionLabel: string
+  triggerIndex: number
   isOpen: boolean
   onOpenChange: (open: boolean) => void
   onEdit: () => void
@@ -26,6 +28,8 @@ interface TransactionActionMenuProps {
 }
 
 export function TransactionActionMenu({
+  transactionLabel,
+  triggerIndex,
   isOpen,
   onOpenChange,
   onEdit,
@@ -49,11 +53,13 @@ export function TransactionActionMenu({
 
   const handleEdit = () => {
     onOpenChange(false)
+    onFocusReturn()
     onEdit()
   }
 
   const handleDelete = () => {
     onOpenChange(false)
+    onFocusReturn()
     onDelete()
   }
 
@@ -61,9 +67,9 @@ export function TransactionActionMenu({
     <Button
       size="icon"
       variant="ghost"
-      aria-label="Azioni per il movimento"
+      aria-label={`Azioni per: ${transactionLabel}`}
       aria-haspopup="menu"
-      onClick={(e) => e.stopPropagation()}
+      data-trigger-index={triggerIndex}
     >
       <DotsThreeVertical size={18} aria-hidden="true" />
     </Button>

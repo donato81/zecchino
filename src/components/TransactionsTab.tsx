@@ -68,9 +68,6 @@ export function TransactionsTab() {
     itemCount: sortedTransactions.length,
     enabled: isAuthenticated,
     disabled: showTransactionDialog || openMenuIndex >= 0,
-    onMenu: onMenuTransactions,
-    onDelete: onDeleteTransactions,
-    onEdit: onEditTransactions,
     containerRef: transactionsListContainerRef,
   })
 
@@ -104,8 +101,8 @@ export function TransactionsTab() {
       </div>
 
       {visibleTransactions.length > 0 && (
-        <Badge variant="secondary" className="text-xs" role="note" aria-label="Istruzioni navigazione: freccia su e freccia giù per navigare, Enter o Spazio per aprire il menu azioni, E per modifica diretta, Canc per eliminare, Home e End per primo e ultimo">
-          ↑/↓ Naviga · Enter Menu · E Modifica · Del Elimina · Home/End Primo/Ultimo
+        <Badge variant="secondary" className="text-xs" role="note" aria-label="Istruzioni navigazione: usa B con NVDA per raggiungere il menu azioni di ogni movimento">
+          Premi B con NVDA per il menu azioni
         </Badge>
       )}
 
@@ -156,13 +153,6 @@ export function TransactionsTab() {
                         ? 'bg-accent/10 border-l-4 border-l-accent ring-2 ring-accent/20'
                         : 'hover:bg-muted/50'
                     }`}
-                    onClick={() => allTransactionsNav.setFocusedIndex(index)}
-                    data-focus-info={`Movimento: ${rawDesc} - ${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'} ${formatCurrency(transaction.importo)} - Premi Enter per il menu azioni`}
-                    tabIndex={isFocused ? 0 : -1}
-                    role="button"
-                    data-list-item
-                    data-index={index}
-                    aria-label={`${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'}: ${rawDesc}, ${formatCurrency(transaction.importo)}, ${formatDateShort(transaction.data)}, ${isTransfer ? 'Trasferimento' : account?.nome || ''}`}
                   >
                     <span className="w-16 shrink-0 text-xs text-muted-foreground tabular-nums">
                       {formatDateShort(transaction.data)}
@@ -177,6 +167,8 @@ export function TransactionsTab() {
                       {shortAccount}
                     </span>
                     <TransactionActionMenu
+                      transactionLabel={`${isIncome ? 'Entrata' : isTransfer ? 'Trasferimento' : 'Uscita'}, ${rawDesc}, ${formatCurrency(transaction.importo)}, ${formatDateShort(transaction.data)}, ${isTransfer ? 'Trasferimento' : account?.nome || ''}`}
+                      triggerIndex={index}
                       isOpen={openMenuIndex === index}
                       onOpenChange={(open) => setOpenMenuIndex(open ? index : -1)}
                       onEdit={() => openEditTransactionDialog(transaction)}
@@ -186,7 +178,7 @@ export function TransactionsTab() {
                       }}
                       onFocusReturn={() => {
                         const el = transactionsListContainerRef.current?.querySelector<HTMLElement>(
-                          `[data-list-item][data-index="${index}"]`
+                          `[data-trigger-index="${index}"]`
                         )
                         el?.focus()
                       }}
