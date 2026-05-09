@@ -1,10 +1,10 @@
 {
   "current_phase": "validate",
-  "current_agent": "Agent-Code",
+  "current_agent": "Agent-Orchestrator",
   "retry_count": 0,
-  "confidence": 0.98,
+  "confidence": 0.96,
   "execution_mode": "autonomous",
-  "last_updated": "2026-05-07T11:18:52Z",
+  "last_updated": "2026-05-09T11:31:02Z",
   "phase_history": [
     "P01-step1-code-pass",
     "P06-code-pass",
@@ -34,14 +34,16 @@
     "P30-docs-pass",
     "P34-code-pass",
     "P34-validate-pass",
-    "P34-docs-pass"
+    "P34-docs-pass",
+    "P41-code-pass",
+    "P41-validate-pass"
   ],
   "active_task_id": "P34-code-validate-docs",
   "initialized": true,
   "project_name": "Zecchino",
   "stack": "React+TypeScript+Vite",
   "framework_version": "2.3.1",
-  "last_step_output": "Rimozione ID temporaneo transazioni completata in 3 file: TransactionInput con id opzionale, handleSaveTransaction adattato per create/update, TransactionDialog senza generateId per nuovi movimenti. get_errors PASS sui file toccati, typecheck PASS (npm exec -- tsc --noEmit).",
+  "last_step_output": "Fix P41 applicato in 2 file: rimossa la doppia chiamata a onFocusReturn da TransactionActionMenu; in TransactionsTab rimossi useEffect morto e closure inline per onOpenChange/onEdit/onDelete in favore dei useCallback esistenti. Typecheck PASS dopo ogni step, build PASS.",
   "last_update_check": "2026-05-07",
   "update_check_done": true,
   "available_package_updates": 2,

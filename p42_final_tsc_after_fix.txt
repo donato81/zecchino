@@ -1,0 +1,20 @@
+﻿src/App.tsx(6,29): error TS2307: Cannot find module '@/hooks/use-mobile' or its corresponding type declarations.
+src/App.tsx(11,26): error TS2307: Cannot find module '@/components/SkipLink' or its corresponding type declarations.
+src/App.tsx(12,35): error TS2307: Cannot find module '@/components/BudgetAlertBanner' or its corresponding type declarations.
+src/App.tsx(13,32): error TS2307: Cannot find module '@/components/FocusIndicator' or its corresponding type declarations.
+src/App.tsx(14,33): error TS2307: Cannot find module '@/components/TransactionsTab' or its corresponding type declarations.
+src/App.tsx(15,30): error TS2307: Cannot find module '@/components/DashboardTab' or its corresponding type declarations.
+src/App.tsx(16,28): error TS2307: Cannot find module '@/components/ReportsTab' or its corresponding type declarations.
+src/App.tsx(17,27): error TS2307: Cannot find module '@/components/AppHeader' or its corresponding type declarations.
+src/App.tsx(18,28): error TS2307: Cannot find module '@/components/AuthScreen' or its corresponding type declarations.
+src/App.tsx(19,32): error TS2307: Cannot find module '@/components/DialogsOverlay' or its corresponding type declarations.
+src/App.tsx(20,32): error TS2307: Cannot find module '@/components/LoadingSpinner' or its corresponding type declarations.
+src/App.tsx(21,32): error TS2307: Cannot find module '@/components/OnboardingFlow' or its corresponding type declarations.
+src/App.tsx(22,45): error TS2307: Cannot find module '@/components/ui/tabs' or its corresponding type declarations.
+src/App.tsx(23,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+src/App.tsx(25,25): error TS2307: Cannot find module '@/components/ui/sonner' or its corresponding type declarations.
+src/App.tsx(26,33): error TS2307: Cannot find module '@/hooks/use-app-shortcuts' or its corresponding type declarations.
+src/context/AuthContext.tsx(10,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+src/lib/supabase/client.ts(3,25): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/lib/supabase/client.ts(4,25): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+EXIT=2

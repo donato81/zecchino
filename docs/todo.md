@@ -15,8 +15,48 @@
 |---|---|---|---|
 | P36 — Decommissioning Spark e cache offline read-only (Blocco 10: 10a rimozione @github/spark + 10b cache localStorage read-only) | `docs/3 - todo lists/P36-todo.md` | Validazione manuale residua | Alta |
 | P37 — Correzioni Accessibilità WCAG 2.1 AA | `docs/3 - todo lists/P37-todo.md` | In corso | Alta |
+| P41 — Bugfix doppia chiamata `onFocusReturn` nel menu azioni movimenti | `docs/3 - todo lists/P41-todo.md` | Da iniziare | Alta |
+| P42 — Cleanup pre-migrazione React Native (rimozione file e dipendenze ELIMINA) | `docs/3 - todo lists/P42-todo.md` | Da iniziare | Alta |
 
 ---
+
+## P42 — Cleanup pre-migrazione React Native
+
+**Data inserimento:** 2026-05-09
+**Stato:** `[ ] Da iniziare`
+**Piano:** [docs/2 - coding plans/P42-coding-plan.md](2%20-%20coding%20plans/P42-coding-plan.md)
+**Todo:** [docs/3 - todo lists/P42-todo.md](3%20-%20todo%20lists/P42-todo.md)
+**Report analisi:** [docs/4 - reports/report-analisi-migrazione-react-native.md](4%20-%20reports/report-analisi-migrazione-react-native.md)
+
+Rimozione di tutti i 103 file classificati ELIMINA nel report di analisi migrazione React Native e dei 40 pacchetti npm incompatibili con React Native. Al termine, nel repository rimangono solo file TIENI (portabili senza modifiche) e VALUTA (portabili con refactoring — input per P43). Il codebase sarà deliberatamente non compilabile: `npx tsc --noEmit` produrrà errori sui file VALUTA che importavano i file ELIMINA. Questo è atteso.
+
+| Intervento | Target | File/Pacchetti |
+|---|---|---|
+| 1 — Rimozione `src/components/ui/` | 46 componenti shadcn/Radix | `git rm src/components/ui/*.tsx` |
+| 2 — Rimozione `src/components/` | 36 componenti applicativi | `git rm src/components/*.tsx` |
+| 3 — Rimozione hook ELIMINA `src/hooks/` | 4 hook DOM-specifici | `use-mobile`, `use-keyboard-shortcuts`, `use-app-shortcuts`, `use-list-navigation` |
+| 4 — Rimozione file radice `src/` | 7 file entry/CSS/type declaration | `main.tsx`, `ErrorFallback.tsx`, `index.css`, `main.css`, `styles/theme.css`, `lucide-react.d.ts`, `vite-end.d.ts` |
+| 5 — Rimozione `src/lib/utils.ts` | 1 file utility Tailwind | `cn()` — senza senso in RN |
+| 6 — Rimozione `src/test/` | 9 file test Web | Directory intera |
+| 7 — Rimozione dipendenze npm | 40 pacchetti | 27 `@radix-ui/*` + 11 librerie web + 2 devDep testing |
+
+---
+
+## P41 — Bugfix doppia chiamata `onFocusReturn` nel menu azioni movimenti
+
+**Data inserimento:** 2026-05-09
+**Stato:** `[ ] Da iniziare`
+**Piano:** [docs/2 - coding plans/P41-coding-plan.md](2%20-%20coding%20plans/P41-coding-plan.md)
+**Todo:** [docs/3 - todo lists/P41-todo.md](3%20-%20todo%20lists/P41-todo.md)
+**Report analisi:** [docs/4 - reports/report-debug-focus-handler-accumulation.md](4%20-%20reports/report-debug-focus-handler-accumulation.md)
+
+Fix della doppia chiamata a `onFocusReturn()` nel componente `TransactionActionMenu` che causava l'accumulo di handler e il comportamento anomalo del menu azioni. Tre interventi: rimozione del call duplicato in `handleOpenChange`, connessione dei `useCallback` memoizzati già presenti come props di `TransactionActionMenu`, rimozione del `useEffect` morto con selettore DOM inesistente.
+
+| Intervento | File | Tipo |
+|---|---|---|
+| Rimozione `onFocusReturn()` da `handleOpenChange` | `src/components/TransactionActionMenu.tsx` | Rimozione riga |
+| Connessione `onMenuTransactions`, `onEditTransactions`, `onDeleteTransactions` a `TransactionActionMenu` | `src/components/TransactionsTab.tsx` | Sostituzione props |
+| Rimozione `useEffect` cleanup con selettore `[data-list-item][data-index]` inesistente | `src/components/TransactionsTab.tsx` | Rimozione blocco |
 
 ## P37 — Correzioni Accessibilità WCAG 2.1 AA
 
